@@ -1,11 +1,12 @@
 import { Fragment, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
-import { UPCOMING_EVENTS, type CalendarEvent } from "@/lib/student-store";
+import { UPCOMING_EVENTS } from "@/lib/student-store";
 import { cn } from "@/lib/utils";
 
 const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 8); // 8am - 7pm
+const GUTTER = 56;
 
 const COLOR_MAP: Record<string, string> = {
   coral: "bg-coral/15 border-coral text-coral",
@@ -29,57 +30,67 @@ export function CalendarGrid({ compact = false }: { compact?: boolean }) {
   const rowHeight = compact ? 36 : 56;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="grid grid-cols-[40px_repeat(7,minmax(0,1fr))] border-b border-border bg-background sticky top-0 z-10">
-        <div className="text-[9px] text-muted-foreground p-2">GMT-4</div>
-        {DAYS.map((d, i) => {
-          const isToday = dates[i].toDateString() === today.toDateString();
-          return (
-            <div key={d} className="text-center py-2 border-l border-border">
-              <div className={cn("text-[10px] font-semibold tracking-wider", isToday ? "text-brand-deep" : "text-muted-foreground")}>{d}</div>
-              <div className={cn("text-base font-bold mt-0.5", isToday && "size-7 rounded-full bg-brand text-white grid place-items-center mx-auto")}>{dates[i].getDate()}</div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Grid */}
-      <div className="flex-1 overflow-auto">
-        <div className="relative grid grid-cols-[40px_repeat(7,minmax(0,1fr))]">
-          {/* Hour labels + cells */}
-          {HOURS.map((h) => (
-            <Fragment key={`row-${h}`}>
-              <div className="text-[10px] text-muted-foreground p-1 text-right pr-2 border-t border-border" style={{ height: rowHeight }}>
-                {h % 12 || 12}{h < 12 ? "am" : "pm"}
-              </div>
-              {DAYS.map((_, di) => (
-                <div key={`c-${h}-${di}`} className="border-t border-l border-border bg-mint/30" style={{ height: rowHeight }} />
-              ))}
-            </Fragment>
-          ))}
-
-          {/* Events absolutely positioned */}
-          {UPCOMING_EVENTS.map((e) => {
-            const top = (e.startHour - HOURS[0]) * rowHeight;
-            const height = (e.endHour - e.startHour) * rowHeight - 2;
-            if (top < 0) return null;
+      <div className="flex border-b border-border bg-background sticky top-0 z-10">
+        <div className="text-[10px] text-muted-foreground p-2 flex items-end justify-end" style={{ width: GUTTER }}>GMT-4</div>
+        <div className="flex-1 grid grid-cols-7">
+          {DAYS.map((d, i) => {
+            const isToday = dates[i].toDateString() === today.toDateString();
             return (
-              <div
-                key={e.id}
-                className={cn("absolute rounded-lg border-l-4 p-1.5 text-[11px] shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition", COLOR_MAP[e.color])}
-                style={{
-                  top,
-                  height,
-                  left: `calc(40px + (100% - 40px) * ${e.day} / 7 + 2px)`,
-                  width: `calc((100% - 40px) / 7 - 4px)`,
-                }}
-              >
-                <div className="font-semibold leading-tight truncate">{e.title}</div>
-                {height > 30 && <div className="opacity-70 truncate text-[10px]">{e.tutor}</div>}
+              <div key={d} className="text-center py-2 border-l border-border first:border-l-0">
+                <div className={cn("text-[10px] font-semibold tracking-wider", isToday ? "text-brand-deep" : "text-muted-foreground")}>{d}</div>
+                <div className={cn("text-base font-bold mt-0.5", isToday && "size-7 rounded-full bg-brand text-white grid place-items-center mx-auto")}>{dates[i].getDate()}</div>
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-auto">
+        <div className="flex">
+          {/* Hour gutter */}
+          <div className="flex-shrink-0" style={{ width: GUTTER }}>
+            {HOURS.map((h) => (
+              <div key={h} className="text-[10px] text-muted-foreground pr-2 pt-1 text-right border-t border-border" style={{ height: rowHeight }}>
+                {h % 12 || 12}{h < 12 ? " AM" : " PM"}
+              </div>
+            ))}
+          </div>
+
+          {/* 7-day grid */}
+          <div className="flex-1 relative grid grid-cols-7">
+            {DAYS.map((_, di) => (
+              <div key={di} className="border-l border-border first:border-l-0">
+                {HOURS.map((h) => (
+                  <div key={h} className="border-t border-border" style={{ height: rowHeight }} />
+                ))}
+              </div>
+            ))}
+
+            {/* Events absolutely positioned within the 7-col area */}
+            {UPCOMING_EVENTS.map((e) => {
+              const top = (e.startHour - HOURS[0]) * rowHeight;
+              const height = (e.endHour - e.startHour) * rowHeight - 2;
+              if (top < 0) return null;
+              return (
+                <div
+                  key={e.id}
+                  className={cn("absolute rounded-lg border-l-4 p-1.5 text-[11px] shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition", COLOR_MAP[e.color])}
+                  style={{
+                    top,
+                    height,
+                    left: `calc(${(e.day / 7) * 100}% + 3px)`,
+                    width: `calc(${100 / 7}% - 6px)`,
+                  }}
+                >
+                  <div className="font-semibold leading-tight truncate">{e.title}</div>
+                  {height > 30 && <div className="opacity-70 truncate text-[10px]">{e.tutor}</div>}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -87,7 +98,7 @@ export function CalendarGrid({ compact = false }: { compact?: boolean }) {
 }
 
 export function CalendarPopup({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [offset, setOffset] = useState(0);
+  const [_offset, setOffset] = useState(0);
   if (!open) return null;
   const monthLabel = new Date().toLocaleString("en", { month: "long", year: "numeric" });
   return (

@@ -65,8 +65,8 @@
   --brand: oklch(0.74 0.19 145);            /* vivid green */
   --brand-soft: oklch(0.95 0.07 150);       /* mint chip */
   --brand-deep: oklch(0.55 0.16 150);       /* darker green */
-  --mint: oklch(0.97 0.04 150);             /* page wash */
-  --mint-deep: oklch(0.93 0.05 150);
+  --mint: oklch(0.985 0.003 240);           /* near-white page wash */
+  --mint-deep: oklch(0.95 0.01 230);
   --ink: oklch(0.18 0.02 240);              /* near-black headings */
   --coral: oklch(0.74 0.18 40);             /* warm accent */
   --coral-soft: oklch(0.94 0.06 50);

@@ -16,7 +16,6 @@ import {
   LogOut,
   ChevronUp,
   Plus,
-  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentStoreProvider, useStudentStore, ALL_LESSONS } from "@/lib/student-store";
@@ -27,11 +26,10 @@ type NavItem = { to: string; label: string; icon: ComponentType<{ className?: st
 const nav: NavItem[] = [
   { to: "/student", label: "Home", icon: LayoutDashboard, exact: true, tint: "bg-brand-soft text-brand-deep" },
   { to: "/student/tutors", label: "Find tutors", icon: Search, tint: "bg-coral-soft text-coral" },
-  { to: "/student/lessons", label: "Lessons", icon: GraduationCap, tint: "bg-sky text-ink" },
-  { to: "/student/bookings", label: "Bookings", icon: CalendarDays, tint: "bg-peach text-ink" },
-  { to: "/student/curriculum", label: "Curriculum", icon: BookOpen, tint: "bg-lavender text-ink" },
+  { to: "/student/lessons", label: "My Lessons", icon: GraduationCap, tint: "bg-sky text-ink" },
+  { to: "/student/bookings", label: "My Bookings", icon: CalendarDays, tint: "bg-peach text-ink" },
+  { to: "/student/tools", label: "Tools", icon: BookOpen, tint: "bg-lavender text-ink" },
   { to: "/student/messages", label: "Messages", icon: MessageSquare, tint: "bg-brand-soft text-brand-deep" },
-  { to: "/student/settings", label: "Settings", icon: Settings, tint: "bg-mint-deep text-forest" },
 ];
 
 const COLLAPSE_KEY = "itutor.sidebarCollapsed";
@@ -62,14 +60,22 @@ function MyLessonsSection({ collapsed }: { collapsed: boolean }) {
   }
 
   return (
-    <div className="px-3 mt-4">
-      <div className="flex items-center justify-between px-2 mb-1.5">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">My lessons</div>
-        <button onClick={() => setShowAdd((s) => !s)} className="size-5 grid place-items-center rounded hover:bg-muted text-muted-foreground" title="Add lesson">
-          <Plus className="size-3.5" />
+    <div className="px-3 mt-5">
+      <div className="h-px bg-border mx-2 mb-3" />
+      <div className="flex items-center justify-between px-2 mb-2">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">My Lessons</div>
+        <button
+          onClick={() => setShowAdd((s) => !s)}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-deep hover:bg-brand-soft px-2 py-1 rounded-md"
+          title="Add lesson"
+        >
+          <Plus className="size-3.5" /> Add
         </button>
       </div>
       <div className="space-y-0.5">
+        {visible.length === 0 && (
+          <div className="text-[11px] text-muted-foreground px-2 py-2 italic">No lessons pinned. Click Add to pin one.</div>
+        )}
         {visible.map((l) => (
           <div key={l.id} className="group flex items-center gap-2 pr-1 rounded-lg hover:bg-muted">
             <Link
@@ -260,10 +266,13 @@ function ShellInner() {
               <Link to="/student/messages" className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Messages">
                 <MessageSquare className="size-4" />
               </Link>
-              <button className="relative size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Notifications">
+              <Link to="/student/notifications" className="relative size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Notifications">
                 <Bell className="size-4" />
                 <span className="absolute top-2 right-2 size-2 rounded-full bg-coral" />
-              </button>
+              </Link>
+              <Link to="/student/settings" className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Settings">
+                <Settings className="size-4" />
+              </Link>
             </div>
           </div>
         </header>

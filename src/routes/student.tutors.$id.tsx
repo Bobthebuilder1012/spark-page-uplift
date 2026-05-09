@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Star, Heart, MapPin, Award, Clock, MessageSquare, Video, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Star, Heart, MapPin, Award, Clock, MessageSquare, Video, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id")({
@@ -10,21 +10,50 @@ export const Route = createFileRoute("/student/tutors/$id")({
   component: TutorDetail,
 });
 
-const SLOTS = [
-  { day: "Mon", date: "11", times: ["4:00 PM", "5:30 PM"] },
-  { day: "Tue", date: "12", times: ["6:00 PM"] },
-  { day: "Wed", date: "13", times: ["4:00 PM", "5:30 PM", "7:00 PM"] },
-  { day: "Thu", date: "14", times: [] },
-  { day: "Fri", date: "15", times: ["4:00 PM", "6:00 PM"] },
-  { day: "Sat", date: "16", times: ["10:00 AM", "2:00 PM", "4:00 PM"] },
-  { day: "Sun", date: "17", times: ["2:00 PM"] },
-];
+const TUTOR_PROFILES: Record<string, { name: string; subject: string; level: string; price: number; bio: string; tags: string[] }> = {
+  ramdeen: { name: "Mr. Ramdeen", subject: "Mathematics", level: "CSEC & CAPE", price: 120, bio: "Caribbean-trained mathematics tutor with a decade of experience preparing students for SEA, CSEC and CAPE exams. Friendly, patient, and focused on building confidence through real understanding.", tags: ["Functions", "Calculus", "Trigonometry", "Algebra", "Statistics"] },
+  singh: { name: "Ms. Singh", subject: "Physics", level: "CSEC & CAPE", price: 110, bio: "Physics tutor and UWI graduate. I make complex concepts intuitive through real-world examples and lots of practice.", tags: ["Mechanics", "Waves", "Electricity", "Modern Physics"] },
+  joseph: { name: "Mr. Joseph", subject: "English Literature", level: "CSEC", price: 100, bio: "Literature tutor with a love for Caribbean writers. Helping students find their voice in essays and analysis.", tags: ["Essays", "Poetry", "Drama", "Prose"] },
+  ali: { name: "Ms. Ali", subject: "Biology", level: "CSEC & CAPE", price: 115, bio: "Biology educator focused on diagrams, mnemonics, and exam technique.", tags: ["Cells", "Genetics", "Ecology"] },
+  thomas: { name: "Mr. Thomas", subject: "Chemistry", level: "CAPE", price: 130, bio: "PhD Chemistry tutor specialising in CAPE preparation.", tags: ["Organic", "Inorganic", "Physical"] },
+  khan: { name: "Ms. Khan", subject: "SEA Prep", level: "Primary", price: 80, bio: "Patient SEA preparation tutor. Building strong fundamentals one step at a time.", tags: ["Maths", "English", "Comprehension"] },
+};
+
+function buildSlots(days = 30) {
+  const out: { date: Date; times: string[] }[] = [];
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const dow = d.getDay();
+    // Vary availability deterministically
+    const pool = ["3:30 PM", "4:00 PM", "5:00 PM", "5:30 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
+    let times: string[] = [];
+    if (dow === 0) times = pool.slice(0, 2);
+    else if (dow === 6) times = ["10:00 AM", "11:30 AM", "2:00 PM", "4:00 PM"];
+    else times = pool.filter((_, idx) => (idx + i) % 2 === 0);
+    if (i % 7 === 4) times = []; // occasional day off
+    out.push({ date: d, times });
+  }
+  return out;
+}
+
 
 function TutorDetail() {
   const { id } = Route.useParams();
+  const profile = TUTOR_PROFILES[id] ?? { name: "Tutor", subject: "Mathematics", level: "CSEC & CAPE", price: 120, bio: "", tags: [] };
+  const slots = useMemo(() => buildSlots(30), []);
   const [pickedDay, setPickedDay] = useState(0);
   const [pickedTime, setPickedTime] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const dayScrollRef = useRef<HTMLDivElement>(null);
+
+  const initials = profile.name.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+
+  const scrollDays = (dir: 1 | -1) => {
+    dayScrollRef.current?.scrollBy({ left: dir * 280, behavior: "smooth" });
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -39,11 +68,11 @@ function TutorDetail() {
           <div className="flex items-end justify-between gap-4 flex-wrap">
             <div className="flex items-end gap-4">
               <div className="size-24 rounded-3xl bg-white border-4 border-background grid place-items-center text-2xl font-bold text-forest shadow-card">
-                {id.slice(0, 2).toUpperCase()}
+                {initials}
               </div>
               <div className="pb-1">
-                <h1 className="text-2xl font-bold text-ink capitalize">Mr. {id}</h1>
-                <p className="text-sm text-muted-foreground">Mathematics · CSEC & CAPE</p>
+                <h1 className="text-2xl font-bold text-ink">{profile.name}</h1>
+                <p className="text-sm text-muted-foreground">{profile.subject} · {profile.level}</p>
                 <div className="flex items-center gap-3 mt-2 text-sm">
                   <div className="flex items-center gap-1">
                     <Star className="size-4 fill-coral text-coral" />
@@ -91,11 +120,9 @@ function TutorDetail() {
         <div className="lg:col-span-2 space-y-6">
           <section className="rounded-3xl bg-background border border-border p-6">
             <h2 className="font-semibold text-ink mb-2">About</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Caribbean-trained mathematics tutor with a decade of experience preparing students for SEA, CSEC and CAPE exams. Friendly, patient, and focused on building confidence through real understanding.
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
             <div className="flex flex-wrap gap-2 mt-4">
-              {["Functions", "Calculus", "Trigonometry", "Algebra", "Statistics"].map((s) => (
+              {profile.tags.map((s) => (
                 <span key={s} className="px-3 py-1 rounded-full bg-brand-soft text-forest text-xs font-medium">{s}</span>
               ))}
             </div>
@@ -131,34 +158,52 @@ function TutorDetail() {
           <div className="rounded-3xl bg-background border border-border p-5">
             <div className="flex items-baseline justify-between mb-4">
               <div>
-                <span className="text-2xl font-bold text-ink">TT$120</span>
+                <span className="text-2xl font-bold text-ink">TT${profile.price}</span>
                 <span className="text-sm text-muted-foreground">/hr</span>
               </div>
               <span className="text-xs px-2 py-1 rounded-full bg-brand-soft text-forest font-semibold">Available</span>
             </div>
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Pick a day</div>
-            <div className="grid grid-cols-7 gap-1 mb-4">
-              {SLOTS.map((s, i) => (
-                <button
-                  key={s.day}
-                  onClick={() => { setPickedDay(i); setPickedTime(null); }}
-                  disabled={s.times.length === 0}
-                  className={cn(
-                    "py-2 rounded-xl text-center transition disabled:opacity-30",
-                    pickedDay === i ? "bg-ink text-white" : "hover:bg-muted"
-                  )}
-                >
-                  <div className="text-[10px] font-medium opacity-70">{s.day}</div>
-                  <div className="text-sm font-bold">{s.date}</div>
-                </button>
-              ))}
+
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pick a day · next 30 days</div>
+              <div className="flex gap-1">
+                <button onClick={() => scrollDays(-1)} className="size-6 grid place-items-center rounded-full hover:bg-muted" aria-label="Previous days"><ChevronLeft className="size-3.5" /></button>
+                <button onClick={() => scrollDays(1)} className="size-6 grid place-items-center rounded-full hover:bg-muted" aria-label="Next days"><ChevronRight className="size-3.5" /></button>
+              </div>
             </div>
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Available times</div>
+
+            <div ref={dayScrollRef} className="flex gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-thin -mx-1 px-1 snap-x">
+              {slots.map((s, i) => {
+                const disabled = s.times.length === 0;
+                const isToday = i === 0;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => { setPickedDay(i); setPickedTime(null); }}
+                    disabled={disabled}
+                    className={cn(
+                      "shrink-0 w-14 py-2 rounded-xl text-center transition snap-start disabled:opacity-30 border",
+                      pickedDay === i ? "bg-ink text-white border-ink" : "border-border hover:border-brand"
+                    )}
+                  >
+                    <div className="text-[10px] font-semibold opacity-70 uppercase">
+                      {isToday ? "Today" : s.date.toLocaleDateString("en", { weekday: "short" })}
+                    </div>
+                    <div className="text-base font-bold mt-0.5">{s.date.getDate()}</div>
+                    <div className="text-[9px] opacity-60 mt-0.5">{s.date.toLocaleDateString("en", { month: "short" })}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              Available times · {slots[pickedDay].date.toLocaleDateString("en", { weekday: "long", month: "short", day: "numeric" })}
+            </div>
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {SLOTS[pickedDay].times.length === 0 && (
+              {slots[pickedDay].times.length === 0 && (
                 <div className="col-span-2 text-sm text-muted-foreground py-3 text-center">No slots this day</div>
               )}
-              {SLOTS[pickedDay].times.map((t) => (
+              {slots[pickedDay].times.map((t) => (
                 <button
                   key={t}
                   onClick={() => setPickedTime(t)}
