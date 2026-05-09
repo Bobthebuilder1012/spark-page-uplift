@@ -89,7 +89,7 @@ function MyLessonsSection({ collapsed }: { collapsed: boolean }) {
               >
                 {l.emoji}
               </span>
-              <span className="truncate text-ink">{l.title}</span>
+              <span className="truncate text-foreground">{l.title}</span>
             </Link>
             <button
               onClick={() => togglePin(l.id)}
@@ -137,7 +137,7 @@ function ProfileMenu({ collapsed }: { collapsed: boolean }) {
         {!collapsed && (
           <>
             <div className="min-w-0 flex-1 text-left">
-              <div className="text-sm font-semibold truncate text-ink">Aliyah M.</div>
+              <div className="text-sm font-semibold truncate text-foreground">Aliyah M.</div>
               <div className="text-xs text-muted-foreground truncate">Form 5 · CSEC</div>
             </div>
             <ChevronUp className={cn("size-4 text-muted-foreground transition-transform", !open && "rotate-180")} />
@@ -198,7 +198,7 @@ function ShellInner() {
   return (
     <div className="min-h-screen bg-mint flex">
       {/* Desktop sidebar */}
-      <aside className={cn("hidden lg:flex shrink-0 flex-col border-r border-border bg-background transition-all duration-200", collapsed ? "w-16" : "w-64")}>
+      <aside className={cn("dark hidden lg:flex shrink-0 flex-col border-r border-border bg-ink text-foreground transition-all duration-200", collapsed ? "w-16" : "w-64")}>
         <div className={cn("px-3 py-4 border-b border-border flex items-center gap-2", collapsed && "justify-center")}>
           {!collapsed && <Link to="/" className="flex-1"><Logo size={26} /></Link>}
           <button
@@ -223,7 +223,7 @@ function ShellInner() {
                   className={cn(
                     "flex items-center rounded-xl text-sm font-medium transition-colors group",
                     collapsed ? "justify-center p-2" : "gap-3 px-2 py-2",
-                    active ? "bg-muted text-ink" : "text-muted-foreground hover:bg-muted/60 hover:text-ink"
+                    active ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   )}
                 >
                   <span className={cn("size-8 rounded-lg grid place-items-center transition", item.tint, !active && "opacity-80 group-hover:opacity-100")}>
