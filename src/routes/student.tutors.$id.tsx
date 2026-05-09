@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Star, Heart, MapPin, Award, Clock, MessageSquare, Video, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Star, Heart, MapPin, Award, Clock, MessageSquare, Video, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id")({
@@ -10,15 +10,35 @@ export const Route = createFileRoute("/student/tutors/$id")({
   component: TutorDetail,
 });
 
-const SLOTS = [
-  { day: "Mon", date: "11", times: ["4:00 PM", "5:30 PM"] },
-  { day: "Tue", date: "12", times: ["6:00 PM"] },
-  { day: "Wed", date: "13", times: ["4:00 PM", "5:30 PM", "7:00 PM"] },
-  { day: "Thu", date: "14", times: [] },
-  { day: "Fri", date: "15", times: ["4:00 PM", "6:00 PM"] },
-  { day: "Sat", date: "16", times: ["10:00 AM", "2:00 PM", "4:00 PM"] },
-  { day: "Sun", date: "17", times: ["2:00 PM"] },
-];
+const TUTOR_PROFILES: Record<string, { name: string; subject: string; level: string; price: number; bio: string; tags: string[] }> = {
+  ramdeen: { name: "Mr. Ramdeen", subject: "Mathematics", level: "CSEC & CAPE", price: 120, bio: "Caribbean-trained mathematics tutor with a decade of experience preparing students for SEA, CSEC and CAPE exams. Friendly, patient, and focused on building confidence through real understanding.", tags: ["Functions", "Calculus", "Trigonometry", "Algebra", "Statistics"] },
+  singh: { name: "Ms. Singh", subject: "Physics", level: "CSEC & CAPE", price: 110, bio: "Physics tutor and UWI graduate. I make complex concepts intuitive through real-world examples and lots of practice.", tags: ["Mechanics", "Waves", "Electricity", "Modern Physics"] },
+  joseph: { name: "Mr. Joseph", subject: "English Literature", level: "CSEC", price: 100, bio: "Literature tutor with a love for Caribbean writers. Helping students find their voice in essays and analysis.", tags: ["Essays", "Poetry", "Drama", "Prose"] },
+  ali: { name: "Ms. Ali", subject: "Biology", level: "CSEC & CAPE", price: 115, bio: "Biology educator focused on diagrams, mnemonics, and exam technique.", tags: ["Cells", "Genetics", "Ecology"] },
+  thomas: { name: "Mr. Thomas", subject: "Chemistry", level: "CAPE", price: 130, bio: "PhD Chemistry tutor specialising in CAPE preparation.", tags: ["Organic", "Inorganic", "Physical"] },
+  khan: { name: "Ms. Khan", subject: "SEA Prep", level: "Primary", price: 80, bio: "Patient SEA preparation tutor. Building strong fundamentals one step at a time.", tags: ["Maths", "English", "Comprehension"] },
+};
+
+function buildSlots(days = 30) {
+  const out: { date: Date; times: string[] }[] = [];
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const dow = d.getDay();
+    // Vary availability deterministically
+    const pool = ["3:30 PM", "4:00 PM", "5:00 PM", "5:30 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
+    let times: string[] = [];
+    if (dow === 0) times = pool.slice(0, 2);
+    else if (dow === 6) times = ["10:00 AM", "11:30 AM", "2:00 PM", "4:00 PM"];
+    else times = pool.filter((_, idx) => (idx + i) % 2 === 0);
+    if (i % 7 === 4) times = []; // occasional day off
+    out.push({ date: d, times });
+  }
+  return out;
+}
+
 
 function TutorDetail() {
   const { id } = Route.useParams();
