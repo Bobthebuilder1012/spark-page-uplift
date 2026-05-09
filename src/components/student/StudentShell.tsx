@@ -200,7 +200,11 @@ function ShellInner() {
       {/* Desktop sidebar */}
       <aside className={cn("dark hidden lg:flex shrink-0 flex-col border-r border-border bg-ink text-foreground transition-all duration-200", collapsed ? "w-16" : "w-64")}>
         <div className={cn("px-3 py-4 border-b border-border flex items-center gap-2", collapsed && "justify-center")}>
-          {!collapsed && <Link to="/" className="flex-1"><Logo size={26} /></Link>}
+          {!collapsed ? (
+            <Link to="/" className="flex-1" title="Back to home"><Logo size={26} /></Link>
+          ) : (
+            <Link to="/" title="Back to home" className="size-8 grid place-items-center rounded-lg bg-brand text-white font-bold text-sm">i</Link>
+          )}
           <button
             onClick={() => setCollapsed((c) => !c)}
             className="size-8 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground"
