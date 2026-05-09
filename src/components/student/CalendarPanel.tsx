@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { UPCOMING_EVENTS, type CalendarEvent } from "@/lib/student-store";
@@ -49,14 +49,14 @@ export function CalendarGrid({ compact = false }: { compact?: boolean }) {
         <div className="relative grid grid-cols-[40px_repeat(7,minmax(0,1fr))]">
           {/* Hour labels + cells */}
           {HOURS.map((h) => (
-            <>
-              <div key={`h-${h}`} className="text-[10px] text-muted-foreground p-1 text-right pr-2 border-t border-border" style={{ height: rowHeight }}>
+            <Fragment key={`row-${h}`}>
+              <div className="text-[10px] text-muted-foreground p-1 text-right pr-2 border-t border-border" style={{ height: rowHeight }}>
                 {h % 12 || 12}{h < 12 ? "am" : "pm"}
               </div>
               {DAYS.map((_, di) => (
                 <div key={`c-${h}-${di}`} className="border-t border-l border-border bg-mint/30" style={{ height: rowHeight }} />
               ))}
-            </>
+            </Fragment>
           ))}
 
           {/* Events absolutely positioned */}
@@ -71,8 +71,8 @@ export function CalendarGrid({ compact = false }: { compact?: boolean }) {
                 style={{
                   top,
                   height,
-                  left: `calc(40px + ${(e.day / 7) * 100}% - ${(40 / 7)}px + 2px)`,
-                  width: `calc(${100 / 7}% - 4px)`,
+                  left: `calc(40px + (100% - 40px) * ${e.day} / 7 + 2px)`,
+                  width: `calc((100% - 40px) / 7 - 4px)`,
                 }}
               >
                 <div className="font-semibold leading-tight truncate">{e.title}</div>
