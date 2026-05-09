@@ -198,7 +198,7 @@ function ShellInner() {
   return (
     <div className="min-h-screen bg-mint flex">
       {/* Desktop sidebar */}
-      <aside className={cn("dark hidden lg:flex shrink-0 flex-col border-r border-border bg-ink text-foreground transition-all duration-200", collapsed ? "w-16" : "w-64")}>
+      <aside className={cn("dark hidden lg:flex shrink-0 flex-col border-r border-border bg-ink text-foreground transition-all duration-200 sticky top-0 h-screen", collapsed ? "w-16" : "w-64")}>
         <div className={cn("px-3 py-4 border-b border-border flex items-center gap-2", collapsed && "justify-center")}>
           {!collapsed ? (
             <Link to="/" className="flex-1" title="Back to home"><Logo size={26} /></Link>
