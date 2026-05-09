@@ -1,9 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search, Star, Heart, MapPin, Sparkles, SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { z } from "zod";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+
+const searchSchema = z.object({ q: fallback(z.string(), "").default("") });
 
 export const Route = createFileRoute("/student/tutors/")({
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [{ title: "Find tutors — iTutor Student" }],
   }),
@@ -22,16 +27,25 @@ const TUTORS = [
 const CHIPS = ["All", "Maths", "English", "Physics", "Chemistry", "Biology", "SEA"];
 
 function FindTutors() {
+  const { q } = Route.useSearch();
   const [active, setActive] = useState("All");
+  const [query, setQuery] = useState(q || "");
   const [saved, setSaved] = useState<Set<string>>(new Set());
 
-  const list = active === "All" ? TUTORS : TUTORS.filter((t) => t.subject.toLowerCase().includes(active.toLowerCase()) || (active === "SEA" && t.subject === "SEA Prep"));
+  useEffect(() => { setQuery(q || ""); }, [q]);
+
+  const ql = query.trim().toLowerCase();
+  const list = TUTORS
+    .filter((t) => active === "All" || t.subject.toLowerCase().includes(active.toLowerCase()) || (active === "SEA" && t.subject === "SEA Prep"))
+    .filter((t) => !ql || t.name.toLowerCase().includes(ql) || t.subject.toLowerCase().includes(ql) || t.tags.join(" ").toLowerCase().includes(ql));
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold text-ink">Find your tutor</h1>
-        <p className="text-sm text-muted-foreground mt-1">{TUTORS.length} verified Caribbean tutors available</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          {ql ? <>Showing results for "<span className="text-ink font-medium">{query}</span>" · {list.length} match{list.length === 1 ? "" : "es"}</> : <>{TUTORS.length} verified Caribbean tutors available</>}
+        </p>
       </div>
 
       {/* Search bar */}
@@ -39,6 +53,8 @@ function FindTutors() {
         <div className="flex-1 flex items-center gap-2 px-3">
           <Search className="size-4 text-muted-foreground" />
           <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by subject, name, or topic…"
             className="flex-1 bg-transparent outline-none text-sm py-2"
           />

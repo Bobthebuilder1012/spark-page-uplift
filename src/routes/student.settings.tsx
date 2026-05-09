@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { User, Bell, Lock, CreditCard, GraduationCap, ChevronRight, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/student/settings")({
   head: () => ({
@@ -18,16 +19,6 @@ const SECTIONS = [
   { id: "billing", label: "Billing", icon: CreditCard },
 ];
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button
-      onClick={() => onChange(!on)}
-      className={cn("relative w-11 h-6 rounded-full transition-colors", on ? "bg-brand" : "bg-muted")}
-    >
-      <span className={cn("absolute top-0.5 size-5 rounded-full bg-white transition-transform shadow", on ? "translate-x-5" : "translate-x-0.5")} />
-    </button>
-  );
-}
 
 function Settings() {
   const [section, setSection] = useState("profile");
@@ -117,7 +108,7 @@ function Settings() {
                     <div className="font-medium text-ink text-sm">{n.label}</div>
                     <div className="text-xs text-muted-foreground mt-0.5">{n.desc}</div>
                   </div>
-                  <Toggle on={notif[n.key as keyof typeof notif]} onChange={(v) => setNotif({ ...notif, [n.key]: v })} />
+                  <Switch checked={notif[n.key as keyof typeof notif]} onCheckedChange={(v) => setNotif({ ...notif, [n.key]: v })} />
                 </div>
               ))}
             </>
