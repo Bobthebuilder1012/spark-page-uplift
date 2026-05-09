@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Video, Calendar, MoreHorizontal, RotateCcw, Star } from "lucide-react";
+import { Video, Calendar, MoreHorizontal, RotateCcw, Star, Tag, Clock, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/bookings")({
@@ -110,6 +110,9 @@ function Bookings() {
           <TabsTrigger value="past" className="rounded-xl px-5 data-[state=active]:bg-brand-soft data-[state=active]:text-forest">
             Past · {PAST.length}
           </TabsTrigger>
+          <TabsTrigger value="offers" className="rounded-xl px-5 data-[state=active]:bg-coral-soft data-[state=active]:text-coral">
+            Offers · {OFFERS.length}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="upcoming" className="mt-6 space-y-3">
@@ -118,7 +121,89 @@ function Bookings() {
         <TabsContent value="past" className="mt-6 space-y-3">
           {PAST.map((b) => <BookingCard key={b.id} b={b} past />)}
         </TabsContent>
+        <TabsContent value="offers" className="mt-6 space-y-3">
+          {OFFERS.map((o) => <OfferCard key={o.id} o={o} />)}
+        </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+const OFFERS = [
+  {
+    id: "o1",
+    tutor: "Mr. Ramdeen",
+    initials: "MR",
+    subject: "CSEC Mathematics",
+    message: "I noticed you've been working on Functions. I'd love to offer a focused 90-min session at a discount.",
+    price: "TT$120",
+    original: "TT$180",
+    expiresIn: "2 days",
+    tint: "from-coral to-peach",
+  },
+  {
+    id: "o2",
+    tutor: "Ms. Singh",
+    initials: "MS",
+    subject: "CSEC Physics",
+    message: "Bundle: 4 Physics sessions for the price of 3. Perfect before your mock exams.",
+    price: "TT$540",
+    original: "TT$720",
+    expiresIn: "5 days",
+    tint: "from-sky-500 to-violet-500",
+  },
+  {
+    id: "o3",
+    tutor: "Mr. Joseph",
+    initials: "MJ",
+    subject: "English Literature",
+    message: "Free 30-min essay review. Send me one of your past essays and we'll go through it together.",
+    price: "Free",
+    original: "",
+    expiresIn: "1 week",
+    tint: "from-violet-500 to-fuchsia-500",
+  },
+];
+
+function OfferCard({ o }: { o: (typeof OFFERS)[number] }) {
+  return (
+    <div className="rounded-2xl bg-background border border-border overflow-hidden hover:shadow-card transition">
+      <div className={`h-1.5 bg-gradient-to-r ${o.tint}`} />
+      <div className="p-4">
+        <div className="flex items-start gap-3">
+          <div className={`size-12 rounded-2xl bg-gradient-to-br ${o.tint} grid place-items-center text-white font-semibold flex-shrink-0`}>
+            {o.initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold text-ink">{o.tutor}</h3>
+              <span className="px-2 py-0.5 rounded-full bg-coral-soft text-coral text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1">
+                <Tag className="size-3" /> Offer
+              </span>
+            </div>
+            <div className="text-xs text-muted-foreground mt-0.5">{o.subject}</div>
+            <p className="text-sm text-ink mt-2">{o.message}</p>
+            <div className="flex items-baseline gap-2 mt-3">
+              <span className="text-xl font-bold text-ink">{o.price}</span>
+              {o.original && <span className="text-sm text-muted-foreground line-through">{o.original}</span>}
+              <span className="ml-auto text-xs text-muted-foreground inline-flex items-center gap-1">
+                <Clock className="size-3" /> {o.expiresIn} left
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-2 mt-4">
+          <button className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand text-white font-semibold text-sm hover:bg-brand-deep">
+            <Check className="size-4" /> Accept
+          </button>
+          <button className="px-4 py-2.5 rounded-xl border border-border font-semibold text-sm hover:bg-muted">
+            Counter
+          </button>
+          <button className="size-10 grid place-items-center rounded-xl text-muted-foreground hover:bg-muted" title="Decline">
+            <X className="size-4" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

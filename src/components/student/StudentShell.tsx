@@ -24,12 +24,12 @@ import { CalendarPopup } from "./CalendarPanel";
 type NavItem = { to: string; label: string; icon: ComponentType<{ className?: string }>; exact?: boolean; tint: string };
 
 const nav: NavItem[] = [
-  { to: "/student", label: "Home", icon: LayoutDashboard, exact: true, tint: "bg-brand-soft text-brand-deep" },
-  { to: "/student/tutors", label: "Find tutors", icon: Search, tint: "bg-coral-soft text-coral" },
-  { to: "/student/lessons", label: "My Lessons", icon: GraduationCap, tint: "bg-sky text-ink" },
-  { to: "/student/bookings", label: "My Bookings", icon: CalendarDays, tint: "bg-peach text-ink" },
-  { to: "/student/tools", label: "Tools", icon: BookOpen, tint: "bg-lavender text-ink" },
-  { to: "/student/messages", label: "Messages", icon: MessageSquare, tint: "bg-brand-soft text-brand-deep" },
+  { to: "/student", label: "Home", icon: LayoutDashboard, exact: true, tint: "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/30" },
+  { to: "/student/tutors", label: "Find tutors", icon: Search, tint: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/30" },
+  { to: "/student/lessons", label: "My Lessons", icon: GraduationCap, tint: "bg-sky-500/20 text-sky-300 ring-1 ring-sky-400/30" },
+  { to: "/student/bookings", label: "My Bookings", icon: CalendarDays, tint: "bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30" },
+  { to: "/student/tools", label: "Tools", icon: BookOpen, tint: "bg-violet-500/20 text-violet-300 ring-1 ring-violet-400/30" },
+  { to: "/student/messages", label: "Messages", icon: MessageSquare, tint: "bg-teal-500/20 text-teal-300 ring-1 ring-teal-400/30" },
 ];
 
 const COLLAPSE_KEY = "itutor.sidebarCollapsed";
@@ -200,7 +200,11 @@ function ShellInner() {
       {/* Desktop sidebar */}
       <aside className={cn("dark hidden lg:flex shrink-0 flex-col border-r border-border bg-ink text-foreground transition-all duration-200", collapsed ? "w-16" : "w-64")}>
         <div className={cn("px-3 py-4 border-b border-border flex items-center gap-2", collapsed && "justify-center")}>
-          {!collapsed && <Link to="/" className="flex-1"><Logo size={26} /></Link>}
+          {!collapsed ? (
+            <Link to="/" className="flex-1" title="Back to home"><Logo size={26} /></Link>
+          ) : (
+            <Link to="/" title="Back to home" className="size-8 grid place-items-center rounded-lg bg-brand text-white font-bold text-sm">i</Link>
+          )}
           <button
             onClick={() => setCollapsed((c) => !c)}
             className="size-8 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground"
