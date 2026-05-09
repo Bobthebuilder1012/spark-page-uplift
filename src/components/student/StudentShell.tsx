@@ -16,7 +16,6 @@ import {
   LogOut,
   ChevronUp,
   Plus,
-  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentStoreProvider, useStudentStore, ALL_LESSONS } from "@/lib/student-store";
