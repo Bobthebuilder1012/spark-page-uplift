@@ -1,26 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Nav } from "@/components/landing/Nav";
+import { Hero } from "@/components/landing/Hero";
+import { Stats } from "@/components/landing/Stats";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { CtaBand } from "@/components/landing/CtaBand";
+import { Footer } from "@/components/landing/Footer";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "iTutor — Caribbean's No. 1 Tutoring Platform for SEA, CSEC & CAPE" },
+      {
+        name: "description",
+        content:
+          "Connect with verified Caribbean tutors for SEA, CSEC & CAPE. Personalised 1-on-1 sessions that turn struggles into strengths.",
+      },
+      { property: "og:title", content: "iTutor — Unlock Your Academic Potential" },
+      { property: "og:description", content: "Verified Caribbean tutors. Real results. SEA, CSEC & CAPE preparation built around you." },
+      { property: "og:type", content: "website" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
-
 function Index() {
-  return <PlaceholderIndex />;
+  return (
+    <main className="min-h-screen bg-white">
+      <Nav />
+      <Hero />
+      <Stats />
+      <Testimonials />
+      <HowItWorks />
+      <CtaBand />
+      <Footer />
+    </main>
+  );
 }
