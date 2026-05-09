@@ -84,7 +84,7 @@ function QuickLinksMobile() {
           </Link>
         ))}
         {pinned.length === 0 && (
-          <div className="col-span-4 text-xs text-muted-foreground text-center py-4 rounded-2xl border border-dashed border-border">
+          <div className="col-span-5 text-xs text-muted-foreground text-center py-3 rounded-2xl border border-dashed border-border">
             Tap Add to pin tools here
           </div>
         )}
