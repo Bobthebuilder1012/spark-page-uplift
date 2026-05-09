@@ -137,7 +137,7 @@ function ProfileMenu({ collapsed }: { collapsed: boolean }) {
         {!collapsed && (
           <>
             <div className="min-w-0 flex-1 text-left">
-              <div className="text-sm font-semibold truncate text-ink">Aliyah M.</div>
+              <div className="text-sm font-semibold truncate text-foreground">Aliyah M.</div>
               <div className="text-xs text-muted-foreground truncate">Form 5 · CSEC</div>
             </div>
             <ChevronUp className={cn("size-4 text-muted-foreground transition-transform", !open && "rotate-180")} />
