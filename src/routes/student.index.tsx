@@ -45,11 +45,13 @@ function QuickLinksMobile() {
   const [picking, setPicking] = useState(false);
   const pinned = ALL_TOOLS.filter((t) => quickLinks.includes(t.key));
   const available = ALL_TOOLS.filter((t) => !quickLinks.includes(t.key));
+  // Compact when few pinned, expand as more are added
+  const dense = pinned.length <= 3;
 
   return (
     <div className="lg:hidden">
       <div className="flex items-center justify-between mb-2 px-1">
-        <div className="text-sm font-semibold text-ink">Quick links</div>
+        <div className="text-sm font-semibold text-ink">My Quick Links</div>
         <button
           onClick={() => setPicking((p) => !p)}
           className="text-xs font-semibold text-brand-deep inline-flex items-center gap-1 px-2 py-1 rounded-md hover:bg-brand-soft"
@@ -57,20 +59,20 @@ function QuickLinksMobile() {
           <Plus className="size-3.5" /> {picking ? "Done" : "Add"}
         </button>
       </div>
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-5 gap-2">
         {pinned.map((t) => (
           <Link
             key={t.key}
             to="/student/tools"
-            className="relative flex flex-col items-center gap-1.5 p-2 rounded-2xl bg-background border border-border hover:shadow-card transition"
+            className="relative flex flex-col items-center gap-1 p-1.5 rounded-2xl bg-background border border-border hover:shadow-card transition"
           >
             <div
-              className="size-11 rounded-2xl grid place-items-center text-xl"
+              className={`${dense ? "size-9" : "size-11"} rounded-xl grid place-items-center ${dense ? "text-base" : "text-xl"}`}
               style={{ background: `color-mix(in oklab, var(--${t.color}) 35%, white)` }}
             >
               {t.emoji}
             </div>
-            <span className="text-[10px] font-medium text-ink text-center leading-tight">{t.name}</span>
+            <span className="text-[9px] font-medium text-ink text-center leading-tight line-clamp-1">{t.name}</span>
             {picking && (
               <button
                 onClick={(e) => { e.preventDefault(); toggleQuickLink(t.key); }}
@@ -82,7 +84,7 @@ function QuickLinksMobile() {
           </Link>
         ))}
         {pinned.length === 0 && (
-          <div className="col-span-4 text-xs text-muted-foreground text-center py-4 rounded-2xl border border-dashed border-border">
+          <div className="col-span-5 text-xs text-muted-foreground text-center py-3 rounded-2xl border border-dashed border-border">
             Tap Add to pin tools here
           </div>
         )}
@@ -90,7 +92,7 @@ function QuickLinksMobile() {
       {picking && available.length > 0 && (
         <div className="mt-3 p-3 rounded-2xl bg-muted/60">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">Add a quick link</div>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {available.map((t) => (
               <button
                 key={t.key}
@@ -125,10 +127,7 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Mobile quick links */}
-      <QuickLinksMobile />
-
-      {/* Today hero */}
+      {/* Next lesson hero (above quick links on mobile) */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -158,6 +157,9 @@ function Dashboard() {
           </div>
         </div>
       </motion.div>
+
+      {/* Mobile quick links (below next lesson) */}
+      <QuickLinksMobile />
 
       {/* Stat strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
