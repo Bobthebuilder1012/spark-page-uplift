@@ -1,9 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search, Star, Heart, MapPin, Sparkles, SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { z } from "zod";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+
+const searchSchema = z.object({ q: fallback(z.string(), "").default("") });
 
 export const Route = createFileRoute("/student/tutors/")({
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [{ title: "Find tutors — iTutor Student" }],
   }),
