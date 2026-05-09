@@ -5,7 +5,7 @@ import { Logo } from "./Logo";
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 10);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -13,18 +13,20 @@ export function Nav() {
 
   return (
     <motion.header
-      initial={{ y: -30, opacity: 0 }}
+      initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-5"
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={`fixed inset-x-0 top-0 z-50 transition-all ${
+        scrolled
+          ? "bg-black/85 backdrop-blur-xl border-b border-white/10"
+          : "bg-black border-b border-transparent"
+      }`}
     >
-      <div
-        className={`mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/10 px-4 py-2.5 transition-all sm:px-6 sm:py-3 ${
-          scrolled ? "bg-ink/90 backdrop-blur-xl shadow-card" : "bg-ink"
-        }`}
-      >
-        <Logo light />
-        <nav className="hidden items-center gap-7 text-sm text-white/70 md:flex">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 sm:px-8 sm:py-4">
+        <a href="#" className="flex items-center" aria-label="itutor home">
+          <Logo size={28} />
+        </a>
+        <nav className="hidden items-center gap-8 text-sm font-medium text-white/70 md:flex">
           <a href="#how" className="hover:text-white transition-colors">How it works</a>
           <a href="#testimonials" className="hover:text-white transition-colors">Reviews</a>
           <a href="#faq" className="hover:text-white transition-colors">FAQ</a>

@@ -1,12 +1,20 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Facebook, Instagram, Linkedin } from "lucide-react";
+import { ChevronDown, Facebook, Instagram, Linkedin, Mail } from "lucide-react";
 import { Logo } from "./Logo";
 
 const offers = [
-  { title: "CSEC Subjects", body: "Secondary exams, core & elective subjects" },
-  { title: "CAPE Subjects", body: "Sixth form units & advanced programmes" },
-  { title: "Exam Preparation", body: "Past papers, SBAs & exam strategy" },
-  { title: "Popular Topics", body: "Communities, lessons & study help" },
+  "CSEC Subjects",
+  "CAPE Subjects",
+  "SEA Preparation",
+  "Exam Preparation",
+  "Past Papers & SBAs",
+];
+
+const company = [
+  { label: "About", href: "#" },
+  { label: "How it works", href: "#how" },
+  { label: "Reviews", href: "#testimonials" },
+  { label: "Become a Tutor", href: "#" },
 ];
 
 const faqs = [
@@ -25,16 +33,10 @@ function Faq({ q, a }: { q: string; a: string }) {
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between py-4 text-left transition-colors hover:text-white"
       >
-        <span className="font-semibold text-white">{q}</span>
-        <ChevronDown
-          className={`h-4 w-4 text-white/60 transition-transform ${open ? "rotate-180" : ""}`}
-        />
+        <span className="font-medium text-white">{q}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-white/60 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      <div
-        className={`grid overflow-hidden text-sm text-white/70 transition-all duration-300 ${
-          open ? "grid-rows-[1fr] pb-4" : "grid-rows-[0fr]"
-        }`}
-      >
+      <div className={`grid overflow-hidden text-sm text-white/60 transition-all duration-300 ${open ? "grid-rows-[1fr] pb-4" : "grid-rows-[0fr]"}`}>
         <div className="min-h-0">{a}</div>
       </div>
     </div>
@@ -43,54 +45,55 @@ function Faq({ q, a }: { q: string; a: string }) {
 
 export function Footer() {
   return (
-    <footer id="faq" className="px-3 pb-6 pt-10 sm:px-6">
-      <div
-        className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] px-6 py-14 text-white sm:px-10 sm:py-16"
-        style={{ background: "linear-gradient(180deg, oklch(0.26 0.04 155) 0%, oklch(0.18 0.03 155) 100%)" }}
-      >
-        <div className="pointer-events-none absolute left-1/3 top-0 h-72 w-72 -translate-y-1/3 rounded-full bg-brand/30 blur-3xl" />
-
-        <div className="relative grid gap-12 lg:grid-cols-3">
-          {/* Company */}
-          <div>
-            <Logo light className="mb-6" />
-            <h3 className="text-xl font-bold">Company</h3>
-            <ul className="mt-5 space-y-3 text-sm text-white/70">
-              <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-              <li className="text-white/60">Contact: <span className="text-white">support@myitutor.com</span></li>
-              <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Terms &amp; Conditions</a></li>
-            </ul>
-
-            <div className="mt-8">
-              <p className="mb-3 font-semibold">Follow Us</p>
-              <div className="flex gap-2">
-                {[Facebook, Instagram, Linkedin].map((Icon, i) => (
-                  <a
-                    key={i}
-                    href="#"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-brand"
-                    aria-label="Social link"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                ))}
-              </div>
+    <footer id="faq" className="bg-black text-white">
+      <div className="mx-auto max-w-7xl px-6 pb-10 pt-20 sm:px-10">
+        <div className="grid gap-12 lg:grid-cols-12">
+          {/* Brand column */}
+          <div className="lg:col-span-4">
+            <Logo size={32} />
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/60">
+              The Caribbean's home for verified 1-on-1 tutors. Built for SEA, CSEC and CAPE students who want real results.
+            </p>
+            <a href="mailto:support@myitutor.com" className="mt-6 inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors">
+              <Mail className="h-4 w-4 text-brand" />
+              support@myitutor.com
+            </a>
+            <div className="mt-6 flex gap-2">
+              {[Facebook, Instagram, Linkedin].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white/80 transition-all hover:bg-brand hover:text-white"
+                  aria-label="Social link"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
             </div>
           </div>
 
+          {/* Company */}
+          <div className="lg:col-span-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50">Company</h3>
+            <ul className="mt-5 space-y-3 text-sm">
+              {company.map((c) => (
+                <li key={c.label}>
+                  <a href={c.href} className="text-white/75 transition-colors hover:text-white">
+                    {c.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Offers */}
-          <div>
-            <h3 className="text-xl font-bold">Everything We Offer</h3>
-            <ul className="mt-5 divide-y divide-white/10">
+          <div className="lg:col-span-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50">Programmes</h3>
+            <ul className="mt-5 space-y-3 text-sm">
               {offers.map((o) => (
-                <li key={o.title}>
-                  <a href="#" className="group flex items-start justify-between gap-3 py-3 transition-colors hover:text-white">
-                    <div>
-                      <p className="font-semibold text-white">{o.title}</p>
-                      <p className="text-sm text-white/60">{o.body}</p>
-                    </div>
-                    <ChevronRight className="mt-1 h-4 w-4 text-white/40 transition-transform group-hover:translate-x-1" />
+                <li key={o}>
+                  <a href="#" className="text-white/75 transition-colors hover:text-white">
+                    {o}
                   </a>
                 </li>
               ))}
@@ -98,9 +101,9 @@ export function Footer() {
           </div>
 
           {/* FAQ */}
-          <div>
-            <h3 className="text-xl font-bold">Frequently Asked Questions</h3>
-            <div className="mt-5">
+          <div className="lg:col-span-4">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50">Frequently Asked</h3>
+            <div className="mt-3">
               {faqs.map((f) => (
                 <Faq key={f.q} {...f} />
               ))}
@@ -108,12 +111,12 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="relative mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-sm text-white/60 sm:flex-row">
-          <p>© iTutor. Nora Digital, Ltd.</p>
+        <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-sm text-white/50 sm:flex-row sm:items-center">
+          <p>© {new Date().getFullYear()} iTutor — Nora Digital, Ltd. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-white transition-colors">Help</a>
             <a href="#" className="hover:text-white transition-colors">Privacy</a>
             <a href="#" className="hover:text-white transition-colors">Terms</a>
+            <a href="#" className="hover:text-white transition-colors">Help</a>
           </div>
         </div>
       </div>
