@@ -267,10 +267,13 @@ function ShellInner() {
               <Link to="/student/messages" className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Messages">
                 <MessageSquare className="size-4" />
               </Link>
-              <button className="relative size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Notifications">
+              <Link to="/student/notifications" className="relative size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Notifications">
                 <Bell className="size-4" />
                 <span className="absolute top-2 right-2 size-2 rounded-full bg-coral" />
-              </button>
+              </Link>
+              <Link to="/student/settings" className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Settings">
+                <Settings className="size-4" />
+              </Link>
             </div>
           </div>
         </header>
