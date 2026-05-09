@@ -27,11 +27,10 @@ type NavItem = { to: string; label: string; icon: ComponentType<{ className?: st
 const nav: NavItem[] = [
   { to: "/student", label: "Home", icon: LayoutDashboard, exact: true, tint: "bg-brand-soft text-brand-deep" },
   { to: "/student/tutors", label: "Find tutors", icon: Search, tint: "bg-coral-soft text-coral" },
-  { to: "/student/lessons", label: "Lessons", icon: GraduationCap, tint: "bg-sky text-ink" },
-  { to: "/student/bookings", label: "Bookings", icon: CalendarDays, tint: "bg-peach text-ink" },
-  { to: "/student/curriculum", label: "Curriculum", icon: BookOpen, tint: "bg-lavender text-ink" },
+  { to: "/student/lessons", label: "My Lessons", icon: GraduationCap, tint: "bg-sky text-ink" },
+  { to: "/student/bookings", label: "My Bookings", icon: CalendarDays, tint: "bg-peach text-ink" },
+  { to: "/student/tools", label: "Tools", icon: BookOpen, tint: "bg-lavender text-ink" },
   { to: "/student/messages", label: "Messages", icon: MessageSquare, tint: "bg-brand-soft text-brand-deep" },
-  { to: "/student/settings", label: "Settings", icon: Settings, tint: "bg-mint-deep text-forest" },
 ];
 
 const COLLAPSE_KEY = "itutor.sidebarCollapsed";
