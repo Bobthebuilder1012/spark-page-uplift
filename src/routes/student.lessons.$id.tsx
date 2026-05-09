@@ -3,7 +3,7 @@ import { ALL_LESSONS } from "@/lib/student-store";
 import { ArrowLeft, FileText, Video, MessageCircle, Paperclip } from "lucide-react";
 
 export const Route = createFileRoute("/student/lessons/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Lesson — iTutor Student` }] }),
+  head: () => ({ meta: [{ title: `Lesson — iTutor Student` }] }),
   component: LessonDetail,
 });
 
