@@ -160,34 +160,52 @@ function TutorDetail() {
           <div className="rounded-3xl bg-background border border-border p-5">
             <div className="flex items-baseline justify-between mb-4">
               <div>
-                <span className="text-2xl font-bold text-ink">TT$120</span>
+                <span className="text-2xl font-bold text-ink">TT${profile.price}</span>
                 <span className="text-sm text-muted-foreground">/hr</span>
               </div>
               <span className="text-xs px-2 py-1 rounded-full bg-brand-soft text-forest font-semibold">Available</span>
             </div>
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Pick a day</div>
-            <div className="grid grid-cols-7 gap-1 mb-4">
-              {SLOTS.map((s, i) => (
-                <button
-                  key={s.day}
-                  onClick={() => { setPickedDay(i); setPickedTime(null); }}
-                  disabled={s.times.length === 0}
-                  className={cn(
-                    "py-2 rounded-xl text-center transition disabled:opacity-30",
-                    pickedDay === i ? "bg-ink text-white" : "hover:bg-muted"
-                  )}
-                >
-                  <div className="text-[10px] font-medium opacity-70">{s.day}</div>
-                  <div className="text-sm font-bold">{s.date}</div>
-                </button>
-              ))}
+
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pick a day · next 30 days</div>
+              <div className="flex gap-1">
+                <button onClick={() => scrollDays(-1)} className="size-6 grid place-items-center rounded-full hover:bg-muted" aria-label="Previous days"><ChevronLeft className="size-3.5" /></button>
+                <button onClick={() => scrollDays(1)} className="size-6 grid place-items-center rounded-full hover:bg-muted" aria-label="Next days"><ChevronRight className="size-3.5" /></button>
+              </div>
             </div>
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Available times</div>
+
+            <div ref={dayScrollRef} className="flex gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-thin -mx-1 px-1 snap-x">
+              {slots.map((s, i) => {
+                const disabled = s.times.length === 0;
+                const isToday = i === 0;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => { setPickedDay(i); setPickedTime(null); }}
+                    disabled={disabled}
+                    className={cn(
+                      "shrink-0 w-14 py-2 rounded-xl text-center transition snap-start disabled:opacity-30 border",
+                      pickedDay === i ? "bg-ink text-white border-ink" : "border-border hover:border-brand"
+                    )}
+                  >
+                    <div className="text-[10px] font-semibold opacity-70 uppercase">
+                      {isToday ? "Today" : s.date.toLocaleDateString("en", { weekday: "short" })}
+                    </div>
+                    <div className="text-base font-bold mt-0.5">{s.date.getDate()}</div>
+                    <div className="text-[9px] opacity-60 mt-0.5">{s.date.toLocaleDateString("en", { month: "short" })}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              Available times · {slots[pickedDay].date.toLocaleDateString("en", { weekday: "long", month: "short", day: "numeric" })}
+            </div>
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {SLOTS[pickedDay].times.length === 0 && (
+              {slots[pickedDay].times.length === 0 && (
                 <div className="col-span-2 text-sm text-muted-foreground py-3 text-center">No slots this day</div>
               )}
-              {SLOTS[pickedDay].times.map((t) => (
+              {slots[pickedDay].times.map((t) => (
                 <button
                   key={t}
                   onClick={() => setPickedTime(t)}
