@@ -13,10 +13,14 @@ import { Route as StudentRouteImport } from './routes/student'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
 import { Route as StudentSettingsRouteImport } from './routes/student.settings'
+import { Route as StudentMessagesRouteImport } from './routes/student.messages'
 import { Route as StudentCurriculumRouteImport } from './routes/student.curriculum'
+import { Route as StudentCalendarRouteImport } from './routes/student.calendar'
 import { Route as StudentBookingsRouteImport } from './routes/student.bookings'
 import { Route as StudentTutorsIndexRouteImport } from './routes/student.tutors.index'
+import { Route as StudentLessonsIndexRouteImport } from './routes/student.lessons.index'
 import { Route as StudentTutorsIdRouteImport } from './routes/student.tutors.$id'
+import { Route as StudentLessonsIdRouteImport } from './routes/student.lessons.$id'
 
 const StudentRoute = StudentRouteImport.update({
   id: '/student',
@@ -38,9 +42,19 @@ const StudentSettingsRoute = StudentSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentMessagesRoute = StudentMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => StudentRoute,
+} as any)
 const StudentCurriculumRoute = StudentCurriculumRouteImport.update({
   id: '/curriculum',
   path: '/curriculum',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentCalendarRoute = StudentCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => StudentRoute,
 } as any)
 const StudentBookingsRoute = StudentBookingsRouteImport.update({
@@ -53,9 +67,19 @@ const StudentTutorsIndexRoute = StudentTutorsIndexRouteImport.update({
   path: '/tutors/',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentLessonsIndexRoute = StudentLessonsIndexRouteImport.update({
+  id: '/lessons/',
+  path: '/lessons/',
+  getParentRoute: () => StudentRoute,
+} as any)
 const StudentTutorsIdRoute = StudentTutorsIdRouteImport.update({
   id: '/tutors/$id',
   path: '/tutors/$id',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentLessonsIdRoute = StudentLessonsIdRouteImport.update({
+  id: '/lessons/$id',
+  path: '/lessons/$id',
   getParentRoute: () => StudentRoute,
 } as any)
 
@@ -63,19 +87,27 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/student': typeof StudentRouteWithChildren
   '/student/bookings': typeof StudentBookingsRoute
+  '/student/calendar': typeof StudentCalendarRoute
   '/student/curriculum': typeof StudentCurriculumRoute
+  '/student/messages': typeof StudentMessagesRoute
   '/student/settings': typeof StudentSettingsRoute
   '/student/': typeof StudentIndexRoute
+  '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/student/bookings': typeof StudentBookingsRoute
+  '/student/calendar': typeof StudentCalendarRoute
   '/student/curriculum': typeof StudentCurriculumRoute
+  '/student/messages': typeof StudentMessagesRoute
   '/student/settings': typeof StudentSettingsRoute
   '/student': typeof StudentIndexRoute
+  '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/student/lessons': typeof StudentLessonsIndexRoute
   '/student/tutors': typeof StudentTutorsIndexRoute
 }
 export interface FileRoutesById {
@@ -83,10 +115,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/student': typeof StudentRouteWithChildren
   '/student/bookings': typeof StudentBookingsRoute
+  '/student/calendar': typeof StudentCalendarRoute
   '/student/curriculum': typeof StudentCurriculumRoute
+  '/student/messages': typeof StudentMessagesRoute
   '/student/settings': typeof StudentSettingsRoute
   '/student/': typeof StudentIndexRoute
+  '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
 }
 export interface FileRouteTypes {
@@ -95,29 +131,41 @@ export interface FileRouteTypes {
     | '/'
     | '/student'
     | '/student/bookings'
+    | '/student/calendar'
     | '/student/curriculum'
+    | '/student/messages'
     | '/student/settings'
     | '/student/'
+    | '/student/lessons/$id'
     | '/student/tutors/$id'
+    | '/student/lessons/'
     | '/student/tutors/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/student/bookings'
+    | '/student/calendar'
     | '/student/curriculum'
+    | '/student/messages'
     | '/student/settings'
     | '/student'
+    | '/student/lessons/$id'
     | '/student/tutors/$id'
+    | '/student/lessons'
     | '/student/tutors'
   id:
     | '__root__'
     | '/'
     | '/student'
     | '/student/bookings'
+    | '/student/calendar'
     | '/student/curriculum'
+    | '/student/messages'
     | '/student/settings'
     | '/student/'
+    | '/student/lessons/$id'
     | '/student/tutors/$id'
+    | '/student/lessons/'
     | '/student/tutors/'
   fileRoutesById: FileRoutesById
 }
@@ -156,11 +204,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentSettingsRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/messages': {
+      id: '/student/messages'
+      path: '/messages'
+      fullPath: '/student/messages'
+      preLoaderRoute: typeof StudentMessagesRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/student/curriculum': {
       id: '/student/curriculum'
       path: '/curriculum'
       fullPath: '/student/curriculum'
       preLoaderRoute: typeof StudentCurriculumRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/calendar': {
+      id: '/student/calendar'
+      path: '/calendar'
+      fullPath: '/student/calendar'
+      preLoaderRoute: typeof StudentCalendarRouteImport
       parentRoute: typeof StudentRoute
     }
     '/student/bookings': {
@@ -177,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentTutorsIndexRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/lessons/': {
+      id: '/student/lessons/'
+      path: '/lessons'
+      fullPath: '/student/lessons/'
+      preLoaderRoute: typeof StudentLessonsIndexRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/student/tutors/$id': {
       id: '/student/tutors/$id'
       path: '/tutors/$id'
@@ -184,24 +253,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentTutorsIdRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/lessons/$id': {
+      id: '/student/lessons/$id'
+      path: '/lessons/$id'
+      fullPath: '/student/lessons/$id'
+      preLoaderRoute: typeof StudentLessonsIdRouteImport
+      parentRoute: typeof StudentRoute
+    }
   }
 }
 
 interface StudentRouteChildren {
   StudentBookingsRoute: typeof StudentBookingsRoute
+  StudentCalendarRoute: typeof StudentCalendarRoute
   StudentCurriculumRoute: typeof StudentCurriculumRoute
+  StudentMessagesRoute: typeof StudentMessagesRoute
   StudentSettingsRoute: typeof StudentSettingsRoute
   StudentIndexRoute: typeof StudentIndexRoute
+  StudentLessonsIdRoute: typeof StudentLessonsIdRoute
   StudentTutorsIdRoute: typeof StudentTutorsIdRoute
+  StudentLessonsIndexRoute: typeof StudentLessonsIndexRoute
   StudentTutorsIndexRoute: typeof StudentTutorsIndexRoute
 }
 
 const StudentRouteChildren: StudentRouteChildren = {
   StudentBookingsRoute: StudentBookingsRoute,
+  StudentCalendarRoute: StudentCalendarRoute,
   StudentCurriculumRoute: StudentCurriculumRoute,
+  StudentMessagesRoute: StudentMessagesRoute,
   StudentSettingsRoute: StudentSettingsRoute,
   StudentIndexRoute: StudentIndexRoute,
+  StudentLessonsIdRoute: StudentLessonsIdRoute,
   StudentTutorsIdRoute: StudentTutorsIdRoute,
+  StudentLessonsIndexRoute: StudentLessonsIndexRoute,
   StudentTutorsIndexRoute: StudentTutorsIndexRoute,
 }
 
@@ -215,3 +299,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
