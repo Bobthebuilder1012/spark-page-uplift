@@ -24,6 +24,15 @@ export const Route = createFileRoute("/student/")({
   component: Dashboard,
 });
 
+// Set to null when there are no upcoming lessons — the hero block will hide.
+const NEXT_LESSON: { title: string; tutor: string; initials: string; time: string; inMinutes: number } | null = {
+  title: "CSEC Mathematics — Functions",
+  tutor: "Mr. Ramdeen",
+  initials: "MR",
+  time: "4:00 – 5:00 PM",
+  inMinutes: 23,
+};
+
 function MobileProfileCard() {
   return (
     <Link
@@ -127,36 +136,38 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Next lesson hero (above quick links on mobile) */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand to-brand-deep p-6 lg:p-8 text-white shadow-pop"
-      >
-        <div className="absolute -right-12 -top-12 size-56 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative flex flex-col lg:flex-row lg:items-center gap-6">
-          <div className="flex-1">
-            <div className="text-xs uppercase tracking-wider text-white/70 font-semibold">Next lesson · in 23 min</div>
-            <h2 className="text-2xl lg:text-3xl font-bold mt-1">CSEC Mathematics — Functions</h2>
-            <div className="flex items-center gap-3 text-sm text-white/85 mt-2">
-              <div className="flex items-center gap-2">
-                <div className="size-7 rounded-full bg-white/20 grid place-items-center text-xs font-semibold">MR</div>
-                Mr. Ramdeen
+      {/* Next lesson hero — only when there is one */}
+      {NEXT_LESSON ? (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand to-brand-deep p-6 lg:p-8 text-white shadow-pop"
+        >
+          <div className="absolute -right-12 -top-12 size-56 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative flex flex-col lg:flex-row lg:items-center gap-6">
+            <div className="flex-1">
+              <div className="text-xs uppercase tracking-wider text-white/70 font-semibold">Next lesson · in {NEXT_LESSON.inMinutes} min</div>
+              <h2 className="text-2xl lg:text-3xl font-bold mt-1">{NEXT_LESSON.title}</h2>
+              <div className="flex items-center gap-3 text-sm text-white/85 mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="size-7 rounded-full bg-white/20 grid place-items-center text-xs font-semibold">{NEXT_LESSON.initials}</div>
+                  {NEXT_LESSON.tutor}
+                </div>
+                <span className="text-white/40">•</span>
+                <Clock className="size-3.5" /> {NEXT_LESSON.time}
               </div>
-              <span className="text-white/40">•</span>
-              <Clock className="size-3.5" /> 4:00 – 5:00 PM
+            </div>
+            <div className="flex gap-2">
+              <button className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-forest font-semibold hover:bg-white/90 transition">
+                <Video className="size-4" /> Join lesson
+              </button>
+              <button className="px-4 py-3 rounded-2xl bg-white/15 text-white font-semibold hover:bg-white/25 transition">
+                Reschedule
+              </button>
             </div>
           </div>
-          <div className="flex gap-2">
-            <button className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-forest font-semibold hover:bg-white/90 transition">
-              <Video className="size-4" /> Join lesson
-            </button>
-            <button className="px-4 py-3 rounded-2xl bg-white/15 text-white font-semibold hover:bg-white/25 transition">
-              Reschedule
-            </button>
-          </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      ) : null}
 
       {/* Mobile quick links (below next lesson) */}
       <QuickLinksMobile />
