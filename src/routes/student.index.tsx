@@ -111,6 +111,9 @@ function QuickLinksMobile() {
 function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      {/* Mobile profile */}
+      <MobileProfileCard />
+
       {/* Greeting */}
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
@@ -121,6 +124,9 @@ function Dashboard() {
           <Flame className="size-4" /> 6 day streak
         </div>
       </div>
+
+      {/* Mobile quick links */}
+      <QuickLinksMobile />
 
       {/* Today hero */}
       <motion.div
