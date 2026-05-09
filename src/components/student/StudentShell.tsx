@@ -13,10 +13,10 @@ import { cn } from "@/lib/utils";
 
 const nav = [
   { to: "/student", label: "Home", icon: LayoutDashboard, exact: true },
-  { to: "/student/tutors", label: "Find tutors", icon: Search },
-  { to: "/student/bookings", label: "Bookings", icon: CalendarDays },
-  { to: "/student/curriculum", label: "Curriculum", icon: BookOpen },
-  { to: "/student/settings", label: "Settings", icon: Settings },
+  { to: "/student/tutors", label: "Find tutors", icon: Search, exact: false },
+  { to: "/student/bookings", label: "Bookings", icon: CalendarDays, exact: false },
+  { to: "/student/curriculum", label: "Curriculum", icon: BookOpen, exact: false },
+  { to: "/student/settings", label: "Settings", icon: Settings, exact: false },
 ] as const;
 
 export function StudentShell() {

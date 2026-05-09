@@ -9,38 +9,132 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StudentRouteImport } from './routes/student'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StudentIndexRouteImport } from './routes/student.index'
+import { Route as StudentSettingsRouteImport } from './routes/student.settings'
+import { Route as StudentCurriculumRouteImport } from './routes/student.curriculum'
+import { Route as StudentBookingsRouteImport } from './routes/student.bookings'
+import { Route as StudentTutorsIndexRouteImport } from './routes/student.tutors.index'
+import { Route as StudentTutorsIdRouteImport } from './routes/student.tutors.$id'
 
+const StudentRoute = StudentRouteImport.update({
+  id: '/student',
+  path: '/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudentIndexRoute = StudentIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentSettingsRoute = StudentSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentCurriculumRoute = StudentCurriculumRouteImport.update({
+  id: '/curriculum',
+  path: '/curriculum',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentBookingsRoute = StudentBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentTutorsIndexRoute = StudentTutorsIndexRouteImport.update({
+  id: '/tutors/',
+  path: '/tutors/',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentTutorsIdRoute = StudentTutorsIdRouteImport.update({
+  id: '/tutors/$id',
+  path: '/tutors/$id',
+  getParentRoute: () => StudentRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/student': typeof StudentRouteWithChildren
+  '/student/bookings': typeof StudentBookingsRoute
+  '/student/curriculum': typeof StudentCurriculumRoute
+  '/student/settings': typeof StudentSettingsRoute
+  '/student/': typeof StudentIndexRoute
+  '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/student/tutors/': typeof StudentTutorsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/student/bookings': typeof StudentBookingsRoute
+  '/student/curriculum': typeof StudentCurriculumRoute
+  '/student/settings': typeof StudentSettingsRoute
+  '/student': typeof StudentIndexRoute
+  '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/student/tutors': typeof StudentTutorsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/student': typeof StudentRouteWithChildren
+  '/student/bookings': typeof StudentBookingsRoute
+  '/student/curriculum': typeof StudentCurriculumRoute
+  '/student/settings': typeof StudentSettingsRoute
+  '/student/': typeof StudentIndexRoute
+  '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/student/tutors/': typeof StudentTutorsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/student'
+    | '/student/bookings'
+    | '/student/curriculum'
+    | '/student/settings'
+    | '/student/'
+    | '/student/tutors/$id'
+    | '/student/tutors/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/student/bookings'
+    | '/student/curriculum'
+    | '/student/settings'
+    | '/student'
+    | '/student/tutors/$id'
+    | '/student/tutors'
+  id:
+    | '__root__'
+    | '/'
+    | '/student'
+    | '/student/bookings'
+    | '/student/curriculum'
+    | '/student/settings'
+    | '/student/'
+    | '/student/tutors/$id'
+    | '/student/tutors/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  StudentRoute: typeof StudentRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/student': {
+      id: '/student'
+      path: '/student'
+      fullPath: '/student'
+      preLoaderRoute: typeof StudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +142,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/student/': {
+      id: '/student/'
+      path: '/'
+      fullPath: '/student/'
+      preLoaderRoute: typeof StudentIndexRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/settings': {
+      id: '/student/settings'
+      path: '/settings'
+      fullPath: '/student/settings'
+      preLoaderRoute: typeof StudentSettingsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/curriculum': {
+      id: '/student/curriculum'
+      path: '/curriculum'
+      fullPath: '/student/curriculum'
+      preLoaderRoute: typeof StudentCurriculumRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/bookings': {
+      id: '/student/bookings'
+      path: '/bookings'
+      fullPath: '/student/bookings'
+      preLoaderRoute: typeof StudentBookingsRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/tutors/': {
+      id: '/student/tutors/'
+      path: '/tutors'
+      fullPath: '/student/tutors/'
+      preLoaderRoute: typeof StudentTutorsIndexRouteImport
+      parentRoute: typeof StudentRoute
+    }
+    '/student/tutors/$id': {
+      id: '/student/tutors/$id'
+      path: '/tutors/$id'
+      fullPath: '/student/tutors/$id'
+      preLoaderRoute: typeof StudentTutorsIdRouteImport
+      parentRoute: typeof StudentRoute
+    }
   }
 }
 
+interface StudentRouteChildren {
+  StudentBookingsRoute: typeof StudentBookingsRoute
+  StudentCurriculumRoute: typeof StudentCurriculumRoute
+  StudentSettingsRoute: typeof StudentSettingsRoute
+  StudentIndexRoute: typeof StudentIndexRoute
+  StudentTutorsIdRoute: typeof StudentTutorsIdRoute
+  StudentTutorsIndexRoute: typeof StudentTutorsIndexRoute
+}
+
+const StudentRouteChildren: StudentRouteChildren = {
+  StudentBookingsRoute: StudentBookingsRoute,
+  StudentCurriculumRoute: StudentCurriculumRoute,
+  StudentSettingsRoute: StudentSettingsRoute,
+  StudentIndexRoute: StudentIndexRoute,
+  StudentTutorsIdRoute: StudentTutorsIdRoute,
+  StudentTutorsIndexRoute: StudentTutorsIndexRoute,
+}
+
+const StudentRouteWithChildren =
+  StudentRoute._addFileChildren(StudentRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  StudentRoute: StudentRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
