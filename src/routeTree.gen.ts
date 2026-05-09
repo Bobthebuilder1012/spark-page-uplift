@@ -14,7 +14,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
 import { Route as StudentSettingsRouteImport } from './routes/student.settings'
 import { Route as StudentMessagesRouteImport } from './routes/student.messages'
-import { Route as StudentCurriculumRouteImport } from './routes/student.curriculum'
 import { Route as StudentCalendarRouteImport } from './routes/student.calendar'
 import { Route as StudentBookingsRouteImport } from './routes/student.bookings'
 import { Route as StudentTutorsIndexRouteImport } from './routes/student.tutors.index'
@@ -45,11 +44,6 @@ const StudentSettingsRoute = StudentSettingsRouteImport.update({
 const StudentMessagesRoute = StudentMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
-  getParentRoute: () => StudentRoute,
-} as any)
-const StudentCurriculumRoute = StudentCurriculumRouteImport.update({
-  id: '/curriculum',
-  path: '/curriculum',
   getParentRoute: () => StudentRoute,
 } as any)
 const StudentCalendarRoute = StudentCalendarRouteImport.update({
@@ -88,7 +82,6 @@ export interface FileRoutesByFullPath {
   '/student': typeof StudentRouteWithChildren
   '/student/bookings': typeof StudentBookingsRoute
   '/student/calendar': typeof StudentCalendarRoute
-  '/student/curriculum': typeof StudentCurriculumRoute
   '/student/messages': typeof StudentMessagesRoute
   '/student/settings': typeof StudentSettingsRoute
   '/student/': typeof StudentIndexRoute
@@ -101,7 +94,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/student/bookings': typeof StudentBookingsRoute
   '/student/calendar': typeof StudentCalendarRoute
-  '/student/curriculum': typeof StudentCurriculumRoute
   '/student/messages': typeof StudentMessagesRoute
   '/student/settings': typeof StudentSettingsRoute
   '/student': typeof StudentIndexRoute
@@ -116,7 +108,6 @@ export interface FileRoutesById {
   '/student': typeof StudentRouteWithChildren
   '/student/bookings': typeof StudentBookingsRoute
   '/student/calendar': typeof StudentCalendarRoute
-  '/student/curriculum': typeof StudentCurriculumRoute
   '/student/messages': typeof StudentMessagesRoute
   '/student/settings': typeof StudentSettingsRoute
   '/student/': typeof StudentIndexRoute
@@ -132,7 +123,6 @@ export interface FileRouteTypes {
     | '/student'
     | '/student/bookings'
     | '/student/calendar'
-    | '/student/curriculum'
     | '/student/messages'
     | '/student/settings'
     | '/student/'
@@ -145,7 +135,6 @@ export interface FileRouteTypes {
     | '/'
     | '/student/bookings'
     | '/student/calendar'
-    | '/student/curriculum'
     | '/student/messages'
     | '/student/settings'
     | '/student'
@@ -159,7 +148,6 @@ export interface FileRouteTypes {
     | '/student'
     | '/student/bookings'
     | '/student/calendar'
-    | '/student/curriculum'
     | '/student/messages'
     | '/student/settings'
     | '/student/'
@@ -211,13 +199,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentMessagesRouteImport
       parentRoute: typeof StudentRoute
     }
-    '/student/curriculum': {
-      id: '/student/curriculum'
-      path: '/curriculum'
-      fullPath: '/student/curriculum'
-      preLoaderRoute: typeof StudentCurriculumRouteImport
-      parentRoute: typeof StudentRoute
-    }
     '/student/calendar': {
       id: '/student/calendar'
       path: '/calendar'
@@ -266,7 +247,6 @@ declare module '@tanstack/react-router' {
 interface StudentRouteChildren {
   StudentBookingsRoute: typeof StudentBookingsRoute
   StudentCalendarRoute: typeof StudentCalendarRoute
-  StudentCurriculumRoute: typeof StudentCurriculumRoute
   StudentMessagesRoute: typeof StudentMessagesRoute
   StudentSettingsRoute: typeof StudentSettingsRoute
   StudentIndexRoute: typeof StudentIndexRoute
@@ -279,7 +259,6 @@ interface StudentRouteChildren {
 const StudentRouteChildren: StudentRouteChildren = {
   StudentBookingsRoute: StudentBookingsRoute,
   StudentCalendarRoute: StudentCalendarRoute,
-  StudentCurriculumRoute: StudentCurriculumRoute,
   StudentMessagesRoute: StudentMessagesRoute,
   StudentSettingsRoute: StudentSettingsRoute,
   StudentIndexRoute: StudentIndexRoute,
@@ -299,3 +278,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
