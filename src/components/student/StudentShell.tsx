@@ -89,7 +89,7 @@ function MyLessonsSection({ collapsed }: { collapsed: boolean }) {
               >
                 {l.emoji}
               </span>
-              <span className="truncate text-ink">{l.title}</span>
+              <span className="truncate text-foreground">{l.title}</span>
             </Link>
             <button
               onClick={() => togglePin(l.id)}
