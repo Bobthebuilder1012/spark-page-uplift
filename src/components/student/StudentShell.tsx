@@ -223,7 +223,7 @@ function ShellInner() {
                   className={cn(
                     "flex items-center rounded-xl text-sm font-medium transition-colors group",
                     collapsed ? "justify-center p-2" : "gap-3 px-2 py-2",
-                    active ? "bg-muted text-ink" : "text-muted-foreground hover:bg-muted/60 hover:text-ink"
+                    active ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   )}
                 >
                   <span className={cn("size-8 rounded-lg grid place-items-center transition", item.tint, !active && "opacity-80 group-hover:opacity-100")}>
