@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Video, Calendar, MoreHorizontal, RotateCcw, Star } from "lucide-react";
+import { Video, Calendar, MoreHorizontal, RotateCcw, Star, Tag, Clock, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/bookings")({
