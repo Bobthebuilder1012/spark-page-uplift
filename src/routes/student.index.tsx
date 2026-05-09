@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import {
   Clock,
   Video,
@@ -10,7 +11,11 @@ import {
   Calendar,
   CheckCircle2,
   PlayCircle,
+  Plus,
+  X,
+  Settings,
 } from "lucide-react";
+import { ALL_TOOLS, useStudentStore, type ToolKey } from "@/lib/student-store";
 
 export const Route = createFileRoute("/student/")({
   head: () => ({
@@ -18,6 +23,90 @@ export const Route = createFileRoute("/student/")({
   }),
   component: Dashboard,
 });
+
+function MobileProfileCard() {
+  return (
+    <Link
+      to="/student/settings"
+      className="lg:hidden flex items-center gap-3 rounded-2xl bg-background border border-border p-3 shadow-sm hover:shadow-card transition"
+    >
+      <div className="size-12 rounded-full bg-gradient-to-br from-coral to-peach grid place-items-center text-white font-semibold shadow-sm">AM</div>
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold text-ink truncate">Aliyah M.</div>
+        <div className="text-xs text-muted-foreground truncate">Form 5 · CSEC · View profile</div>
+      </div>
+      <Settings className="size-4 text-muted-foreground" />
+    </Link>
+  );
+}
+
+function QuickLinksMobile() {
+  const { quickLinks, toggleQuickLink } = useStudentStore();
+  const [picking, setPicking] = useState(false);
+  const pinned = ALL_TOOLS.filter((t) => quickLinks.includes(t.key));
+  const available = ALL_TOOLS.filter((t) => !quickLinks.includes(t.key));
+
+  return (
+    <div className="lg:hidden">
+      <div className="flex items-center justify-between mb-2 px-1">
+        <div className="text-sm font-semibold text-ink">Quick links</div>
+        <button
+          onClick={() => setPicking((p) => !p)}
+          className="text-xs font-semibold text-brand-deep inline-flex items-center gap-1 px-2 py-1 rounded-md hover:bg-brand-soft"
+        >
+          <Plus className="size-3.5" /> {picking ? "Done" : "Add"}
+        </button>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {pinned.map((t) => (
+          <Link
+            key={t.key}
+            to="/student/tools"
+            className="relative flex flex-col items-center gap-1.5 p-2 rounded-2xl bg-background border border-border hover:shadow-card transition"
+          >
+            <div
+              className="size-11 rounded-2xl grid place-items-center text-xl"
+              style={{ background: `color-mix(in oklab, var(--${t.color}) 35%, white)` }}
+            >
+              {t.emoji}
+            </div>
+            <span className="text-[10px] font-medium text-ink text-center leading-tight">{t.name}</span>
+            {picking && (
+              <button
+                onClick={(e) => { e.preventDefault(); toggleQuickLink(t.key); }}
+                className="absolute -top-1 -right-1 size-5 grid place-items-center rounded-full bg-coral text-white shadow"
+              >
+                <X className="size-3" />
+              </button>
+            )}
+          </Link>
+        ))}
+        {pinned.length === 0 && (
+          <div className="col-span-4 text-xs text-muted-foreground text-center py-4 rounded-2xl border border-dashed border-border">
+            Tap Add to pin tools here
+          </div>
+        )}
+      </div>
+      {picking && available.length > 0 && (
+        <div className="mt-3 p-3 rounded-2xl bg-muted/60">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">Add a quick link</div>
+          <div className="grid grid-cols-4 gap-2">
+            {available.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => toggleQuickLink(t.key as ToolKey)}
+                className="flex flex-col items-center gap-1 p-2 rounded-xl bg-background hover:shadow-sm"
+              >
+                <span className="text-lg">{t.emoji}</span>
+                <span className="text-[10px] text-ink text-center leading-tight">{t.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Dashboard() {
   return (
