@@ -120,11 +120,9 @@ function TutorDetail() {
         <div className="lg:col-span-2 space-y-6">
           <section className="rounded-3xl bg-background border border-border p-6">
             <h2 className="font-semibold text-ink mb-2">About</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Caribbean-trained mathematics tutor with a decade of experience preparing students for SEA, CSEC and CAPE exams. Friendly, patient, and focused on building confidence through real understanding.
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
             <div className="flex flex-wrap gap-2 mt-4">
-              {["Functions", "Calculus", "Trigonometry", "Algebra", "Statistics"].map((s) => (
+              {profile.tags.map((s) => (
                 <span key={s} className="px-3 py-1 rounded-full bg-brand-soft text-forest text-xs font-medium">{s}</span>
               ))}
             </div>
