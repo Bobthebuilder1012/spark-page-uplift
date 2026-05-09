@@ -61,14 +61,22 @@ function MyLessonsSection({ collapsed }: { collapsed: boolean }) {
   }
 
   return (
-    <div className="px-3 mt-4">
-      <div className="flex items-center justify-between px-2 mb-1.5">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">My lessons</div>
-        <button onClick={() => setShowAdd((s) => !s)} className="size-5 grid place-items-center rounded hover:bg-muted text-muted-foreground" title="Add lesson">
-          <Plus className="size-3.5" />
+    <div className="px-3 mt-5">
+      <div className="h-px bg-border mx-2 mb-3" />
+      <div className="flex items-center justify-between px-2 mb-2">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">My Lessons</div>
+        <button
+          onClick={() => setShowAdd((s) => !s)}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-deep hover:bg-brand-soft px-2 py-1 rounded-md"
+          title="Add lesson"
+        >
+          <Plus className="size-3.5" /> Add
         </button>
       </div>
       <div className="space-y-0.5">
+        {visible.length === 0 && (
+          <div className="text-[11px] text-muted-foreground px-2 py-2 italic">No lessons pinned. Click Add to pin one.</div>
+        )}
         {visible.map((l) => (
           <div key={l.id} className="group flex items-center gap-2 pr-1 rounded-lg hover:bg-muted">
             <Link
