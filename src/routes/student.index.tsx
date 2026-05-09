@@ -24,6 +24,15 @@ export const Route = createFileRoute("/student/")({
   component: Dashboard,
 });
 
+// Set to null when there are no upcoming lessons — the hero block will hide.
+const NEXT_LESSON: { title: string; tutor: string; initials: string; time: string; inMinutes: number } | null = {
+  title: "CSEC Mathematics — Functions",
+  tutor: "Mr. Ramdeen",
+  initials: "MR",
+  time: "4:00 – 5:00 PM",
+  inMinutes: 23,
+};
+
 function MobileProfileCard() {
   return (
     <Link
