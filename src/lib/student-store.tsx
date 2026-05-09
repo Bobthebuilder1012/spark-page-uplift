@@ -36,34 +36,66 @@ export const UPCOMING_EVENTS: CalendarEvent[] = [
   { id: "e5", title: "Biology — Cells", tutor: "Ms. Ali", day: 4, startHour: 15, endHour: 16, color: "brand" },
 ];
 
+export type ToolKey =
+  | "past-papers"
+  | "practice-quiz"
+  | "calculator"
+  | "formula-sheet"
+  | "pomodoro"
+  | "flashcards";
+
+export const ALL_TOOLS: { key: ToolKey; name: string; emoji: string; color: string }[] = [
+  { key: "past-papers", name: "Past papers", emoji: "📄", color: "sky" },
+  { key: "practice-quiz", name: "Practice quiz", emoji: "✨", color: "coral" },
+  { key: "calculator", name: "Calculator", emoji: "🧮", color: "lavender" },
+  { key: "formula-sheet", name: "Formulas", emoji: "📘", color: "brand" },
+  { key: "pomodoro", name: "Pomodoro", emoji: "⏱️", color: "peach" },
+  { key: "flashcards", name: "Flashcards", emoji: "🧠", color: "coral" },
+];
+
 type Ctx = {
   pinnedLessons: string[];
   togglePin: (id: string) => void;
   isPinned: (id: string) => boolean;
+  quickLinks: ToolKey[];
+  toggleQuickLink: (key: ToolKey) => void;
 };
 
 const StudentCtx = createContext<Ctx | null>(null);
 const KEY = "itutor.pinnedLessons";
+const QL_KEY = "itutor.quickLinks";
 
 export function StudentStoreProvider({ children }: { children: ReactNode }) {
   const [pinnedLessons, setPinned] = useState<string[]>(ALL_LESSONS.map((l) => l.id));
+  const [quickLinks, setQuickLinks] = useState<ToolKey[]>(["calculator", "past-papers"]);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) setPinned(JSON.parse(raw));
+      const ql = localStorage.getItem(QL_KEY);
+      if (ql) setQuickLinks(JSON.parse(ql));
     } catch {}
   }, []);
 
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify(pinnedLessons)); } catch {}
   }, [pinnedLessons]);
+  useEffect(() => {
+    try { localStorage.setItem(QL_KEY, JSON.stringify(quickLinks)); } catch {}
+  }, [quickLinks]);
 
   const togglePin = (id: string) =>
     setPinned((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const isPinned = (id: string) => pinnedLessons.includes(id);
+  const toggleQuickLink = (key: ToolKey) =>
+    setQuickLinks((p) => (p.includes(key) ? p.filter((x) => x !== key) : [...p, key]));
 
-  return <StudentCtx.Provider value={{ pinnedLessons, togglePin, isPinned }}>{children}</StudentCtx.Provider>;
+  return (
+    <StudentCtx.Provider value={{ pinnedLessons, togglePin, isPinned, quickLinks, toggleQuickLink }}>
+      {children}
+    </StudentCtx.Provider>
+  );
 }
 
 export function useStudentStore() {
