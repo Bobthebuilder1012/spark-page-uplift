@@ -92,7 +92,7 @@ function QuickLinksMobile() {
       {picking && available.length > 0 && (
         <div className="mt-3 p-3 rounded-2xl bg-muted/60">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 font-semibold">Add a quick link</div>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {available.map((t) => (
               <button
                 key={t.key}
