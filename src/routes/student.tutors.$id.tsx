@@ -42,9 +42,18 @@ function buildSlots(days = 30) {
 
 function TutorDetail() {
   const { id } = Route.useParams();
+  const profile = TUTOR_PROFILES[id] ?? { name: "Tutor", subject: "Mathematics", level: "CSEC & CAPE", price: 120, bio: "", tags: [] };
+  const slots = useMemo(() => buildSlots(30), []);
   const [pickedDay, setPickedDay] = useState(0);
   const [pickedTime, setPickedTime] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const dayScrollRef = useRef<HTMLDivElement>(null);
+
+  const initials = profile.name.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+
+  const scrollDays = (dir: 1 | -1) => {
+    dayScrollRef.current?.scrollBy({ left: dir * 280, behavior: "smooth" });
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -59,11 +68,11 @@ function TutorDetail() {
           <div className="flex items-end justify-between gap-4 flex-wrap">
             <div className="flex items-end gap-4">
               <div className="size-24 rounded-3xl bg-white border-4 border-background grid place-items-center text-2xl font-bold text-forest shadow-card">
-                {id.slice(0, 2).toUpperCase()}
+                {initials}
               </div>
               <div className="pb-1">
-                <h1 className="text-2xl font-bold text-ink capitalize">Mr. {id}</h1>
-                <p className="text-sm text-muted-foreground">Mathematics · CSEC & CAPE</p>
+                <h1 className="text-2xl font-bold text-ink">{profile.name}</h1>
+                <p className="text-sm text-muted-foreground">{profile.subject} · {profile.level}</p>
                 <div className="flex items-center gap-3 mt-2 text-sm">
                   <div className="flex items-center gap-1">
                     <Star className="size-4 fill-coral text-coral" />
