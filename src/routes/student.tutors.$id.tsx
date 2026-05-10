@@ -310,13 +310,14 @@ function TutorDetail() {
             setDuration={setDuration}
             scrollRef={dayScrollRef}
             scrollDays={scrollDays}
+            onContinue={() => { setBookingStep(3); setShowBooking(true); }}
           />
         </aside>
       </div>
 
-      {/* Mobile booking sheet */}
+      {/* Booking sheet — mobile bottom sheet, desktop centered modal (confirmation step) */}
       {showBooking && (
-        <div className="lg:hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowBooking(false)}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowBooking(false)}>
           <div className="bg-background w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-background border-b border-border px-5 py-3 flex items-center justify-between">
               <div>
