@@ -420,9 +420,9 @@ function BookingCard({
   const longestWindow = eff.reduce((m, w) => Math.max(m, w.end - w.start), 0);
   const starts = startsForDuration(eff, duration);
   // If the currently picked time no longer fits (e.g. duration changed), clear it.
-  if (pickedTime != null && !starts.includes(pickedTime)) {
-    setPickedTime(null);
-  }
+  useEffect(() => {
+    if (pickedTime != null && !starts.includes(pickedTime)) setPickedTime(null);
+  }, [pickedTime, starts, setPickedTime]);
 
   return (
     <div className={cn(!embedded && "rounded-3xl bg-background border border-border p-5")}>
