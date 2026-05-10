@@ -221,8 +221,12 @@ function ExplorePage() {
                         <span className="text-lg font-bold text-ink">TT${l.monthlyPrice}</span>
                         <span className="text-xs text-muted-foreground">/month</span>
                       </div>
-                      <button disabled={full} className="px-3 py-1.5 rounded-xl bg-brand text-white text-xs font-semibold hover:bg-brand-deep transition disabled:opacity-50">
-                        {full ? "Waitlist" : "Join lesson"}
+                      <button
+                        disabled={full || joined.has(l.id)}
+                        onClick={() => setJoinLesson(l)}
+                        className="px-3 py-1.5 rounded-xl bg-brand text-white text-xs font-semibold hover:bg-brand-deep transition disabled:opacity-50"
+                      >
+                        {joined.has(l.id) ? "Enrolled ✓" : full ? "Waitlist" : "Join lesson"}
                       </button>
                     </div>
                   </div>
