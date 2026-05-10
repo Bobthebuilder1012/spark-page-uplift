@@ -135,7 +135,8 @@ function TutorDetail() {
   const slots = useMemo(() => buildSlots(30), []);
   const [pickedSubject, setPickedSubject] = useState(profile.subjects[0]);
   const [pickedDay, setPickedDay] = useState(0);
-  const [pickedTime, setPickedTime] = useState<string | null>(null);
+  const [pickedTime, setPickedTime] = useState<number | null>(null);
+  const [duration, setDuration] = useState<number>(1);
   const [saved, setSaved] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
   const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
