@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, Star, Heart, Calendar, Clock, Sparkles, SlidersHorizontal, Users, GraduationCap } from "lucide-react";
+import { Search, Star, Heart, Calendar, Clock, Sparkles, SlidersHorizontal, Users, GraduationCap, BadgeCheck, Flame } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
@@ -12,19 +12,32 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/student/tutors/")({
   validateSearch: zodValidator(searchSchema),
-  head: () => ({
-    meta: [{ title: "Explore — iTutor Student" }],
-  }),
+  head: () => ({ meta: [{ title: "Explore — iTutor Student" }] }),
   component: ExplorePage,
 });
 
-const TUTORS = [
-  { id: "ramdeen", name: "Mr. Ramdeen", subject: "Mathematics", level: "CSEC · CAPE", rating: 4.9, reviews: 128, price: 120, nextSlot: "Today 6:00 PM", tags: ["Top rated", "10+ years"], color: "from-brand to-brand-deep" },
-  { id: "singh", name: "Ms. Singh", subject: "Physics", level: "CSEC · CAPE", rating: 4.8, reviews: 94, price: 110, nextSlot: "Tomorrow 4:00 PM", tags: ["UWI grad"], color: "from-sky to-lavender" },
-  { id: "joseph", name: "Mr. Joseph", subject: "English Lit", level: "CSEC", rating: 4.95, reviews: 211, price: 100, nextSlot: "Today 8:00 PM", tags: ["Top rated"], color: "from-coral to-peach" },
-  { id: "ali", name: "Ms. Ali", subject: "Biology", level: "CSEC · CAPE", rating: 4.7, reviews: 67, price: 115, nextSlot: "Wed 5:00 PM", tags: ["New"], color: "from-lavender to-brand-soft" },
-  { id: "thomas", name: "Mr. Thomas", subject: "Chemistry", level: "CAPE", rating: 4.85, reviews: 142, price: 130, nextSlot: "Tomorrow 7:00 PM", tags: ["PhD"], color: "from-brand-deep to-forest" },
-  { id: "khan", name: "Ms. Khan", subject: "SEA Prep", level: "Primary", rating: 4.92, reviews: 178, price: 80, nextSlot: "Today 5:30 PM", tags: ["Top rated", "5+ years"], color: "from-peach to-coral" },
+type Tutor = {
+  id: string;
+  name: string;
+  subjects: string[]; // multiple
+  level: string;
+  rating: number;
+  reviews: number;
+  price: number;
+  nextSlot: string;
+  hue: number;
+  verified: boolean;
+  topRated?: boolean;
+  blurb: string;
+};
+
+const TUTORS: Tutor[] = [
+  { id: "ramdeen", name: "Mr. Ramdeen", subjects: ["Mathematics", "Physics"], level: "CSEC · CAPE", rating: 4.9, reviews: 128, price: 120, nextSlot: "Today 6:00 PM", hue: 145, verified: true, topRated: true, blurb: "10+ yrs · Calculus, Trig, Mechanics" },
+  { id: "singh", name: "Ms. Singh", subjects: ["Physics"], level: "CSEC · CAPE", rating: 4.8, reviews: 94, price: 110, nextSlot: "Tomorrow 4:00 PM", hue: 220, verified: true, blurb: "UWI grad · Waves, Electricity" },
+  { id: "joseph", name: "Mr. Joseph", subjects: ["English Lit", "English"], level: "CSEC", rating: 4.95, reviews: 211, price: 100, nextSlot: "Today 8:00 PM", hue: 20, verified: true, topRated: true, blurb: "Essay & poetry coaching" },
+  { id: "ali", name: "Ms. Ali", subjects: ["Biology"], level: "CSEC · CAPE", rating: 4.7, reviews: 67, price: 115, nextSlot: "Wed 5:00 PM", hue: 280, verified: false, blurb: "Diagrams, mnemonics, exam tips" },
+  { id: "thomas", name: "Mr. Thomas", subjects: ["Chemistry"], level: "CAPE", rating: 4.85, reviews: 142, price: 130, nextSlot: "Tomorrow 7:00 PM", hue: 165, verified: true, blurb: "PhD · Organic & Physical chem" },
+  { id: "khan", name: "Ms. Khan", subjects: ["SEA Prep", "Mathematics", "English"], level: "Primary", rating: 4.92, reviews: 178, price: 80, nextSlot: "Today 5:30 PM", hue: 35, verified: true, topRated: true, blurb: "5+ yrs SEA prep · all subjects" },
 ];
 
 type GroupLesson = {
@@ -32,6 +45,7 @@ type GroupLesson = {
   title: string;
   tutor: string;
   tutorId: string;
+  tutorHue: number;
   subject: string;
   level: string;
   day: string;
@@ -45,15 +59,34 @@ type GroupLesson = {
 };
 
 const LESSONS: GroupLesson[] = [
-  { id: "phys-wed", title: "Physics Power Hour", tutor: "Mr. Ramdeen", tutorId: "ramdeen", subject: "Physics", level: "CSEC", day: "Wednesdays", time: "4:00 – 6:00 PM", monthlyPrice: 200, seats: { taken: 8, total: 12 }, rating: 4.9, tags: ["Group", "4 sessions/mo"], color: "from-sky to-lavender", emoji: "⚛️" },
-  { id: "maths-mon", title: "CSEC Maths Mastery", tutor: "Mr. Ramdeen", tutorId: "ramdeen", subject: "Mathematics", level: "CSEC", day: "Mondays", time: "5:00 – 7:00 PM", monthlyPrice: 220, seats: { taken: 10, total: 12 }, rating: 4.95, tags: ["Top rated", "Almost full"], color: "from-brand to-brand-deep", emoji: "📐" },
-  { id: "eng-tue", title: "Essay Lab", tutor: "Mr. Joseph", tutorId: "joseph", subject: "English Lit", level: "CSEC", day: "Tuesdays", time: "6:00 – 7:30 PM", monthlyPrice: 160, seats: { taken: 6, total: 10 }, rating: 4.85, tags: ["Group", "Includes feedback"], color: "from-coral to-peach", emoji: "📚" },
-  { id: "bio-thu", title: "Bio Lab Live", tutor: "Ms. Ali", tutorId: "ali", subject: "Biology", level: "CSEC", day: "Thursdays", time: "4:30 – 6:00 PM", monthlyPrice: 180, seats: { taken: 4, total: 12 }, rating: 4.7, tags: ["New"], color: "from-lavender to-brand-soft", emoji: "🧬" },
-  { id: "chem-sat", title: "CAPE Chem Bootcamp", tutor: "Mr. Thomas", tutorId: "thomas", subject: "Chemistry", level: "CAPE", day: "Saturdays", time: "10:00 AM – 12:00 PM", monthlyPrice: 240, seats: { taken: 11, total: 12 }, rating: 4.9, tags: ["PhD", "Almost full"], color: "from-brand-deep to-forest", emoji: "🧪" },
-  { id: "sea-fri", title: "SEA Sprint Friday", tutor: "Ms. Khan", tutorId: "khan", subject: "SEA Prep", level: "Primary", day: "Fridays", time: "5:00 – 6:30 PM", monthlyPrice: 140, seats: { taken: 7, total: 12 }, rating: 4.92, tags: ["Top rated"], color: "from-peach to-coral", emoji: "✏️" },
+  { id: "phys-wed", title: "Physics Power Hour", tutor: "Mr. Ramdeen", tutorId: "ramdeen", tutorHue: 145, subject: "Physics", level: "CSEC", day: "Wednesdays", time: "4:00 – 6:00 PM", monthlyPrice: 200, seats: { taken: 9, total: 12 }, rating: 4.9, tags: ["Group", "4 sessions/mo"], color: "from-sky to-lavender", emoji: "⚛️" },
+  { id: "maths-mon", title: "CSEC Maths Mastery", tutor: "Mr. Ramdeen", tutorId: "ramdeen", tutorHue: 145, subject: "Mathematics", level: "CSEC", day: "Mondays", time: "5:00 – 7:00 PM", monthlyPrice: 220, seats: { taken: 10, total: 12 }, rating: 4.95, tags: ["Top rated"], color: "from-brand to-brand-deep", emoji: "📐" },
+  { id: "eng-tue", title: "Essay Lab", tutor: "Mr. Joseph", tutorId: "joseph", tutorHue: 20, subject: "English Lit", level: "CSEC", day: "Tuesdays", time: "6:00 – 7:30 PM", monthlyPrice: 160, seats: { taken: 6, total: 10 }, rating: 4.85, tags: ["Includes feedback"], color: "from-coral to-peach", emoji: "📚" },
+  { id: "bio-thu", title: "Bio Lab Live", tutor: "Ms. Ali", tutorId: "ali", tutorHue: 280, subject: "Biology", level: "CSEC", day: "Thursdays", time: "4:30 – 6:00 PM", monthlyPrice: 180, seats: { taken: 4, total: 12 }, rating: 4.7, tags: ["New"], color: "from-lavender to-brand-soft", emoji: "🧬" },
+  { id: "chem-sat", title: "CAPE Chem Bootcamp", tutor: "Mr. Thomas", tutorId: "thomas", tutorHue: 165, subject: "Chemistry", level: "CAPE", day: "Saturdays", time: "10:00 AM – 12:00 PM", monthlyPrice: 240, seats: { taken: 11, total: 12 }, rating: 4.9, tags: ["PhD"], color: "from-brand-deep to-forest", emoji: "🧪" },
+  { id: "sea-fri", title: "SEA Sprint Friday", tutor: "Ms. Khan", tutorId: "khan", tutorHue: 35, subject: "SEA Prep", level: "Primary", day: "Fridays", time: "5:00 – 6:30 PM", monthlyPrice: 140, seats: { taken: 7, total: 12 }, rating: 4.92, tags: ["Top rated"], color: "from-peach to-coral", emoji: "✏️" },
 ];
 
 const CHIPS = ["All", "Maths", "English", "Physics", "Chemistry", "Biology", "SEA"];
+
+function TutorAvatar({ name, hue, size = 40 }: { name: string; hue: number; size?: number }) {
+  const initials = name.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <div
+      className="inline-flex items-center justify-center rounded-full font-semibold shrink-0"
+      style={{
+        width: size,
+        height: size,
+        background: `oklch(0.85 0.1 ${hue})`,
+        color: `oklch(0.28 0.07 ${hue})`,
+        fontSize: size * 0.38,
+      }}
+      aria-hidden
+    >
+      {initials}
+    </div>
+  );
+}
 
 function ExplorePage() {
   const { q, tab } = Route.useSearch();
@@ -65,14 +98,15 @@ function ExplorePage() {
   useEffect(() => { setQuery(q || ""); }, [q]);
 
   const ql = query.trim().toLowerCase();
-  const matchSubject = (s: string) =>
-    active === "All" ||
-    s.toLowerCase().includes(active.toLowerCase()) ||
-    (active === "SEA" && s === "SEA Prep");
+  const matchSubject = (s: string | string[]) => {
+    if (active === "All") return true;
+    const arr = Array.isArray(s) ? s : [s];
+    return arr.some((x) => x.toLowerCase().includes(active.toLowerCase()) || (active === "SEA" && x === "SEA Prep") || (active === "Maths" && x === "Mathematics"));
+  };
 
   const tutors = TUTORS
-    .filter((t) => matchSubject(t.subject))
-    .filter((t) => !ql || t.name.toLowerCase().includes(ql) || t.subject.toLowerCase().includes(ql) || t.tags.join(" ").toLowerCase().includes(ql));
+    .filter((t) => matchSubject(t.subjects))
+    .filter((t) => !ql || t.name.toLowerCase().includes(ql) || t.subjects.join(" ").toLowerCase().includes(ql) || t.blurb.toLowerCase().includes(ql));
 
   const lessons = LESSONS
     .filter((l) => matchSubject(l.subject))
@@ -85,34 +119,18 @@ function ExplorePage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold text-ink">Explore</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Join a recurring group lesson, or book a 1:1 with a tutor.
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">Join a recurring group lesson, or book a 1:1 with a tutor.</p>
       </div>
 
-      {/* Tabs */}
       <div className="inline-flex p-1 rounded-2xl bg-muted">
-        <button
-          onClick={() => setTab("lessons")}
-          className={cn(
-            "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition",
-            tab === "lessons" ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink"
-          )}
-        >
+        <button onClick={() => setTab("lessons")} className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition", tab === "lessons" ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink")}>
           <Users className="size-4" /> Group Lessons
         </button>
-        <button
-          onClick={() => setTab("tutors")}
-          className={cn(
-            "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition",
-            tab === "tutors" ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink"
-          )}
-        >
+        <button onClick={() => setTab("tutors")} className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition", tab === "tutors" ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink")}>
           <GraduationCap className="size-4" /> 1:1 Tutors
         </button>
       </div>
 
-      {/* Search bar */}
       <div className="rounded-2xl bg-background border border-border p-2 flex items-center gap-2 shadow-sm">
         <div className="flex-1 flex items-center gap-2 px-3">
           <Search className="size-4 text-muted-foreground" />
@@ -120,7 +138,7 @@ function ExplorePage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={tab === "lessons" ? "Search lessons, subjects, tutors…" : "Search tutors by subject or name…"}
-            className="flex-1 bg-transparent outline-none text-sm py-2"
+            className="flex-1 bg-transparent outline-none text-sm py-2 min-w-0"
           />
         </div>
         <button className="hidden md:inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-xl">
@@ -128,25 +146,12 @@ function ExplorePage() {
         </button>
       </div>
 
-      {/* Chips */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         {CHIPS.map((c) => (
-          <button
-            key={c}
-            onClick={() => setActive(c)}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition border",
-              active === c
-                ? "bg-ink text-white border-ink"
-                : "bg-background text-muted-foreground border-border hover:border-ink/30"
-            )}
-          >
+          <button key={c} onClick={() => setActive(c)} className={cn("px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition border", active === c ? "bg-ink text-white border-ink" : "bg-background text-muted-foreground border-border hover:border-ink/30")}>
             {c}
           </button>
         ))}
-        <div className="ml-2 inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold bg-coral-soft text-coral whitespace-nowrap">
-          <Sparkles className="size-3.5" /> {tab === "lessons" ? "Enrolling now" : "Available this week"}
-        </div>
       </div>
 
       {tab === "lessons" ? (
@@ -156,23 +161,20 @@ function ExplorePage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {lessons.map((l) => {
+              const remaining = l.seats.total - l.seats.taken;
+              const lowStock = remaining > 0 && remaining <= 5;
+              const full = remaining <= 0;
               const pctFull = Math.round((l.seats.taken / l.seats.total) * 100);
-              const almostFull = l.seats.total - l.seats.taken <= 2;
               return (
                 <div key={l.id} className="group rounded-3xl bg-background border border-border overflow-hidden hover:shadow-card transition-all hover:-translate-y-0.5 flex flex-col">
-                  <div className={`relative h-28 bg-gradient-to-br ${l.color} flex items-end p-4`}>
+                  <div className={`relative h-24 bg-gradient-to-br ${l.color} flex items-end p-3`}>
                     <button
                       onClick={() => setSaved((s) => { const n = new Set(s); n.has(l.id) ? n.delete(l.id) : n.add(l.id); return n; })}
-                      className="absolute top-3 right-3 size-8 rounded-full bg-white/90 backdrop-blur grid place-items-center hover:bg-white"
+                      className="absolute top-2.5 right-2.5 size-8 rounded-full bg-white/90 backdrop-blur grid place-items-center hover:bg-white"
                     >
                       <Heart className={cn("size-4", saved.has(l.id) ? "fill-coral text-coral" : "text-ink")} />
                     </button>
-                    <div className="size-14 rounded-2xl bg-white grid place-items-center text-2xl shadow-md">
-                      {l.emoji}
-                    </div>
-                    {almostFull && (
-                      <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-white/95 text-[10px] font-bold text-coral uppercase tracking-wider">Almost full</span>
-                    )}
+                    <div className="size-12 rounded-2xl bg-white grid place-items-center text-2xl shadow-md">{l.emoji}</div>
                   </div>
                   <div className="p-4 space-y-3 flex-1 flex flex-col">
                     <div>
@@ -183,11 +185,19 @@ function ExplorePage() {
                           <span className="font-semibold">{l.rating}</span>
                         </div>
                       </div>
-                      <Link to="/student/tutors/$id" params={{ id: l.tutorId }} className="text-sm text-muted-foreground hover:text-ink hover:underline">
-                        with {l.tutor}
+                      <Link to="/student/tutors/$id" params={{ id: l.tutorId }} className="mt-1.5 inline-flex items-center gap-2 group/by hover:text-ink">
+                        <TutorAvatar name={l.tutor} hue={l.tutorHue} size={22} />
+                        <span className="text-sm text-muted-foreground group-hover/by:text-ink group-hover/by:underline">by {l.tutor}</span>
                       </Link>
-                      <div className="text-xs text-muted-foreground mt-0.5">{l.subject} · {l.level}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{l.subject} · {l.level}</div>
                     </div>
+
+                    {(lowStock || full) && (
+                      <div className={cn("inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full self-start", full ? "bg-muted text-muted-foreground" : "bg-coral-soft text-coral")}>
+                        <Flame className="size-3.5" />
+                        {full ? "Lesson full · join waitlist" : `Only ${remaining} spot${remaining === 1 ? "" : "s"} left!`}
+                      </div>
+                    )}
 
                     <div className="space-y-1.5 text-xs">
                       <div className="flex items-center gap-1.5 text-brand-deep font-medium">
@@ -200,7 +210,7 @@ function ExplorePage() {
                         <Users className="size-3.5" /> {l.seats.taken}/{l.seats.total} enrolled
                       </div>
                       <div className="h-1 rounded-full bg-muted overflow-hidden">
-                        <div className={cn("h-full rounded-full", almostFull ? "bg-coral" : "bg-brand")} style={{ width: `${pctFull}%` }} />
+                        <div className={cn("h-full rounded-full", lowStock ? "bg-coral" : "bg-brand")} style={{ width: `${pctFull}%` }} />
                       </div>
                     </div>
 
@@ -209,8 +219,8 @@ function ExplorePage() {
                         <span className="text-lg font-bold text-ink">TT${l.monthlyPrice}</span>
                         <span className="text-xs text-muted-foreground">/month</span>
                       </div>
-                      <button className="px-3 py-1.5 rounded-xl bg-brand text-white text-xs font-semibold hover:bg-brand-deep transition">
-                        Join lesson
+                      <button disabled={full} className="px-3 py-1.5 rounded-xl bg-brand text-white text-xs font-semibold hover:bg-brand-deep transition disabled:opacity-50">
+                        {full ? "Waitlist" : "Join lesson"}
                       </button>
                     </div>
                   </div>
@@ -224,52 +234,52 @@ function ExplorePage() {
           <div className="text-sm text-muted-foreground">
             {tutors.length} tutor{tutors.length === 1 ? "" : "s"} for 1:1 sessions {ql && <>matching "<span className="text-ink font-medium">{query}</span>"</>}
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 gap-3">
             {tutors.map((t) => (
               <Link
                 key={t.id}
                 to="/student/tutors/$id"
                 params={{ id: t.id }}
-                className="group rounded-3xl bg-background border border-border overflow-hidden hover:shadow-card transition-all hover:-translate-y-0.5"
+                className="group rounded-2xl bg-background border border-border p-4 hover:shadow-card hover:border-brand/40 transition-all flex gap-3 items-start"
               >
-                <div className={`relative h-32 bg-gradient-to-br ${t.color} flex items-end p-4`}>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSaved((s) => { const n = new Set(s); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n; });
-                    }}
-                    className="absolute top-3 right-3 size-8 rounded-full bg-white/90 backdrop-blur grid place-items-center hover:bg-white"
-                  >
-                    <Heart className={cn("size-4", saved.has(t.id) ? "fill-coral text-coral" : "text-ink")} />
-                  </button>
-                  <div className="size-16 rounded-2xl bg-white grid place-items-center text-xl font-bold text-forest shadow-md">
-                    {t.name.split(" ").map((p) => p[0]).join("").slice(0, 2)}
-                  </div>
-                  {t.tags.includes("Top rated") && (
-                    <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-white/95 text-[10px] font-bold text-forest uppercase tracking-wider">★ Top rated</span>
-                  )}
-                </div>
-                <div className="p-4 space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-semibold text-ink">{t.name}</h3>
-                      <div className="flex items-center gap-1 text-sm">
-                        <Star className="size-3.5 fill-coral text-coral" />
-                        <span className="font-semibold">{t.rating}</span>
-                        <span className="text-muted-foreground text-xs">({t.reviews})</span>
+                <TutorAvatar name={t.name} hue={t.hue} size={56} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="font-semibold text-ink truncate">{t.name}</h3>
+                        {t.verified && <BadgeCheck className="size-4 text-brand-deep shrink-0" />}
                       </div>
+                      <div className="text-xs text-muted-foreground truncate">{t.subjects.join(" · ")}</div>
                     </div>
-                    <div className="text-sm text-muted-foreground">{t.subject} · {t.level}</div>
+                    <button
+                      onClick={(e) => { e.preventDefault(); setSaved((s) => { const n = new Set(s); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n; }); }}
+                      className="size-8 rounded-full hover:bg-muted grid place-items-center shrink-0 -mr-1 -mt-1"
+                    >
+                      <Heart className={cn("size-4", saved.has(t.id) ? "fill-coral text-coral" : "text-muted-foreground")} />
+                    </button>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-brand-deep font-medium">
-                    <Clock className="size-3.5" /> Next 1:1: {t.nextSlot}
+
+                  <div className="flex items-center gap-2 mt-1.5 text-xs">
+                    <span className="inline-flex items-center gap-1 font-semibold text-ink">
+                      <Star className="size-3 fill-coral text-coral" />{t.rating}
+                    </span>
+                    <span className="text-muted-foreground">({t.reviews})</span>
+                    {t.topRated && <span className="px-1.5 py-0.5 rounded-full bg-brand-soft text-forest text-[10px] font-bold uppercase tracking-wide">Top rated</span>}
                   </div>
-                  <div className="flex items-end justify-between pt-2 border-t border-border">
+
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-1">{t.blurb}</p>
+
+                  <div className="flex items-center gap-1.5 text-[11px] text-brand-deep font-medium mt-2">
+                    <Clock className="size-3" /> Next: {t.nextSlot}
+                  </div>
+
+                  <div className="flex items-end justify-between mt-3 pt-3 border-t border-border">
                     <div>
-                      <span className="text-lg font-bold text-ink">TT${t.price}</span>
-                      <span className="text-xs text-muted-foreground">/hr</span>
+                      <span className="text-base font-bold text-ink">TT${t.price}</span>
+                      <span className="text-[11px] text-muted-foreground">/hr</span>
                     </div>
-                    <span className="text-xs font-semibold text-brand-deep group-hover:underline">Request 1:1 →</span>
+                    <span className="text-xs font-semibold text-brand-deep group-hover:underline">View profile →</span>
                   </div>
                 </div>
               </Link>
