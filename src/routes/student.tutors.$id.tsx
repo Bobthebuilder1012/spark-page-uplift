@@ -306,6 +306,8 @@ function TutorDetail() {
             setPickedDay={setPickedDay}
             pickedTime={pickedTime}
             setPickedTime={setPickedTime}
+            duration={duration}
+            setDuration={setDuration}
             scrollRef={dayScrollRef}
             scrollDays={scrollDays}
           />
