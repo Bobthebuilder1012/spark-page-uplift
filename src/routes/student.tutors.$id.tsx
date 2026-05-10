@@ -42,21 +42,69 @@ const TUTOR_PROFILES: Record<string, Profile> = {
   khan: { name: "Ms. Khan", subjects: ["SEA Prep", "Mathematics", "English"], level: "Primary", price: 80, hue: 35, bio: "Patient SEA preparation tutor. Building strong fundamentals one step at a time.", tags: ["Maths", "English", "Comprehension"], qualifications: [{ subject: "SEA Prep", credential: "B.Ed Primary Education", verified: true }, { subject: "Mathematics", credential: "CSEC Maths · Grade I", verified: true }], bannerFrom: "from-peach", bannerTo: "to-coral" },
 };
 
-function buildSlots(days = 30) {
-  const out: { date: Date; times: string[] }[] = [];
+// Availability is defined as continuous windows (decimal hours, 24h).
+// e.g. { start: 15.5, end: 21 } means tutor is free 3:30 PM – 9:00 PM.
+// Booked sub-ranges are subtracted so they never appear as available start times.
+type Window = { start: number; end: number };
+type DayAvail = { date: Date; windows: Window[]; booked: Window[] };
+
+const SLOT_STEP = 0.5; // 30-minute granularity
+const DURATION_OPTIONS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+
+function fmtTime(h: number) {
+  const hr = Math.floor(h);
+  const m = Math.round((h - hr) * 60);
+  const ampm = hr >= 12 ? "PM" : "AM";
+  const h12 = ((hr + 11) % 12) + 1;
+  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
+}
+
+// Subtract booked windows from availability windows.
+function effectiveWindows(windows: Window[], booked: Window[]): Window[] {
+  let out = windows.map((w) => ({ ...w }));
+  for (const b of booked) {
+    const next: Window[] = [];
+    for (const w of out) {
+      if (b.end <= w.start || b.start >= w.end) { next.push(w); continue; }
+      if (b.start > w.start) next.push({ start: w.start, end: b.start });
+      if (b.end < w.end) next.push({ start: b.end, end: w.end });
+    }
+    out = next;
+  }
+  return out.filter((w) => w.end - w.start >= SLOT_STEP);
+}
+
+// Compute valid start times for a given duration across all effective windows.
+function startsForDuration(eff: Window[], duration: number): number[] {
+  const out: number[] = [];
+  for (const w of eff) {
+    let t = Math.ceil(w.start / SLOT_STEP) * SLOT_STEP;
+    while (t + duration <= w.end + 1e-9) {
+      out.push(Number(t.toFixed(2)));
+      t += SLOT_STEP;
+    }
+  }
+  return out;
+}
+
+function buildSlots(days = 30): DayAvail[] {
+  const out: DayAvail[] = [];
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   for (let i = 0; i < days; i++) {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
     const dow = d.getDay();
-    const pool = ["3:30 PM", "4:00 PM", "5:00 PM", "5:30 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
-    let times: string[] = [];
-    if (dow === 0) times = pool.slice(0, 2);
-    else if (dow === 6) times = ["10:00 AM", "11:30 AM", "2:00 PM", "4:00 PM"];
-    else times = pool.filter((_, idx) => (idx + i) % 2 === 0);
-    if (i % 7 === 4) times = [];
-    out.push({ date: d, times });
+    let windows: Window[] = [];
+    if (dow === 0) windows = [{ start: 15.5, end: 18 }];
+    else if (dow === 6) windows = [{ start: 10, end: 13 }, { start: 14, end: 18 }];
+    else if (i % 7 === 4) windows = [];
+    else windows = [{ start: 15.5, end: 21 }];
+    // Demo: simulate some prior bookings that reduce availability.
+    const booked: Window[] = [];
+    if (dow === 2) booked.push({ start: 17, end: 18 });
+    if (dow === 4) booked.push({ start: 16, end: 17.5 });
+    out.push({ date: d, windows, booked });
   }
   return out;
 }
