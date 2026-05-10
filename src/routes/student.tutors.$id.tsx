@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Star, Heart, MapPin, Award, Clock, MessageSquare, Video, BadgeCheck, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, ShieldCheck, FileText, X, Check } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id")({
