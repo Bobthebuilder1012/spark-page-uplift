@@ -79,7 +79,7 @@ function ExplorePage() {
     .filter((l) => !ql || l.title.toLowerCase().includes(ql) || l.tutor.toLowerCase().includes(ql) || l.subject.toLowerCase().includes(ql) || l.tags.join(" ").toLowerCase().includes(ql));
 
   const setTab = (next: "lessons" | "tutors") =>
-    navigate({ search: (prev) => ({ ...prev, tab: next }) });
+    navigate({ search: (prev: { q: string; tab: "lessons" | "tutors" }) => ({ ...prev, tab: next }) });
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
