@@ -354,6 +354,8 @@ function TutorDetail() {
                   setPickedDay={setPickedDay}
                   pickedTime={pickedTime}
                   setPickedTime={setPickedTime}
+                  duration={duration}
+                  setDuration={setDuration}
                   scrollRef={dayScrollRef}
                   scrollDays={scrollDays}
                   embedded
@@ -366,10 +368,10 @@ function TutorDetail() {
                     <Row label="Tutor" value={profile.name} />
                     <Row label="Subject" value={pickedSubject} />
                     <Row label="Date" value={slots[pickedDay].date.toLocaleDateString("en", { weekday: "long", month: "short", day: "numeric" })} />
-                    <Row label="Time" value={pickedTime ?? "—"} />
-                    <Row label="Duration" value="1 hr" />
+                    <Row label="Time" value={pickedTime != null ? `${fmtTime(pickedTime)} – ${fmtTime(pickedTime + duration)}` : "—"} />
+                    <Row label="Duration" value={`${duration} hr${duration === 1 ? "" : "s"}`} />
                     <div className="border-t border-border pt-2 flex justify-between font-semibold text-ink">
-                      <span>Total</span><span>TT${profile.price}</span>
+                      <span>Total</span><span>TT${(profile.price * duration).toFixed(0)}</span>
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">By confirming, you agree to rate this tutor after the class. Free cancellation up to 24h before.</p>
