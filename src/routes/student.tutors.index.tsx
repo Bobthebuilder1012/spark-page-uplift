@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, Star, Heart, Calendar, Clock, Sparkles, SlidersHorizontal, Users, GraduationCap, BadgeCheck, Flame } from "lucide-react";
+import { Search, Star, Heart, Calendar, Clock, Sparkles, SlidersHorizontal, Users, GraduationCap, BadgeCheck, Flame, X, Check, Repeat } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
