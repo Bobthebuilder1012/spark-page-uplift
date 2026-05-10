@@ -94,6 +94,8 @@ function ExplorePage() {
   const [active, setActive] = useState("All");
   const [query, setQuery] = useState(q || "");
   const [saved, setSaved] = useState<Set<string>>(new Set());
+  const [joinLesson, setJoinLesson] = useState<GroupLesson | null>(null);
+  const [joined, setJoined] = useState<Set<string>>(new Set());
 
   useEffect(() => { setQuery(q || ""); }, [q]);
 
