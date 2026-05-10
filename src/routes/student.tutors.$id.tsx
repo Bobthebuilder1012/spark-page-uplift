@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Star, Heart, MapPin, Award, Clock, MessageSquare, Video, BadgeCheck, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, ShieldCheck, FileText, X, Check } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id")({
@@ -42,21 +42,69 @@ const TUTOR_PROFILES: Record<string, Profile> = {
   khan: { name: "Ms. Khan", subjects: ["SEA Prep", "Mathematics", "English"], level: "Primary", price: 80, hue: 35, bio: "Patient SEA preparation tutor. Building strong fundamentals one step at a time.", tags: ["Maths", "English", "Comprehension"], qualifications: [{ subject: "SEA Prep", credential: "B.Ed Primary Education", verified: true }, { subject: "Mathematics", credential: "CSEC Maths · Grade I", verified: true }], bannerFrom: "from-peach", bannerTo: "to-coral" },
 };
 
-function buildSlots(days = 30) {
-  const out: { date: Date; times: string[] }[] = [];
+// Availability is defined as continuous windows (decimal hours, 24h).
+// e.g. { start: 15.5, end: 21 } means tutor is free 3:30 PM – 9:00 PM.
+// Booked sub-ranges are subtracted so they never appear as available start times.
+type Window = { start: number; end: number };
+type DayAvail = { date: Date; windows: Window[]; booked: Window[] };
+
+const SLOT_STEP = 0.5; // 30-minute granularity
+const DURATION_OPTIONS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+
+function fmtTime(h: number) {
+  const hr = Math.floor(h);
+  const m = Math.round((h - hr) * 60);
+  const ampm = hr >= 12 ? "PM" : "AM";
+  const h12 = ((hr + 11) % 12) + 1;
+  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
+}
+
+// Subtract booked windows from availability windows.
+function effectiveWindows(windows: Window[], booked: Window[]): Window[] {
+  let out = windows.map((w) => ({ ...w }));
+  for (const b of booked) {
+    const next: Window[] = [];
+    for (const w of out) {
+      if (b.end <= w.start || b.start >= w.end) { next.push(w); continue; }
+      if (b.start > w.start) next.push({ start: w.start, end: b.start });
+      if (b.end < w.end) next.push({ start: b.end, end: w.end });
+    }
+    out = next;
+  }
+  return out.filter((w) => w.end - w.start >= SLOT_STEP);
+}
+
+// Compute valid start times for a given duration across all effective windows.
+function startsForDuration(eff: Window[], duration: number): number[] {
+  const out: number[] = [];
+  for (const w of eff) {
+    let t = Math.ceil(w.start / SLOT_STEP) * SLOT_STEP;
+    while (t + duration <= w.end + 1e-9) {
+      out.push(Number(t.toFixed(2)));
+      t += SLOT_STEP;
+    }
+  }
+  return out;
+}
+
+function buildSlots(days = 30): DayAvail[] {
+  const out: DayAvail[] = [];
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   for (let i = 0; i < days; i++) {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
     const dow = d.getDay();
-    const pool = ["3:30 PM", "4:00 PM", "5:00 PM", "5:30 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
-    let times: string[] = [];
-    if (dow === 0) times = pool.slice(0, 2);
-    else if (dow === 6) times = ["10:00 AM", "11:30 AM", "2:00 PM", "4:00 PM"];
-    else times = pool.filter((_, idx) => (idx + i) % 2 === 0);
-    if (i % 7 === 4) times = [];
-    out.push({ date: d, times });
+    let windows: Window[] = [];
+    if (dow === 0) windows = [{ start: 15.5, end: 18 }];
+    else if (dow === 6) windows = [{ start: 10, end: 13 }, { start: 14, end: 18 }];
+    else if (i % 7 === 4) windows = [];
+    else windows = [{ start: 15.5, end: 21 }];
+    // Demo: simulate some prior bookings that reduce availability.
+    const booked: Window[] = [];
+    if (dow === 2) booked.push({ start: 17, end: 18 });
+    if (dow === 4) booked.push({ start: 16, end: 17.5 });
+    out.push({ date: d, windows, booked });
   }
   return out;
 }
@@ -87,7 +135,8 @@ function TutorDetail() {
   const slots = useMemo(() => buildSlots(30), []);
   const [pickedSubject, setPickedSubject] = useState(profile.subjects[0]);
   const [pickedDay, setPickedDay] = useState(0);
-  const [pickedTime, setPickedTime] = useState<string | null>(null);
+  const [pickedTime, setPickedTime] = useState<number | null>(null);
+  const [duration, setDuration] = useState<number>(1);
   const [saved, setSaved] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
   const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
@@ -257,6 +306,8 @@ function TutorDetail() {
             setPickedDay={setPickedDay}
             pickedTime={pickedTime}
             setPickedTime={setPickedTime}
+            duration={duration}
+            setDuration={setDuration}
             scrollRef={dayScrollRef}
             scrollDays={scrollDays}
           />
@@ -303,6 +354,8 @@ function TutorDetail() {
                   setPickedDay={setPickedDay}
                   pickedTime={pickedTime}
                   setPickedTime={setPickedTime}
+                  duration={duration}
+                  setDuration={setDuration}
                   scrollRef={dayScrollRef}
                   scrollDays={scrollDays}
                   embedded
@@ -315,10 +368,10 @@ function TutorDetail() {
                     <Row label="Tutor" value={profile.name} />
                     <Row label="Subject" value={pickedSubject} />
                     <Row label="Date" value={slots[pickedDay].date.toLocaleDateString("en", { weekday: "long", month: "short", day: "numeric" })} />
-                    <Row label="Time" value={pickedTime ?? "—"} />
-                    <Row label="Duration" value="1 hr" />
+                    <Row label="Time" value={pickedTime != null ? `${fmtTime(pickedTime)} – ${fmtTime(pickedTime + duration)}` : "—"} />
+                    <Row label="Duration" value={`${duration} hr${duration === 1 ? "" : "s"}`} />
                     <div className="border-t border-border pt-2 flex justify-between font-semibold text-ink">
-                      <span>Total</span><span>TT${profile.price}</span>
+                      <span>Total</span><span>TT${(profile.price * duration).toFixed(0)}</span>
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">By confirming, you agree to rate this tutor after the class. Free cancellation up to 24h before.</p>
@@ -345,21 +398,32 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 function BookingCard({
-  profile, slots, pickedSubject, setPickedSubject, pickedDay, setPickedDay, pickedTime, setPickedTime, scrollRef, scrollDays, embedded, onContinue,
+  profile, slots, pickedSubject, setPickedSubject, pickedDay, setPickedDay, pickedTime, setPickedTime, duration, setDuration, scrollRef, scrollDays, embedded, onContinue,
 }: {
   profile: Profile;
-  slots: { date: Date; times: string[] }[];
+  slots: DayAvail[];
   pickedSubject: string;
   setPickedSubject: (s: string) => void;
   pickedDay: number;
   setPickedDay: (n: number) => void;
-  pickedTime: string | null;
-  setPickedTime: (s: string | null) => void;
+  pickedTime: number | null;
+  setPickedTime: (n: number | null) => void;
+  duration: number;
+  setDuration: (n: number) => void;
   scrollRef: React.RefObject<HTMLDivElement | null>;
   scrollDays: (dir: 1 | -1) => void;
   embedded?: boolean;
   onContinue?: () => void;
 }) {
+  const day = slots[pickedDay];
+  const eff = effectiveWindows(day.windows, day.booked);
+  const longestWindow = eff.reduce((m, w) => Math.max(m, w.end - w.start), 0);
+  const starts = startsForDuration(eff, duration);
+  // If the currently picked time no longer fits (e.g. duration changed), clear it.
+  useEffect(() => {
+    if (pickedTime != null && !starts.includes(pickedTime)) setPickedTime(null);
+  }, [pickedTime, starts, setPickedTime]);
+
   return (
     <div className={cn(!embedded && "rounded-3xl bg-background border border-border p-5")}>
       {!embedded && (
@@ -391,7 +455,8 @@ function BookingCard({
       </div>
       <div ref={scrollRef} className="flex gap-1.5 overflow-x-auto pb-2 mb-4 -mx-1 px-1 snap-x">
         {slots.map((s, i) => {
-          const disabled = s.times.length === 0;
+          const dayEff = effectiveWindows(s.windows, s.booked);
+          const disabled = dayEff.length === 0;
           return (
             <button key={i} onClick={() => { setPickedDay(i); setPickedTime(null); }} disabled={disabled} className={cn("shrink-0 w-14 py-2 rounded-xl text-center transition snap-start disabled:opacity-30 border", pickedDay === i ? "bg-ink text-white border-ink" : "border-border hover:border-brand")}>
               <div className="text-[10px] font-semibold opacity-70 uppercase">{i === 0 ? "Today" : s.date.toLocaleDateString("en", { weekday: "short" })}</div>
@@ -402,24 +467,82 @@ function BookingCard({
         })}
       </div>
 
-      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-        Available times · {slots[pickedDay].date.toLocaleDateString("en", { weekday: "long", month: "short", day: "numeric" })}
+      {/* Duration selector */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Duration</div>
+        <div className="text-[11px] text-muted-foreground">TT${(profile.price * duration).toFixed(0)} total</div>
       </div>
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        {slots[pickedDay].times.length === 0 && <div className="col-span-2 text-sm text-muted-foreground py-3 text-center">No slots this day</div>}
-        {slots[pickedDay].times.map((t) => (
-          <button key={t} onClick={() => setPickedTime(t)} className={cn("py-2.5 rounded-xl text-sm font-medium border transition", pickedTime === t ? "bg-brand text-white border-brand" : "border-border hover:border-brand")}>
-            {t}
-          </button>
-        ))}
+      <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 -mx-1 px-1">
+        {DURATION_OPTIONS.map((d) => {
+          const fits = longestWindow >= d - 1e-9;
+          const active = duration === d;
+          return (
+            <button
+              key={d}
+              onClick={() => setDuration(d)}
+              disabled={!fits}
+              className={cn(
+                "shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition disabled:opacity-30",
+                active ? "bg-ink text-white border-ink" : "border-border text-muted-foreground hover:border-ink/30",
+              )}
+            >
+              {d % 1 === 0 ? `${d} hr` : `${d} hrs`}
+            </button>
+          );
+        })}
       </div>
 
+      {/* Available start times — segmented per continuous window */}
+      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+        Start times · {day.date.toLocaleDateString("en", { weekday: "long", month: "short", day: "numeric" })}
+      </div>
+      {eff.length === 0 ? (
+        <div className="text-sm text-muted-foreground py-4 text-center mb-4">Tutor isn't available on this day</div>
+      ) : starts.length === 0 ? (
+        <div className="text-sm text-muted-foreground py-4 text-center mb-4">
+          No {duration} hr slot fits. Try a shorter duration or another day.
+        </div>
+      ) : (
+        <div className="space-y-3 mb-4">
+          {eff.map((w, wi) => {
+            const winStarts = starts.filter((t) => t >= w.start - 1e-9 && t + duration <= w.end + 1e-9);
+            if (winStarts.length === 0) return null;
+            return (
+              <div key={wi}>
+                <div className="text-[10px] text-muted-foreground mb-1.5">
+                  Free {fmtTime(w.start)} – {fmtTime(w.end)}
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {winStarts.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setPickedTime(t)}
+                      className={cn(
+                        "py-2 rounded-xl text-xs font-medium border transition",
+                        pickedTime === t ? "bg-brand text-white border-brand" : "border-border hover:border-brand",
+                      )}
+                    >
+                      {fmtTime(t)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <button
-        disabled={!pickedTime}
+        disabled={pickedTime == null}
         onClick={onContinue}
         className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-brand text-white font-semibold hover:bg-brand-deep transition disabled:opacity-50"
       >
-        <Video className="size-4" /> {pickedTime ? (embedded ? `Continue with ${pickedTime}` : `Book ${pickedSubject} · ${pickedTime}`) : "Select a time"}
+        <Video className="size-4" />
+        {pickedTime != null
+          ? (embedded
+              ? `Continue · ${fmtTime(pickedTime)} – ${fmtTime(pickedTime + duration)}`
+              : `Book ${duration} hr${duration === 1 ? "" : "s"} · ${fmtTime(pickedTime)}`)
+          : "Select a start time"}
       </button>
       {!embedded && <p className="text-xs text-muted-foreground text-center mt-3">Free cancellation up to 24h before</p>}
     </div>
