@@ -293,6 +293,98 @@ function ExplorePage() {
           </div>
         </>
       )}
+
+      {/* Join lesson confirmation — bottom sheet on mobile, centered modal on desktop */}
+      {joinLesson && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setJoinLesson(null)}>
+          <div className="bg-background w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-background border-b border-border px-5 py-3 flex items-center justify-between">
+              <div>
+                <div className="text-xs text-muted-foreground">Join recurring lesson</div>
+                <div className="font-semibold text-ink text-sm">{joinLesson.title}</div>
+              </div>
+              <button onClick={() => setJoinLesson(null)} className="size-8 rounded-full hover:bg-muted grid place-items-center"><X className="size-4" /></button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {/* Hero */}
+              <div className={cn("rounded-2xl bg-gradient-to-br p-4 flex items-center gap-3", joinLesson.color)}>
+                <div className="size-14 rounded-2xl bg-white grid place-items-center text-3xl shadow-md">{joinLesson.emoji}</div>
+                <div className="text-white">
+                  <div className="font-bold leading-tight">{joinLesson.title}</div>
+                  <div className="text-xs opacity-90">{joinLesson.subject} · {joinLesson.level}</div>
+                </div>
+              </div>
+
+              {/* Tutor */}
+              <Link to="/student/tutors/$id" params={{ id: joinLesson.tutorId }} className="flex items-center gap-3 p-3 rounded-2xl border border-border hover:bg-muted transition">
+                <TutorAvatar name={joinLesson.tutor} hue={joinLesson.tutorHue} size={40} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-muted-foreground">Taught by</div>
+                  <div className="font-semibold text-ink text-sm truncate">{joinLesson.tutor}</div>
+                </div>
+                <span className="text-xs text-brand-deep font-semibold">View →</span>
+              </Link>
+
+              {/* Schedule */}
+              <div className="rounded-2xl border border-border p-4 space-y-2.5 text-sm">
+                <div className="flex items-center gap-2 text-ink">
+                  <Repeat className="size-4 text-brand-deep" />
+                  <span className="font-semibold">Every {joinLesson.day}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="size-4" /> {joinLesson.time}
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Users className="size-4" /> {joinLesson.seats.taken}/{joinLesson.seats.total} students enrolled
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Calendar className="size-4" /> 4 sessions per month · ongoing
+                </div>
+              </div>
+
+              {/* What's included */}
+              <div>
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">What's included</div>
+                <ul className="space-y-1.5 text-sm text-ink">
+                  {[
+                    "Live group sessions every week",
+                    "Recordings for missed classes",
+                    "Notes & worksheets after each class",
+                    "Group chat with the tutor",
+                  ].map((x) => (
+                    <li key={x} className="flex items-start gap-2"><Check className="size-4 text-brand-deep mt-0.5 shrink-0" /><span>{x}</span></li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Total */}
+              <div className="rounded-2xl bg-mint p-4 flex items-end justify-between">
+                <div>
+                  <div className="text-xs text-muted-foreground">Monthly subscription</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Cancel anytime · first class free preview</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-ink">TT${joinLesson.monthlyPrice}</div>
+                  <div className="text-[11px] text-muted-foreground">/month</div>
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground">By joining, you'll be charged monthly and agree to rate the lesson at the end of each month.</p>
+
+              <button
+                onClick={() => {
+                  setJoined((j) => new Set(j).add(joinLesson.id));
+                  setJoinLesson(null);
+                }}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-brand text-white font-semibold hover:bg-brand-deep"
+              >
+                <Check className="size-4" /> Confirm & enroll
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
