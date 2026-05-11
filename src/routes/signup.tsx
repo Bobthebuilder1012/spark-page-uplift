@@ -435,7 +435,7 @@ function SignupPage() {
                         {role === "student"
                           ? "One last step — tell us about your studies."
                           : role === "tutor"
-                            ? "Setting up your tutor profile…"
+                            ? "One last step — set up your tutor profile."
                             : "Taking you to your dashboard…"}
                       </p>
                       <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
