@@ -26,7 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { COUNTRIES, YEAR_LEVELS } from "@/lib/countries";
+import { COUNTRIES, YEAR_LEVELS, TUTOR_LEVELS, TUTOR_SUBJECTS } from "@/lib/countries";
+import { Lightbulb, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/signup")({
