@@ -200,6 +200,60 @@ export const COUNTRIES: Country[] = [
   { code: "ZW", name: "Zimbabwe", flag: "🇿🇼" },
 ];
 
+// Tutor teaching levels (chips)
+export const TUTOR_LEVELS = [
+  { value: "sea", label: "SEA" },
+  { value: "form-1", label: "Form 1" },
+  { value: "form-2", label: "Form 2" },
+  { value: "form-3", label: "Form 3" },
+  { value: "form-4", label: "Form 4" },
+  { value: "form-5", label: "Form 5" },
+  { value: "cape-1", label: "CAPE Unit 1" },
+  { value: "cape-2", label: "CAPE Unit 2" },
+];
+
+// Tutor subject suggestions (CSEC / CAPE)
+export const TUTOR_SUBJECTS = [
+  "CSEC Mathematics",
+  "CSEC Additional Mathematics",
+  "CSEC English A",
+  "CSEC English B",
+  "CSEC Physics",
+  "CSEC Chemistry",
+  "CSEC Biology",
+  "CSEC Human & Social Biology",
+  "CSEC Information Technology",
+  "CSEC Principles of Accounts",
+  "CSEC Principles of Business",
+  "CSEC Economics",
+  "CSEC Geography",
+  "CSEC History",
+  "CSEC Spanish",
+  "CSEC French",
+  "CSEC Social Studies",
+  "CSEC Religious Education",
+  "CAPE Pure Mathematics",
+  "CAPE Applied Mathematics",
+  "CAPE Physics",
+  "CAPE Chemistry",
+  "CAPE Biology",
+  "CAPE Computer Science",
+  "CAPE Economics",
+  "CAPE Accounting",
+  "CAPE Management of Business",
+  "CAPE Sociology",
+  "CAPE Literatures in English",
+  "CAPE Communication Studies",
+  "CAPE Caribbean Studies",
+  "CAPE Law",
+  "CAPE History",
+  "CAPE Geography",
+  "SEA Mathematics",
+  "SEA English",
+  "SEA Creative Writing",
+  "SEA Science",
+];
+
 // Year levels — SEA integrated, with age ranges shown inline
 export const YEAR_LEVELS = [
   { value: "sea", label: "SEA (10–11)" },

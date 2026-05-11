@@ -26,7 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { COUNTRIES, YEAR_LEVELS } from "@/lib/countries";
+import { COUNTRIES, YEAR_LEVELS, TUTOR_LEVELS, TUTOR_SUBJECTS } from "@/lib/countries";
+import { Lightbulb, X as XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/signup")({
@@ -75,6 +76,11 @@ function SignupPage() {
   const [school, setSchool] = useState<"attend" | "teach" | "no" | "">("");
   const [schoolName, setSchoolName] = useState("");
   const [year, setYear] = useState("");
+
+  // Step 5 (tutor profile)
+  const [tLevels, setTLevels] = useState<string[]>([]);
+  const [tSubjects, setTSubjects] = useState<string[]>([]);
+  const [tQuery, setTQuery] = useState("");
 
   // Sync hash with step
   useEffect(() => {
@@ -140,18 +146,32 @@ function SignupPage() {
       goto("confirmed");
       // auto-advance to secondary signup after a beat
       setTimeout(() => {
-        if (role === "student") goto("profile");
-        else if (role === "tutor") navigate({ to: "/student" }); // tutor tertiary later
+        if (role === "student" || role === "tutor") goto("profile");
         else navigate({ to: "/student" }); // parents skip secondary
       }, 1400);
     }, 600);
   };
 
   const completeProfile = () => {
+    if (role === "tutor") {
+      if (tLevels.length === 0) return;
+      const needsSubjects = tLevels.some((l) => l !== "sea");
+      if (needsSubjects && tSubjects.length === 0) return;
+      navigate({ to: "/student" });
+      return;
+    }
     if (!year) return;
     if (school !== "no" && school !== "" && !schoolName.trim()) return;
     navigate({ to: "/student" });
   };
+
+  const toggleLevel = (v: string) =>
+    setTLevels((cur) => (cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]));
+  const addSubject = (s: string) => {
+    if (!tSubjects.includes(s)) setTSubjects((cur) => [...cur, s]);
+    setTQuery("");
+  };
+  const removeSubject = (s: string) => setTSubjects((cur) => cur.filter((x) => x !== s));
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-forest via-forest to-[oklch(0.18_0.04_155)] text-white">
@@ -309,7 +329,7 @@ function SignupPage() {
 
                       <p className="pt-2 text-center text-sm text-muted-foreground">
                         Already have an account?{" "}
-                        <a href="#" className="font-medium text-forest underline">Log in</a>
+                        <Link to="/login" className="font-medium text-forest underline">Log in</Link>
                       </p>
                     </form>
                   </StepWrap>
@@ -415,7 +435,7 @@ function SignupPage() {
                         {role === "student"
                           ? "One last step — tell us about your studies."
                           : role === "tutor"
-                            ? "Setting up your tutor profile…"
+                            ? "One last step — set up your tutor profile."
                             : "Taking you to your dashboard…"}
                       </p>
                       <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
@@ -426,7 +446,141 @@ function SignupPage() {
                   </StepWrap>
                 )}
 
-                {step === "profile" && (
+                {step === "profile" && role === "tutor" && (
+                  <StepWrap key="profile-tutor">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand to-forest text-white shadow-pop">
+                        <Lightbulb className="h-6 w-6" />
+                      </div>
+                      <h2 className="mt-4 font-display text-2xl font-bold tracking-tight sm:text-3xl">
+                        Set up your tutor profile
+                      </h2>
+                      <p className="mt-1.5 max-w-md text-sm text-muted-foreground">
+                        Add the levels you teach and your subjects so students can find you.
+                      </p>
+                    </div>
+
+                    <div className="mt-6 space-y-5">
+                      <div className="rounded-2xl bg-brand/5 p-4 ring-1 ring-brand/10">
+                        <Label className="text-sm font-semibold">
+                          Teaching Levels <span className="text-destructive">*</span>
+                        </Label>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Select all levels you can teach, including SEA if applicable.
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {TUTOR_LEVELS.map((l) => {
+                            const active = tLevels.includes(l.value);
+                            return (
+                              <button
+                                key={l.value}
+                                type="button"
+                                onClick={() => toggleLevel(l.value)}
+                                className={cn(
+                                  "rounded-full border px-4 py-1.5 text-sm font-semibold transition",
+                                  active
+                                    ? "border-brand bg-brand text-white"
+                                    : "border-border bg-white text-foreground hover:border-brand/40",
+                                )}
+                              >
+                                {l.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {tLevels.length > 0 && (
+                          <p className="mt-3 text-xs font-medium text-brand">
+                            ✓ Selected: {tLevels.length} level{tLevels.length === 1 ? "" : "s"}
+                          </p>
+                        )}
+                      </div>
+
+                      {tLevels.some((l) => l !== "sea") && (
+                        <div className="rounded-2xl border border-border bg-white p-4">
+                          <Label className="text-sm font-semibold">
+                            Subjects you can teach (CSEC / CAPE) <span className="text-destructive">*</span>
+                          </Label>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            Search and add subjects for the secondary / CAPE levels you selected above.
+                          </p>
+                          <div className="relative mt-3">
+                            <Input
+                              value={tQuery}
+                              onChange={(e) => setTQuery(e.target.value)}
+                              placeholder="Type subject name (e.g. CSEC Math, CAPE Physics)…"
+                            />
+                            {tQuery.trim() && (
+                              <ul className="absolute left-0 right-0 top-full z-20 mt-1 max-h-56 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
+                                {TUTOR_SUBJECTS.filter(
+                                  (s) =>
+                                    s.toLowerCase().includes(tQuery.toLowerCase()) &&
+                                    !tSubjects.includes(s),
+                                )
+                                  .slice(0, 8)
+                                  .map((s) => (
+                                    <li key={s}>
+                                      <button
+                                        type="button"
+                                        onClick={() => addSubject(s)}
+                                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent"
+                                      >
+                                        {s}
+                                        <span className="text-xs text-muted-foreground">Add</span>
+                                      </button>
+                                    </li>
+                                  ))}
+                                {TUTOR_SUBJECTS.filter(
+                                  (s) =>
+                                    s.toLowerCase().includes(tQuery.toLowerCase()) &&
+                                    !tSubjects.includes(s),
+                                ).length === 0 && (
+                                  <li className="px-3 py-2 text-sm text-muted-foreground">No matches</li>
+                                )}
+                              </ul>
+                            )}
+                          </div>
+                          {tSubjects.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {tSubjects.map((s) => (
+                                <span
+                                  key={s}
+                                  className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-medium"
+                                >
+                                  {s}
+                                  <button
+                                    type="button"
+                                    onClick={() => removeSubject(s)}
+                                    className="text-muted-foreground hover:text-foreground"
+                                    aria-label={`Remove ${s}`}
+                                  >
+                                    <XIcon className="h-3 w-3" />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <p className="mt-2 text-xs text-muted-foreground">
+                            {tSubjects.length} subject{tSubjects.length === 1 ? "" : "s"} selected
+                          </p>
+                        </div>
+                      )}
+
+                      <Button
+                        size="lg"
+                        onClick={completeProfile}
+                        disabled={
+                          tLevels.length === 0 ||
+                          (tLevels.some((l) => l !== "sea") && tSubjects.length === 0)
+                        }
+                        className="w-full bg-gradient-to-r from-brand to-forest text-white hover:opacity-95"
+                      >
+                        Complete Profile
+                      </Button>
+                    </div>
+                  </StepWrap>
+                )}
+
+                {step === "profile" && role !== "tutor" && (
                   <StepWrap key="profile">
                     <Header
                       title="Tell us about your studies"

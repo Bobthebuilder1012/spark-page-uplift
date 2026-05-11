@@ -36,9 +36,9 @@ export function Nav() {
           <Link to="/signup" className="hidden rounded-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white sm:inline-flex">
             Sign Up
           </Link>
-          <button className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-pop transition-transform hover:scale-[1.04] active:scale-95">
+          <Link to="/login" className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-pop transition-transform hover:scale-[1.04] active:scale-95">
             Log In
-          </button>
+          </Link>
         </div>
       </div>
     </motion.header>
