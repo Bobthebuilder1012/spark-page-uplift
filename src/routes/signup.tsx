@@ -146,18 +146,32 @@ function SignupPage() {
       goto("confirmed");
       // auto-advance to secondary signup after a beat
       setTimeout(() => {
-        if (role === "student") goto("profile");
-        else if (role === "tutor") navigate({ to: "/student" }); // tutor tertiary later
+        if (role === "student" || role === "tutor") goto("profile");
         else navigate({ to: "/student" }); // parents skip secondary
       }, 1400);
     }, 600);
   };
 
   const completeProfile = () => {
+    if (role === "tutor") {
+      if (tLevels.length === 0) return;
+      const needsSubjects = tLevels.some((l) => l !== "sea");
+      if (needsSubjects && tSubjects.length === 0) return;
+      navigate({ to: "/student" });
+      return;
+    }
     if (!year) return;
     if (school !== "no" && school !== "" && !schoolName.trim()) return;
     navigate({ to: "/student" });
   };
+
+  const toggleLevel = (v: string) =>
+    setTLevels((cur) => (cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]));
+  const addSubject = (s: string) => {
+    if (!tSubjects.includes(s)) setTSubjects((cur) => [...cur, s]);
+    setTQuery("");
+  };
+  const removeSubject = (s: string) => setTSubjects((cur) => cur.filter((x) => x !== s));
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-forest via-forest to-[oklch(0.18_0.04_155)] text-white">
