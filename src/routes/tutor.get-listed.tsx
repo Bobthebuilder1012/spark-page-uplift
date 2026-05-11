@@ -225,8 +225,8 @@ function AvailabilityCard({ done }: { done: boolean }) {
             <div />
             {DAYS.map((d) => <div key={d} className="text-center text-[11px] font-semibold text-muted-foreground py-1">{d}</div>)}
             {HOURS.map((h) => (
-              <>
-                <div key={`l${h}`} className="text-[10px] text-muted-foreground tabular-nums text-right pr-2 py-1">
+              <FragmentRow key={`row-${h}`}>
+                <div className="text-[10px] text-muted-foreground tabular-nums text-right pr-2 py-1">
                   {h % 12 === 0 ? 12 : h % 12}{h < 12 ? "a" : "p"}
                 </div>
                 {DAYS.map((_, d) => {
