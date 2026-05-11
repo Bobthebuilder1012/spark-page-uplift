@@ -240,7 +240,7 @@ function AvailabilityCard({ done }: { done: boolean }) {
                     />
                   );
                 })}
-              </>
+              </FragmentRow>
             ))}
           </div>
         </div>
