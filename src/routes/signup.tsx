@@ -77,6 +77,11 @@ function SignupPage() {
   const [schoolName, setSchoolName] = useState("");
   const [year, setYear] = useState("");
 
+  // Step 5 (tutor profile)
+  const [tLevels, setTLevels] = useState<string[]>([]);
+  const [tSubjects, setTSubjects] = useState<string[]>([]);
+  const [tQuery, setTQuery] = useState("");
+
   // Sync hash with step
   useEffect(() => {
     if (typeof window === "undefined") return;
