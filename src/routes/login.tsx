@@ -142,6 +142,10 @@ function LoginPage() {
                 New to iTutor?{" "}
                 <Link to="/signup" className="font-medium text-forest underline">Create an account</Link>
               </p>
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                Tutor?{" "}
+                <Link to="/tutor" className="font-medium text-forest underline">Open the tutor workspace</Link>
+              </p>
             </motion.div>
           </div>
         </section>
