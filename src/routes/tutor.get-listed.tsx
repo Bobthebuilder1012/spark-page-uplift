@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useState, useRef, Fragment } from "react";
 import { useTutor, SUBJECT_OPTIONS } from "@/lib/tutor-store";
 import { Check, Circle, Camera, Plus, X, Trash2, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -225,7 +225,7 @@ function AvailabilityCard({ done }: { done: boolean }) {
             <div />
             {DAYS.map((d) => <div key={d} className="text-center text-[11px] font-semibold text-muted-foreground py-1">{d}</div>)}
             {HOURS.map((h) => (
-              <FragmentRow key={`row-${h}`}>
+              <Fragment key={`row-${h}`}>
                 <div className="text-[10px] text-muted-foreground tabular-nums text-right pr-2 py-1">
                   {h % 12 === 0 ? 12 : h % 12}{h < 12 ? "a" : "p"}
                 </div>
@@ -240,7 +240,7 @@ function AvailabilityCard({ done }: { done: boolean }) {
                     />
                   );
                 })}
-              </FragmentRow>
+              </Fragment>
             ))}
           </div>
         </div>
