@@ -329,7 +329,7 @@ function SignupPage() {
 
                       <p className="pt-2 text-center text-sm text-muted-foreground">
                         Already have an account?{" "}
-                        <a href="#" className="font-medium text-forest underline">Log in</a>
+                        <Link to="/login" className="font-medium text-forest underline">Log in</Link>
                       </p>
                     </form>
                   </StepWrap>
