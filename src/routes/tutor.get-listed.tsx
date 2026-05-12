@@ -277,16 +277,37 @@ function RateCard({ done }: { done: boolean }) {
   );
 }
 
+function ZoomLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden>
+      <rect width="32" height="32" rx="6" fill="#2D8CFF" />
+      <path fill="#fff" d="M7 11.5A1.5 1.5 0 0 1 8.5 10h9A3.5 3.5 0 0 1 21 13.5v7A1.5 1.5 0 0 1 19.5 22h-9A3.5 3.5 0 0 1 7 18.5v-7Zm15 1.4a.6.6 0 0 1 .96-.48l3.04 2.28a.6.6 0 0 1 .24.48v3.64a.6.6 0 0 1-.24.48L22.96 21.58a.6.6 0 0 1-.96-.48v-8.2Z" />
+    </svg>
+  );
+}
+
+function MeetLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden>
+      <rect width="32" height="32" rx="6" fill="#fff" stroke="#E5E7EB" />
+      <path fill="#00832D" d="M19 11v3l3-2.4V20.4L19 18v3a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1Z" />
+      <path fill="#FFBA00" d="m22 11.6 3-2.4v13.6l-3-2.4z" />
+      <path fill="#FBBC04" opacity=".0" d="" />
+      <path fill="#EA4335" d="M19 18v3a1 1 0 0 1-1 1h-3.5l4.5-4Z" />
+      <path fill="#1A73E8" d="M19 14v-3a1 1 0 0 0-1-1h-3.5l4.5 4Z" />
+    </svg>
+  );
+}
+
 function VideoProviderCard({ done }: { done: boolean }) {
   const { profile, setProfile } = useTutor();
-  const options: { id: "zoom" | "google-meet" | "itutor"; label: string; hint: string }[] = [
-    { id: "zoom", label: "Zoom", hint: "Connect your Zoom account" },
-    { id: "google-meet", label: "Google Meet", hint: "Use your Google account" },
-    { id: "itutor", label: "iTutor video", hint: "Built-in, no setup needed" },
+  const options: { id: "zoom" | "google-meet"; label: string; hint: string; Logo: React.FC<{ className?: string }> }[] = [
+    { id: "zoom", label: "Zoom", hint: "Connect your Zoom account", Logo: ZoomLogo },
+    { id: "google-meet", label: "Google Meet", hint: "Use your Google account", Logo: MeetLogo },
   ];
   return (
     <SectionShell done={done} title="Video lesson provider" subtitle="Pick where your live lessons will happen. Required so students get the right join link.">
-      <div className="grid sm:grid-cols-3 gap-2">
+      <div className="grid sm:grid-cols-2 gap-2">
         {options.map((o) => {
           const active = profile.videoProvider === o.id;
           return (
@@ -294,18 +315,21 @@ function VideoProviderCard({ done }: { done: boolean }) {
               key={o.id}
               onClick={() => setProfile((p) => ({ ...p, videoProvider: o.id }))}
               className={cn(
-                "text-left rounded-xl border p-3 transition",
+                "text-left rounded-xl border p-3 transition flex items-center gap-3",
                 active ? "border-brand bg-brand/5 ring-2 ring-brand/30" : "border-border hover:border-brand/50",
               )}
             >
-              <div className="text-sm font-semibold text-ink">{o.label}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{o.hint}</div>
-              {active && o.id !== "itutor" && (
-                <span className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wider text-brand-deep">
-                  {/* TODO(cursor): trigger OAuth connect flow */}
-                  Connect account →
-                </span>
-              )}
+              <o.Logo className="size-9 shrink-0" />
+              <div className="flex-1">
+                <div className="text-sm font-semibold text-ink">{o.label}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{o.hint}</div>
+                {active && (
+                  <span className="mt-1 inline-block text-[10px] font-bold uppercase tracking-wider text-brand-deep">
+                    {/* TODO(cursor): trigger OAuth connect flow */}
+                    Connect account →
+                  </span>
+                )}
+              </div>
             </button>
           );
         })}
@@ -313,3 +337,4 @@ function VideoProviderCard({ done }: { done: boolean }) {
     </SectionShell>
   );
 }
+
