@@ -44,6 +44,23 @@ export type TutorLesson = {
   materialsCount: number;
   notes: string;
   status: LessonStatus;
+  // Customization & marketplace
+  thumbnailGradient?: string;       // tailwind gradient classes for the banner
+  bio?: string;                     // long-form description shown on listing
+  visibility?: "public" | "private" | "unlisted";
+  approvalRequired?: boolean;
+  waitlistEnabled?: boolean;
+  archived?: boolean;
+  whatsappLink?: string;
+  classroomLink?: string;
+  videoProvider?: "zoom" | "google-meet" | "itutor";
+  ownerId?: string;
+  totalSessionsRun?: number;
+  earningsTtd?: number;
+  avgAttendance?: number;           // 0-100
+  retention?: number;               // 0-100
+  rating?: number | null;           // 0-5
+  reviewCount?: number;
 };
 
 export type TutorSession = {
