@@ -1,25 +1,24 @@
 import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ComponentType } from "react";
 import {
-  LayoutDashboard, UserCircle, BookOpen, CalendarDays, DollarSign, Users,
-  Clock, Settings, Wrench, Bell, Search, LogOut, ChevronUp, PanelLeftClose, PanelLeftOpen,
-  Sparkles, Lock,
+  LayoutDashboard, BookOpen, CalendarDays, Users, Wallet, BarChart3,
+  Sparkles, Settings, Bell, Search, LogOut, ChevronUp, PanelLeftClose, PanelLeftOpen, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/landing/Logo";
-import { TutorStoreProvider, useTutor } from "@/lib/tutor-store";
+import { TutorStoreProvider, useTutor, PLACEHOLDER_NOTIFS } from "@/lib/tutor-store";
 
 type NavItem = { to: string; label: string; icon: ComponentType<{ className?: string }>; exact?: boolean; gated?: boolean };
 
 const nav: NavItem[] = [
   { to: "/tutor", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/tutor/profile", label: "Profile", icon: UserCircle },
   { to: "/tutor/lessons", label: "Lessons", icon: BookOpen, gated: true },
   { to: "/tutor/sessions", label: "Sessions", icon: CalendarDays },
-  { to: "/tutor/students", label: "Students", icon: Users },
-  { to: "/tutor/availability", label: "Availability", icon: Clock },
-  { to: "/tutor/earnings", label: "Earnings", icon: DollarSign },
-  { to: "/tutor/tools", label: "Tools", icon: Wrench },
+  { to: "/tutor/students", label: "My Students", icon: Users },
+  { to: "/tutor/wallet", label: "My Wallet", icon: Wallet },
+  { to: "/tutor/analytics", label: "Analytics", icon: BarChart3, gated: true },
+  { to: "/tutor/tools", label: "iTutor AI", icon: Sparkles },
+  { to: "/tutor/settings", label: "Settings", icon: Settings },
 ];
 
 const COLLAPSE_KEY = "itutor.tutorSidebar.collapsed";
@@ -45,10 +44,7 @@ function ListingBanner() {
             </span>
           </div>
         </div>
-        <Link
-          to="/tutor/get-listed"
-          className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-ink text-white text-sm font-semibold hover:bg-ink/90 shrink-0"
-        >
+        <Link to="/tutor/get-listed" className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-ink text-white text-sm font-semibold hover:bg-ink/90 shrink-0">
           Complete profile
         </Link>
       </div>
@@ -95,12 +91,10 @@ function ShellInner() {
   const { completion } = useTutor();
   const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState("");
+  const unreadNotifs = PLACEHOLDER_NOTIFS.filter((n) => n.unread).length;
 
   useEffect(() => {
-    try {
-      const v = localStorage.getItem(COLLAPSE_KEY);
-      if (v) setCollapsed(v === "1");
-    } catch {}
+    try { const v = localStorage.getItem(COLLAPSE_KEY); if (v) setCollapsed(v === "1"); } catch {}
   }, []);
   useEffect(() => {
     try { localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0"); } catch {}
@@ -108,14 +102,9 @@ function ShellInner() {
 
   return (
     <div className="min-h-screen bg-mint flex">
-      {/* Desktop sidebar */}
       <aside className={cn("dark hidden lg:flex shrink-0 flex-col border-r border-border bg-ink text-foreground transition-all duration-200 sticky top-0 h-screen", collapsed ? "w-16" : "w-60")}>
         <div className={cn("px-3 py-4 border-b border-white/10 flex items-center gap-2", collapsed && "justify-center")}>
-          {!collapsed ? (
-            <Link to="/" className="flex-1"><Logo size={24} /></Link>
-          ) : (
-            <Link to="/" className="size-8 grid place-items-center rounded-lg bg-brand text-white font-bold text-sm">i</Link>
-          )}
+          {!collapsed ? <Link to="/" className="flex-1"><Logo size={24} /></Link> : <Link to="/" className="size-8 grid place-items-center rounded-lg bg-brand text-white font-bold text-sm">i</Link>}
           <button onClick={() => setCollapsed((c) => !c)} className="size-8 grid place-items-center rounded-lg hover:bg-white/10 text-white/60">
             {collapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
           </button>
@@ -128,24 +117,16 @@ function ShellInner() {
               const Icon = item.icon;
               const locked = item.gated && !completion.listed;
               return (
-                <Link
-                  key={item.to}
-                  to={item.to}
+                <Link key={item.to} to={item.to}
                   title={collapsed ? item.label : (locked ? "Available once your profile is complete." : undefined)}
                   className={cn(
                     "flex items-center rounded-lg text-sm font-medium transition-colors",
                     collapsed ? "justify-center p-2" : "gap-3 px-3 py-2",
                     active ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white",
                     locked && "opacity-60",
-                  )}
-                >
+                  )}>
                   <Icon className="size-4 shrink-0" />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1">{item.label}</span>
-                      {locked && <Lock className="size-3 text-white/40" />}
-                    </>
-                  )}
+                  {!collapsed && (<><span className="flex-1">{item.label}</span>{locked && <Lock className="size-3 text-white/40" />}</>)}
                 </Link>
               );
             })}
@@ -174,19 +155,16 @@ function ShellInner() {
             <form onSubmit={(e) => { e.preventDefault(); navigate({ to: "/tutor/students" }); }} className="flex-1 max-w-md">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                <input value={query} onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search students, lessons, sessions…"
-                  className="w-full pl-9 pr-4 py-2 rounded-lg bg-muted border border-transparent focus:bg-background focus:border-brand focus:outline-none text-sm"
-                />
+                  className="w-full pl-9 pr-4 py-2 rounded-lg bg-muted border border-transparent focus:bg-background focus:border-brand focus:outline-none text-sm" />
               </div>
             </form>
             <div className="flex items-center gap-1">
-              <button className="relative size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground" title="Notifications">
+              <Link to="/tutor/notifications" className="relative size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground" title="Notifications">
                 <Bell className="size-4" />
-                <span className="absolute top-2 right-2 size-2 rounded-full bg-brand" />
-              </button>
+                {unreadNotifs > 0 && <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-brand text-[10px] font-bold text-white grid place-items-center">{unreadNotifs}</span>}
+              </Link>
               <Link to="/tutor/settings" className="size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground" title="Settings">
                 <Settings className="size-4" />
               </Link>
@@ -222,9 +200,5 @@ function ShellInner() {
 }
 
 export function TutorShell() {
-  return (
-    <TutorStoreProvider>
-      <ShellInner />
-    </TutorStoreProvider>
-  );
+  return (<TutorStoreProvider><ShellInner /></TutorStoreProvider>);
 }

@@ -93,8 +93,8 @@ function TutorDashboard() {
           <div className="mt-4 space-y-2">
             <QuickAction to="/tutor/lessons" icon={Plus} label="Create a lesson" gated={!listed} />
             <QuickAction to="/tutor/availability" icon={Clock} label="Manage availability" />
-            <QuickAction to="/tutor/earnings" icon={Wallet} label="View earnings" />
-            <QuickAction to="/tutor/profile" icon={UserCircle} label="Edit profile" />
+            <QuickAction to="/tutor/wallet" icon={Wallet} label="My Wallet" />
+            <QuickAction to="/tutor/students" icon={UserCircle} label="My Students" />
           </div>
         </div>
       </section>
