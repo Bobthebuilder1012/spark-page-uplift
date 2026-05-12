@@ -4,7 +4,7 @@ import { useTutor, PLACEHOLDER_LESSONS, LESSON_KIND_META, type TutorLesson } fro
 import { Plus, Lock, Users, BookOpen, Search, Archive } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/tutor/lessons")({
+export const Route = createFileRoute("/tutor/lessons/")({
   head: () => ({ meta: [{ title: "Lessons — iTutor Tutor" }] }),
   component: LessonsPage,
 });
