@@ -136,8 +136,9 @@ function Settings() {
             <>
               <div className="rounded-2xl bg-mint p-4 flex items-center justify-between">
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Connected method</div>
-                  <div className="font-semibold text-ink mt-1">WiPay · ending ••42</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Connected bank account</div>
+                  <div className="font-semibold text-ink mt-1">Republic Bank · ending ••42</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Payouts deposit directly into this account.</div>
                 </div>
                 <button className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">Manage</button>
               </div>
