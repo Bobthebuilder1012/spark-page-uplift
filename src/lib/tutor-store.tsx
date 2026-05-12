@@ -145,6 +145,7 @@ const DEFAULT_PROFILE: TutorProfile = {
   subjects: [],
   availability: [],
   hourlyRateTtd: null,
+  videoProvider: null,
 };
 
 // -------------------- Placeholder data --------------------
