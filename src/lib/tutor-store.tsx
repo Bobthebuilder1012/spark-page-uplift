@@ -15,6 +15,7 @@ export type TutorProfile = {
   subjects: TutorSubject[];
   availability: AvailabilitySlot[];
   hourlyRateTtd: number | null;
+  videoProvider: "zoom" | "google-meet" | "itutor" | null;
 };
 
 // Lesson schema -- 4 kinds
