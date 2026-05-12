@@ -42,6 +42,7 @@ import { Route as StudentBookingsRouteImport } from './routes/student.bookings'
 import { Route as StudentTutorsIndexRouteImport } from './routes/student.tutors.index'
 import { Route as StudentLessonsIndexRouteImport } from './routes/student.lessons.index'
 import { Route as TutorStudentsIdRouteImport } from './routes/tutor.students.$id'
+import { Route as TutorLessonsIdRouteImport } from './routes/tutor.lessons.$id'
 import { Route as StudentTutorsIdRouteImport } from './routes/student.tutors.$id'
 import { Route as StudentLessonsIdRouteImport } from './routes/student.lessons.$id'
 
@@ -210,6 +211,11 @@ const TutorStudentsIdRoute = TutorStudentsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => TutorStudentsRoute,
 } as any)
+const TutorLessonsIdRoute = TutorLessonsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => TutorLessonsRoute,
+} as any)
 const StudentTutorsIdRoute = StudentTutorsIdRouteImport.update({
   id: '/tutors/$id',
   path: '/tutors/$id',
@@ -239,7 +245,7 @@ export interface FileRoutesByFullPath {
   '/tutor/earnings': typeof TutorEarningsRoute
   '/tutor/get-listed': typeof TutorGetListedRoute
   '/tutor/growth': typeof TutorGrowthRoute
-  '/tutor/lessons': typeof TutorLessonsRoute
+  '/tutor/lessons': typeof TutorLessonsRouteWithChildren
   '/tutor/messages': typeof TutorMessagesRoute
   '/tutor/notifications': typeof TutorNotificationsRoute
   '/tutor/profile': typeof TutorProfileRoute
@@ -254,6 +260,7 @@ export interface FileRoutesByFullPath {
   '/tutor/': typeof TutorIndexRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/tutor/lessons/$id': typeof TutorLessonsIdRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
   '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
@@ -274,7 +281,7 @@ export interface FileRoutesByTo {
   '/tutor/earnings': typeof TutorEarningsRoute
   '/tutor/get-listed': typeof TutorGetListedRoute
   '/tutor/growth': typeof TutorGrowthRoute
-  '/tutor/lessons': typeof TutorLessonsRoute
+  '/tutor/lessons': typeof TutorLessonsRouteWithChildren
   '/tutor/messages': typeof TutorMessagesRoute
   '/tutor/notifications': typeof TutorNotificationsRoute
   '/tutor/profile': typeof TutorProfileRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/tutor': typeof TutorIndexRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/tutor/lessons/$id': typeof TutorLessonsIdRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
   '/student/lessons': typeof StudentLessonsIndexRoute
   '/student/tutors': typeof StudentTutorsIndexRoute
@@ -312,7 +320,7 @@ export interface FileRoutesById {
   '/tutor/earnings': typeof TutorEarningsRoute
   '/tutor/get-listed': typeof TutorGetListedRoute
   '/tutor/growth': typeof TutorGrowthRoute
-  '/tutor/lessons': typeof TutorLessonsRoute
+  '/tutor/lessons': typeof TutorLessonsRouteWithChildren
   '/tutor/messages': typeof TutorMessagesRoute
   '/tutor/notifications': typeof TutorNotificationsRoute
   '/tutor/profile': typeof TutorProfileRoute
@@ -327,6 +335,7 @@ export interface FileRoutesById {
   '/tutor/': typeof TutorIndexRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/tutor/lessons/$id': typeof TutorLessonsIdRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
   '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
@@ -366,6 +375,7 @@ export interface FileRouteTypes {
     | '/tutor/'
     | '/student/lessons/$id'
     | '/student/tutors/$id'
+    | '/tutor/lessons/$id'
     | '/tutor/students/$id'
     | '/student/lessons/'
     | '/student/tutors/'
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
     | '/tutor'
     | '/student/lessons/$id'
     | '/student/tutors/$id'
+    | '/tutor/lessons/$id'
     | '/tutor/students/$id'
     | '/student/lessons'
     | '/student/tutors'
@@ -438,6 +449,7 @@ export interface FileRouteTypes {
     | '/tutor/'
     | '/student/lessons/$id'
     | '/student/tutors/$id'
+    | '/tutor/lessons/$id'
     | '/tutor/students/$id'
     | '/student/lessons/'
     | '/student/tutors/'
@@ -684,6 +696,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TutorStudentsIdRouteImport
       parentRoute: typeof TutorStudentsRoute
     }
+    '/tutor/lessons/$id': {
+      id: '/tutor/lessons/$id'
+      path: '/$id'
+      fullPath: '/tutor/lessons/$id'
+      preLoaderRoute: typeof TutorLessonsIdRouteImport
+      parentRoute: typeof TutorLessonsRoute
+    }
     '/student/tutors/$id': {
       id: '/student/tutors/$id'
       path: '/tutors/$id'
@@ -732,6 +751,18 @@ const StudentRouteChildren: StudentRouteChildren = {
 const StudentRouteWithChildren =
   StudentRoute._addFileChildren(StudentRouteChildren)
 
+interface TutorLessonsRouteChildren {
+  TutorLessonsIdRoute: typeof TutorLessonsIdRoute
+}
+
+const TutorLessonsRouteChildren: TutorLessonsRouteChildren = {
+  TutorLessonsIdRoute: TutorLessonsIdRoute,
+}
+
+const TutorLessonsRouteWithChildren = TutorLessonsRoute._addFileChildren(
+  TutorLessonsRouteChildren,
+)
+
 interface TutorStudentsRouteChildren {
   TutorStudentsIdRoute: typeof TutorStudentsIdRoute
 }
@@ -751,7 +782,7 @@ interface TutorRouteChildren {
   TutorEarningsRoute: typeof TutorEarningsRoute
   TutorGetListedRoute: typeof TutorGetListedRoute
   TutorGrowthRoute: typeof TutorGrowthRoute
-  TutorLessonsRoute: typeof TutorLessonsRoute
+  TutorLessonsRoute: typeof TutorLessonsRouteWithChildren
   TutorMessagesRoute: typeof TutorMessagesRoute
   TutorNotificationsRoute: typeof TutorNotificationsRoute
   TutorProfileRoute: typeof TutorProfileRoute
@@ -772,7 +803,7 @@ const TutorRouteChildren: TutorRouteChildren = {
   TutorEarningsRoute: TutorEarningsRoute,
   TutorGetListedRoute: TutorGetListedRoute,
   TutorGrowthRoute: TutorGrowthRoute,
-  TutorLessonsRoute: TutorLessonsRoute,
+  TutorLessonsRoute: TutorLessonsRouteWithChildren,
   TutorMessagesRoute: TutorMessagesRoute,
   TutorNotificationsRoute: TutorNotificationsRoute,
   TutorProfileRoute: TutorProfileRoute,
