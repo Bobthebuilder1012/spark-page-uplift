@@ -123,9 +123,9 @@ function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-ink text-sm">Two-factor authentication</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">Add an extra layer of security</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Add an extra layer of security to your account.</div>
                   </div>
-                  <button className="px-4 py-2 rounded-xl bg-ink text-white text-sm font-semibold hover:bg-forest">Enable</button>
+                  <span className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-peach text-ink">Coming soon</span>
                 </div>
               </div>
               <SaveBar label="Update password" />
