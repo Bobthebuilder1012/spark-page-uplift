@@ -44,6 +44,23 @@ export type TutorLesson = {
   materialsCount: number;
   notes: string;
   status: LessonStatus;
+  // Customization & marketplace
+  thumbnailGradient?: string;       // tailwind gradient classes for the banner
+  bio?: string;                     // long-form description shown on listing
+  visibility?: "public" | "private" | "unlisted";
+  approvalRequired?: boolean;
+  waitlistEnabled?: boolean;
+  archived?: boolean;
+  whatsappLink?: string;
+  classroomLink?: string;
+  videoProvider?: "zoom" | "google-meet" | "itutor";
+  ownerId?: string;
+  totalSessionsRun?: number;
+  earningsTtd?: number;
+  avgAttendance?: number;           // 0-100
+  retention?: number;               // 0-100
+  rating?: number | null;           // 0-5
+  reviewCount?: number;
 };
 
 export type TutorSession = {
@@ -193,6 +210,7 @@ export const PLACEHOLDER_LESSONS: TutorLesson[] = [
   {
     id: "l1", title: "CSEC Maths Crash Course", kind: "group-recurring", subject: "Mathematics", level: "CSEC",
     description: "6-week intensive review covering all 9 topics on the CSEC Maths syllabus.",
+    bio: "A 6-week sprint built around past-paper drills, weekly diagnostics and live problem-solving. Students leave knowing exactly which topics to defend and which to attack on exam day.",
     startDate: iso(48), recurrenceRule: "Weekly · Sat 10:00 AM AST", durationMin: 90,
     pricingMode: "per-session", rateTtd: 120, capacity: 12,
     enrollments: [
@@ -201,10 +219,15 @@ export const PLACEHOLDER_LESSONS: TutorLesson[] = [
       { studentId: "u5", name: "Renée Phillip", paymentStatus: "pending" },
     ],
     materialsCount: 6, notes: "", status: "published",
+    thumbnailGradient: "from-orange-500 to-amber-400",
+    visibility: "public", approvalRequired: false, waitlistEnabled: true, archived: false,
+    whatsappLink: "", classroomLink: "", videoProvider: "zoom",
+    totalSessionsRun: 12, earningsTtd: 1440, avgAttendance: 92, retention: 85, rating: 4.8, reviewCount: 9,
   },
   {
     id: "l2", title: "CAPE Pure Maths · Unit 1", kind: "group-recurring", subject: "Pure Mathematics", level: "CAPE",
     description: "Unit 1 syllabus deep-dive. Past paper drills every other week.",
+    bio: "Full Unit 1 coverage with weekly past-paper sets. Targeted at students aiming for Grade I.",
     startDate: iso(72), recurrenceRule: "Weekly · Tue 5:00 PM AST", durationMin: 120,
     pricingMode: "per-block", rateTtd: 180, capacity: 8,
     enrollments: [
@@ -212,6 +235,10 @@ export const PLACEHOLDER_LESSONS: TutorLesson[] = [
       { studentId: "u3", name: "Keshawn Boodoo", paymentStatus: "paid" },
     ],
     materialsCount: 9, notes: "", status: "published",
+    thumbnailGradient: "from-fuchsia-500 to-purple-500",
+    visibility: "public", approvalRequired: true, waitlistEnabled: false, archived: false,
+    whatsappLink: "", classroomLink: "", videoProvider: "google-meet",
+    totalSessionsRun: 18, earningsTtd: 3240, avgAttendance: 88, retention: 91, rating: 4.9, reviewCount: 14,
   },
   {
     id: "l3", title: "Physics 1:1 · Devon", kind: "1on1-recurring", subject: "Physics", level: "CSEC",
@@ -220,6 +247,10 @@ export const PLACEHOLDER_LESSONS: TutorLesson[] = [
     pricingMode: "per-session", rateTtd: 200, capacity: 1,
     enrollments: [{ studentId: "u2", name: "Devon Charles", paymentStatus: "pending" }],
     materialsCount: 3, notes: "", status: "published",
+    thumbnailGradient: "from-sky-500 to-cyan-400",
+    visibility: "private", approvalRequired: true, waitlistEnabled: false, archived: false,
+    videoProvider: "itutor",
+    totalSessionsRun: 7, earningsTtd: 1190, avgAttendance: 100, retention: 100, rating: 5, reviewCount: 2,
   },
   {
     id: "l4", title: "SBA Trial Run · Group", kind: "group-oneoff", subject: "Mathematics", level: "Form 5",
@@ -228,6 +259,10 @@ export const PLACEHOLDER_LESSONS: TutorLesson[] = [
     pricingMode: "per-student", rateTtd: 90, capacity: 10,
     enrollments: [{ studentId: "u1", name: "Aliyah Mohammed", paymentStatus: "paid" }],
     materialsCount: 2, notes: "", status: "published",
+    thumbnailGradient: "from-emerald-500 to-teal-400",
+    visibility: "public", approvalRequired: false, waitlistEnabled: false, archived: false,
+    videoProvider: "zoom",
+    totalSessionsRun: 0, earningsTtd: 90, avgAttendance: 0, retention: 0, rating: null, reviewCount: 0,
   },
   {
     id: "l5", title: "Diagnostic Session · Renée", kind: "1on1-oneoff", subject: "English A", level: "CSEC",
@@ -236,6 +271,19 @@ export const PLACEHOLDER_LESSONS: TutorLesson[] = [
     pricingMode: "per-session", rateTtd: 180, capacity: 1,
     enrollments: [{ studentId: "u5", name: "Renée Phillip", paymentStatus: "paid" }],
     materialsCount: 1, notes: "Recommend enrolling in recurring CSEC English starting next month.", status: "completed",
+    thumbnailGradient: "from-rose-500 to-pink-400",
+    visibility: "private", archived: false, videoProvider: "google-meet",
+    totalSessionsRun: 1, earningsTtd: 153, avgAttendance: 100, retention: 0, rating: 5, reviewCount: 1,
+  },
+  {
+    id: "l6", title: "POA Bootcamp 2024 (Archived)", kind: "group-recurring", subject: "Principles of Accounts", level: "CSEC",
+    description: "Last year's CSEC POA cohort.",
+    startDate: iso(-24*180), recurrenceRule: "Weekly · Thu 6:00 PM AST", durationMin: 90,
+    pricingMode: "per-session", rateTtd: 100, capacity: 15,
+    enrollments: [], materialsCount: 22, notes: "", status: "completed",
+    thumbnailGradient: "from-slate-500 to-zinc-500",
+    visibility: "unlisted", archived: true, videoProvider: "zoom",
+    totalSessionsRun: 24, earningsTtd: 18600, avgAttendance: 84, retention: 72, rating: 4.7, reviewCount: 31,
   },
 ];
 

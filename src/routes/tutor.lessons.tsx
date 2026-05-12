@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useTutor, PLACEHOLDER_LESSONS, LESSON_KIND_META, type LessonKind, type LessonStatus, type TutorLesson } from "@/lib/tutor-store";
-import { Plus, Lock, Users, Repeat, Pencil, Trash2, X, Search, Calendar, FileText, DollarSign, ChevronRight } from "lucide-react";
+import { useTutor, PLACEHOLDER_LESSONS, LESSON_KIND_META, type TutorLesson } from "@/lib/tutor-store";
+import { Plus, Lock, Users, BookOpen, Search, Archive } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tutor/lessons")({
@@ -9,21 +9,21 @@ export const Route = createFileRoute("/tutor/lessons")({
   component: LessonsPage,
 });
 
-const KINDS: ("all" | LessonKind)[] = ["all", "1on1-oneoff", "1on1-recurring", "group-oneoff", "group-recurring"];
-const STATUSES: ("all" | LessonStatus)[] = ["all", "draft", "published", "full", "completed", "cancelled"];
-
 function LessonsPage() {
   const { completion } = useTutor();
-  const [kind, setKind] = useState<typeof KINDS[number]>("all");
-  const [status, setStatus] = useState<typeof STATUSES[number]>("all");
+  const [tab, setTab] = useState<"mine" | "archived">("mine");
   const [search, setSearch] = useState("");
-  const [open, setOpen] = useState<TutorLesson | null>(null);
 
-  const filtered = useMemo(() => PLACEHOLDER_LESSONS.filter((l) =>
-    (kind === "all" || l.kind === kind) &&
-    (status === "all" || l.status === status) &&
-    (search === "" || l.title.toLowerCase().includes(search.toLowerCase()) || l.subject.toLowerCase().includes(search.toLowerCase()))
-  ), [kind, status, search]);
+  const lessons = useMemo(() => PLACEHOLDER_LESSONS.filter((l) => {
+    const archMatch = tab === "archived" ? !!l.archived : !l.archived;
+    const sMatch = search === "" || l.title.toLowerCase().includes(search.toLowerCase()) || l.subject.toLowerCase().includes(search.toLowerCase());
+    return archMatch && sMatch;
+  }), [tab, search]);
+
+  const counts = {
+    mine: PLACEHOLDER_LESSONS.filter((l) => !l.archived).length,
+    archived: PLACEHOLDER_LESSONS.filter((l) => !!l.archived).length,
+  };
 
   if (!completion.listed) {
     return (
@@ -37,191 +37,91 @@ function LessonsPage() {
   }
 
   return (
-    <div className="max-w-7xl space-y-6">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="max-w-7xl space-y-8">
+      <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-ink">Lessons</h1>
-          <p className="text-sm text-muted-foreground mt-1">All lessons you offer · 1:1, group, one-off and recurring.</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-ink">Lesson Marketplace</h1>
+          <p className="text-sm text-muted-foreground mt-1">Create, manage, and discover lesson sessions</p>
         </div>
-        <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">
-          <Plus className="size-4" /> New lesson
+        <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90 shadow-sm">
+          <Plus className="size-4" /> Create a Class
         </button>
       </header>
 
-      {/* Type counts */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {(["1on1-oneoff", "1on1-recurring", "group-oneoff", "group-recurring"] as LessonKind[]).map((k) => {
-          const count = PLACEHOLDER_LESSONS.filter((l) => l.kind === k).length;
-          const m = LESSON_KIND_META[k];
-          return (
-            <button key={k} onClick={() => setKind(k)}
-              className={cn("text-left rounded-2xl border p-4 hover:border-brand transition", kind === k ? "border-brand bg-brand-soft/40" : "border-border bg-card")}>
-              <div className="flex items-center gap-2">
-                <span className={cn("size-2 rounded-full", m.dot)} />
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{m.label}</span>
-              </div>
-              <div className="mt-2 text-2xl font-bold text-ink tabular-nums">{count}</div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+      {/* Tabs */}
+      <div className="border-b border-border flex items-center gap-6">
+        {([["mine", "My Lessons", counts.mine], ["archived", "Archived", counts.archived]] as const).map(([k, label, c]) => (
+          <button key={k} onClick={() => setTab(k)} className={cn("relative pb-3 text-sm font-semibold flex items-center gap-2 transition", tab === k ? "text-brand-deep" : "text-muted-foreground hover:text-ink")}>
+            {label}
+            <span className={cn("text-[11px] px-1.5 py-0.5 rounded-full", tab === k ? "bg-brand-soft text-brand-deep" : "bg-muted text-muted-foreground")}>{c}</span>
+            {tab === k && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-brand" />}
+          </button>
+        ))}
+        <div className="ml-auto relative w-72 max-w-full hidden md:block pb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by title or subject"
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search lessons"
             className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
         </div>
-        <select value={kind} onChange={(e) => setKind(e.target.value as any)} className="px-3 py-2 rounded-lg border border-border bg-card text-sm">
-          <option value="all">All types</option>
-          {(["1on1-oneoff", "1on1-recurring", "group-oneoff", "group-recurring"] as LessonKind[]).map((k) => (<option key={k} value={k}>{LESSON_KIND_META[k].label}</option>))}
-        </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value as any)} className="px-3 py-2 rounded-lg border border-border bg-card text-sm">
-          {STATUSES.map((s) => (<option key={s} value={s}>{s === "all" ? "All statuses" : s.charAt(0).toUpperCase() + s.slice(1)}</option>))}
-        </select>
       </div>
 
-      {/* List */}
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="text-xs uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/40">
-            <tr>
-              <th className="text-left px-4 py-3 font-semibold">Lesson</th>
-              <th className="text-left px-4 py-3 font-semibold hidden md:table-cell">Type</th>
-              <th className="text-left px-4 py-3 font-semibold hidden md:table-cell">Schedule</th>
-              <th className="text-left px-4 py-3 font-semibold">Enrolment</th>
-              <th className="text-left px-4 py-3 font-semibold hidden lg:table-cell">Rate</th>
-              <th className="text-left px-4 py-3 font-semibold">Status</th>
-              <th className="text-right px-4 py-3 font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {filtered.map((l) => {
-              const m = LESSON_KIND_META[l.kind];
-              return (
-                <tr key={l.id} className="hover:bg-muted/40 cursor-pointer" onClick={() => setOpen(l)}>
-                  <td className="px-4 py-3">
-                    <div className="font-semibold text-ink">{l.title}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">{l.subject} · {l.level}</div>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className={cn("inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", m.chip)}>
-                      {l.kind.startsWith("group") ? <Users className="size-3" /> : null}
-                      {l.kind.includes("recurring") && <Repeat className="size-3" />}
-                      {m.short}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell text-muted-foreground text-xs">
-                    {l.recurrenceRule || new Date(l.startDate).toLocaleDateString(undefined, { month: "short", day: "numeric" })}<br/>
-                    <span className="text-[11px]">{l.durationMin} min</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1 text-ink"><Users className="size-3.5 text-muted-foreground" /> {l.enrollments.length} / {l.capacity}</span>
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell font-semibold text-ink">TTD {l.rateTtd}<span className="text-xs text-muted-foreground font-normal"> /{l.pricingMode === "per-student" ? "student" : l.pricingMode === "per-block" ? "block" : "session"}</span></td>
-                  <td className="px-4 py-3"><StatusChip status={l.status} /></td>
-                  <td className="px-4 py-3 text-right">
-                    <button className="size-8 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground inline-flex"><Pencil className="size-4" /></button>
-                    <button className="size-8 grid place-items-center rounded-lg hover:bg-coral-soft text-coral inline-flex"><Trash2 className="size-4" /></button>
-                  </td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground">No lessons match these filters.</td></tr>
-            )}
-          </tbody>
-        </table>
+      {/* Cards grid */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {lessons.map((l) => <LessonCard key={l.id} l={l} />)}
+        {lessons.length === 0 && (
+          <div className="col-span-full text-center py-20 text-sm text-muted-foreground">
+            <Archive className="size-10 mx-auto text-muted-foreground/50" />
+            <p className="mt-3">{tab === "archived" ? "No archived lessons." : "No lessons yet — create your first class."}</p>
+          </div>
+        )}
       </div>
-
-      {open && <LessonDetailDrawer lesson={open} onClose={() => setOpen(null)} />}
-      {/* TODO(cursor): wire CRUD + recurrence (RRULE) + materials uploads + per-student payment ops to backend. */}
+      {/* TODO(cursor): wire CRUD + recurrence + materials uploads + per-student payment ops to backend. */}
     </div>
   );
 }
 
-function StatusChip({ status }: { status: LessonStatus }) {
-  const cls: Record<LessonStatus, string> = {
-    draft: "bg-muted text-muted-foreground",
-    published: "bg-brand-soft text-brand-deep",
-    full: "bg-peach text-ink",
-    completed: "bg-sky text-ink",
-    cancelled: "bg-coral-soft text-coral",
-  };
-  return <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", cls[status])}>{status}</span>;
-}
-
-function LessonDetailDrawer({ lesson, onClose }: { lesson: TutorLesson; onClose: () => void }) {
-  const m = LESSON_KIND_META[lesson.kind];
+function LessonCard({ l }: { l: TutorLesson }) {
+  const m = LESSON_KIND_META[l.kind];
+  const next = new Date(l.startDate);
   return (
-    <div className="fixed inset-0 z-50 flex" onClick={onClose}>
-      <div className="flex-1 bg-ink/40 backdrop-blur-sm" />
-      <aside className="w-full max-w-xl bg-background h-full overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <header className="sticky top-0 bg-background border-b border-border px-6 py-4 flex items-start justify-between gap-3 z-10">
-          <div>
-            <span className={cn("inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", m.chip)}>{m.label}</span>
-            <h2 className="mt-2 text-xl font-bold text-ink">{lesson.title}</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">{lesson.subject} · {lesson.level}</p>
+    <Link to="/tutor/lessons/$id" params={{ id: l.id }}
+      className="group rounded-2xl bg-card border border-border overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all">
+      <div className={cn("h-32 bg-gradient-to-br grid place-items-center relative", l.thumbnailGradient ?? "from-brand to-emerald-400")}>
+        <BookOpen className="size-10 text-white/80" />
+        {l.visibility && (
+          <span className="absolute top-3 right-3 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-white/90 text-ink">{l.visibility}</span>
+        )}
+        {l.archived && <span className="absolute top-3 left-3 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-ink/80 text-white">Archived</span>}
+      </div>
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="font-bold text-ink truncate">{l.title}</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{l.subject} · {l.level}</p>
           </div>
-          <button onClick={onClose} className="size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
-        </header>
-
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-2 gap-3">
-            <Stat icon={Calendar} label="Schedule" value={lesson.recurrenceRule || new Date(lesson.startDate).toLocaleString()} />
-            <Stat icon={Users} label="Enrolment" value={`${lesson.enrollments.length} / ${lesson.capacity}`} />
-            <Stat icon={DollarSign} label="Pricing" value={`TTD ${lesson.rateTtd} · ${lesson.pricingMode}`} />
-            <Stat icon={FileText} label="Materials" value={`${lesson.materialsCount} files`} />
+          <span className={cn("shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", m.chip)}>{m.short}</span>
+        </div>
+        <div className="mt-4 grid grid-cols-3 divide-x divide-border rounded-xl border border-border overflow-hidden text-center">
+          <div className="py-2.5">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Members</div>
+            <div className="text-base font-bold text-ink tabular-nums">{l.enrollments.length}</div>
           </div>
-
-          <section>
-            <h3 className="text-sm font-semibold text-ink mb-2">Description</h3>
-            <p className="text-sm text-muted-foreground">{lesson.description}</p>
-          </section>
-
-          <section>
-            <h3 className="text-sm font-semibold text-ink mb-2">Enrolled students ({lesson.enrollments.length})</h3>
-            <ul className="rounded-xl border border-border divide-y divide-border">
-              {lesson.enrollments.length === 0 && <li className="p-4 text-sm text-muted-foreground text-center">No students yet.</li>}
-              {lesson.enrollments.map((e) => (
-                <li key={e.studentId} className="px-3 py-2.5 flex items-center gap-3">
-                  <div className="size-8 rounded-full bg-coral-soft text-coral grid place-items-center text-xs font-bold">{e.name.split(" ").map((n) => n[0]).join("")}</div>
-                  <Link to="/tutor/students/$id" params={{ id: e.studentId }} className="flex-1 text-sm font-semibold text-ink hover:underline">{e.name}</Link>
-                  <PaymentChip status={e.paymentStatus} />
-                  <ChevronRight className="size-4 text-muted-foreground" />
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section>
-            <h3 className="text-sm font-semibold text-ink mb-2">Lesson notes</h3>
-            <textarea defaultValue={lesson.notes} placeholder="Private notes for this lesson…"
-              className="w-full min-h-24 px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-          </section>
-
-          <div className="flex gap-2 pt-2">
-            <button className="flex-1 px-4 py-2.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">Save changes</button>
-            <button className="px-4 py-2.5 rounded-lg border border-border text-sm font-semibold hover:bg-muted">Duplicate</button>
-            <button className="px-4 py-2.5 rounded-lg text-coral border border-coral-soft hover:bg-coral-soft text-sm font-semibold">Cancel lesson</button>
+          <div className="py-2.5">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Sessions</div>
+            <div className="text-base font-bold text-ink tabular-nums">{l.totalSessionsRun ?? 0}</div>
+          </div>
+          <div className="py-2.5">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Next</div>
+            <div className="text-base font-bold text-purple-600">{next > new Date() ? next.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}</div>
           </div>
         </div>
-      </aside>
-    </div>
+        <div className="mt-3 rounded-xl bg-brand-soft/50 px-3 py-2 flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-wider text-brand-deep font-bold">Earnings</span>
+          <span className="text-sm font-bold text-brand-deep">TTD {(l.earningsTtd ?? 0).toLocaleString()}</span>
+        </div>
+        <div className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <Users className="size-3" /> {l.enrollments.length}/{l.capacity} enrolled · {l.pricingMode === "per-student" ? `TTD ${l.rateTtd}/student` : `TTD ${l.rateTtd}/${l.pricingMode === "per-block" ? "block" : "session"}`}
+        </div>
+      </div>
+    </Link>
   );
-}
-
-function Stat({ icon: Icon, label, value }: any) {
-  return (
-    <div className="rounded-xl border border-border p-3">
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Icon className="size-3.5" /> {label}</div>
-      <div className="mt-1 text-sm font-semibold text-ink">{value}</div>
-    </div>
-  );
-}
-
-function PaymentChip({ status }: { status: "paid" | "pending" | "overdue" }) {
-  const cls = { paid: "bg-brand-soft text-brand-deep", pending: "bg-peach text-ink", overdue: "bg-coral-soft text-coral" }[status];
-  return <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", cls)}>{status}</span>;
 }
