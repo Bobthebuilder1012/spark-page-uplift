@@ -21,11 +21,16 @@ import { Route as TutorToolsRouteImport } from './routes/tutor.tools'
 import { Route as TutorStudentsRouteImport } from './routes/tutor.students'
 import { Route as TutorSettingsRouteImport } from './routes/tutor.settings'
 import { Route as TutorSessionsRouteImport } from './routes/tutor.sessions'
+import { Route as TutorReviewsRouteImport } from './routes/tutor.reviews'
+import { Route as TutorResourcesRouteImport } from './routes/tutor.resources'
 import { Route as TutorProfileRouteImport } from './routes/tutor.profile'
 import { Route as TutorNotificationsRouteImport } from './routes/tutor.notifications'
+import { Route as TutorMessagesRouteImport } from './routes/tutor.messages'
 import { Route as TutorLessonsRouteImport } from './routes/tutor.lessons'
+import { Route as TutorGrowthRouteImport } from './routes/tutor.growth'
 import { Route as TutorGetListedRouteImport } from './routes/tutor.get-listed'
 import { Route as TutorEarningsRouteImport } from './routes/tutor.earnings'
+import { Route as TutorCalendarRouteImport } from './routes/tutor.calendar'
 import { Route as TutorAvailabilityRouteImport } from './routes/tutor.availability'
 import { Route as TutorAnalyticsRouteImport } from './routes/tutor.analytics'
 import { Route as StudentToolsRouteImport } from './routes/student.tools'
@@ -100,6 +105,16 @@ const TutorSessionsRoute = TutorSessionsRouteImport.update({
   path: '/sessions',
   getParentRoute: () => TutorRoute,
 } as any)
+const TutorReviewsRoute = TutorReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => TutorRoute,
+} as any)
+const TutorResourcesRoute = TutorResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => TutorRoute,
+} as any)
 const TutorProfileRoute = TutorProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -110,9 +125,19 @@ const TutorNotificationsRoute = TutorNotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => TutorRoute,
 } as any)
+const TutorMessagesRoute = TutorMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => TutorRoute,
+} as any)
 const TutorLessonsRoute = TutorLessonsRouteImport.update({
   id: '/lessons',
   path: '/lessons',
+  getParentRoute: () => TutorRoute,
+} as any)
+const TutorGrowthRoute = TutorGrowthRouteImport.update({
+  id: '/growth',
+  path: '/growth',
   getParentRoute: () => TutorRoute,
 } as any)
 const TutorGetListedRoute = TutorGetListedRouteImport.update({
@@ -123,6 +148,11 @@ const TutorGetListedRoute = TutorGetListedRouteImport.update({
 const TutorEarningsRoute = TutorEarningsRouteImport.update({
   id: '/earnings',
   path: '/earnings',
+  getParentRoute: () => TutorRoute,
+} as any)
+const TutorCalendarRoute = TutorCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => TutorRoute,
 } as any)
 const TutorAvailabilityRoute = TutorAvailabilityRouteImport.update({
@@ -205,11 +235,16 @@ export interface FileRoutesByFullPath {
   '/student/tools': typeof StudentToolsRoute
   '/tutor/analytics': typeof TutorAnalyticsRoute
   '/tutor/availability': typeof TutorAvailabilityRoute
+  '/tutor/calendar': typeof TutorCalendarRoute
   '/tutor/earnings': typeof TutorEarningsRoute
   '/tutor/get-listed': typeof TutorGetListedRoute
+  '/tutor/growth': typeof TutorGrowthRoute
   '/tutor/lessons': typeof TutorLessonsRoute
+  '/tutor/messages': typeof TutorMessagesRoute
   '/tutor/notifications': typeof TutorNotificationsRoute
   '/tutor/profile': typeof TutorProfileRoute
+  '/tutor/resources': typeof TutorResourcesRoute
+  '/tutor/reviews': typeof TutorReviewsRoute
   '/tutor/sessions': typeof TutorSessionsRoute
   '/tutor/settings': typeof TutorSettingsRoute
   '/tutor/students': typeof TutorStudentsRouteWithChildren
@@ -235,11 +270,16 @@ export interface FileRoutesByTo {
   '/student/tools': typeof StudentToolsRoute
   '/tutor/analytics': typeof TutorAnalyticsRoute
   '/tutor/availability': typeof TutorAvailabilityRoute
+  '/tutor/calendar': typeof TutorCalendarRoute
   '/tutor/earnings': typeof TutorEarningsRoute
   '/tutor/get-listed': typeof TutorGetListedRoute
+  '/tutor/growth': typeof TutorGrowthRoute
   '/tutor/lessons': typeof TutorLessonsRoute
+  '/tutor/messages': typeof TutorMessagesRoute
   '/tutor/notifications': typeof TutorNotificationsRoute
   '/tutor/profile': typeof TutorProfileRoute
+  '/tutor/resources': typeof TutorResourcesRoute
+  '/tutor/reviews': typeof TutorReviewsRoute
   '/tutor/sessions': typeof TutorSessionsRoute
   '/tutor/settings': typeof TutorSettingsRoute
   '/tutor/students': typeof TutorStudentsRouteWithChildren
@@ -268,11 +308,16 @@ export interface FileRoutesById {
   '/student/tools': typeof StudentToolsRoute
   '/tutor/analytics': typeof TutorAnalyticsRoute
   '/tutor/availability': typeof TutorAvailabilityRoute
+  '/tutor/calendar': typeof TutorCalendarRoute
   '/tutor/earnings': typeof TutorEarningsRoute
   '/tutor/get-listed': typeof TutorGetListedRoute
+  '/tutor/growth': typeof TutorGrowthRoute
   '/tutor/lessons': typeof TutorLessonsRoute
+  '/tutor/messages': typeof TutorMessagesRoute
   '/tutor/notifications': typeof TutorNotificationsRoute
   '/tutor/profile': typeof TutorProfileRoute
+  '/tutor/resources': typeof TutorResourcesRoute
+  '/tutor/reviews': typeof TutorReviewsRoute
   '/tutor/sessions': typeof TutorSessionsRoute
   '/tutor/settings': typeof TutorSettingsRoute
   '/tutor/students': typeof TutorStudentsRouteWithChildren
@@ -302,11 +347,16 @@ export interface FileRouteTypes {
     | '/student/tools'
     | '/tutor/analytics'
     | '/tutor/availability'
+    | '/tutor/calendar'
     | '/tutor/earnings'
     | '/tutor/get-listed'
+    | '/tutor/growth'
     | '/tutor/lessons'
+    | '/tutor/messages'
     | '/tutor/notifications'
     | '/tutor/profile'
+    | '/tutor/resources'
+    | '/tutor/reviews'
     | '/tutor/sessions'
     | '/tutor/settings'
     | '/tutor/students'
@@ -332,11 +382,16 @@ export interface FileRouteTypes {
     | '/student/tools'
     | '/tutor/analytics'
     | '/tutor/availability'
+    | '/tutor/calendar'
     | '/tutor/earnings'
     | '/tutor/get-listed'
+    | '/tutor/growth'
     | '/tutor/lessons'
+    | '/tutor/messages'
     | '/tutor/notifications'
     | '/tutor/profile'
+    | '/tutor/resources'
+    | '/tutor/reviews'
     | '/tutor/sessions'
     | '/tutor/settings'
     | '/tutor/students'
@@ -364,11 +419,16 @@ export interface FileRouteTypes {
     | '/student/tools'
     | '/tutor/analytics'
     | '/tutor/availability'
+    | '/tutor/calendar'
     | '/tutor/earnings'
     | '/tutor/get-listed'
+    | '/tutor/growth'
     | '/tutor/lessons'
+    | '/tutor/messages'
     | '/tutor/notifications'
     | '/tutor/profile'
+    | '/tutor/resources'
+    | '/tutor/reviews'
     | '/tutor/sessions'
     | '/tutor/settings'
     | '/tutor/students'
@@ -477,6 +537,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TutorSessionsRouteImport
       parentRoute: typeof TutorRoute
     }
+    '/tutor/reviews': {
+      id: '/tutor/reviews'
+      path: '/reviews'
+      fullPath: '/tutor/reviews'
+      preLoaderRoute: typeof TutorReviewsRouteImport
+      parentRoute: typeof TutorRoute
+    }
+    '/tutor/resources': {
+      id: '/tutor/resources'
+      path: '/resources'
+      fullPath: '/tutor/resources'
+      preLoaderRoute: typeof TutorResourcesRouteImport
+      parentRoute: typeof TutorRoute
+    }
     '/tutor/profile': {
       id: '/tutor/profile'
       path: '/profile'
@@ -491,11 +565,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TutorNotificationsRouteImport
       parentRoute: typeof TutorRoute
     }
+    '/tutor/messages': {
+      id: '/tutor/messages'
+      path: '/messages'
+      fullPath: '/tutor/messages'
+      preLoaderRoute: typeof TutorMessagesRouteImport
+      parentRoute: typeof TutorRoute
+    }
     '/tutor/lessons': {
       id: '/tutor/lessons'
       path: '/lessons'
       fullPath: '/tutor/lessons'
       preLoaderRoute: typeof TutorLessonsRouteImport
+      parentRoute: typeof TutorRoute
+    }
+    '/tutor/growth': {
+      id: '/tutor/growth'
+      path: '/growth'
+      fullPath: '/tutor/growth'
+      preLoaderRoute: typeof TutorGrowthRouteImport
       parentRoute: typeof TutorRoute
     }
     '/tutor/get-listed': {
@@ -510,6 +598,13 @@ declare module '@tanstack/react-router' {
       path: '/earnings'
       fullPath: '/tutor/earnings'
       preLoaderRoute: typeof TutorEarningsRouteImport
+      parentRoute: typeof TutorRoute
+    }
+    '/tutor/calendar': {
+      id: '/tutor/calendar'
+      path: '/calendar'
+      fullPath: '/tutor/calendar'
+      preLoaderRoute: typeof TutorCalendarRouteImport
       parentRoute: typeof TutorRoute
     }
     '/tutor/availability': {
@@ -652,11 +747,16 @@ const TutorStudentsRouteWithChildren = TutorStudentsRoute._addFileChildren(
 interface TutorRouteChildren {
   TutorAnalyticsRoute: typeof TutorAnalyticsRoute
   TutorAvailabilityRoute: typeof TutorAvailabilityRoute
+  TutorCalendarRoute: typeof TutorCalendarRoute
   TutorEarningsRoute: typeof TutorEarningsRoute
   TutorGetListedRoute: typeof TutorGetListedRoute
+  TutorGrowthRoute: typeof TutorGrowthRoute
   TutorLessonsRoute: typeof TutorLessonsRoute
+  TutorMessagesRoute: typeof TutorMessagesRoute
   TutorNotificationsRoute: typeof TutorNotificationsRoute
   TutorProfileRoute: typeof TutorProfileRoute
+  TutorResourcesRoute: typeof TutorResourcesRoute
+  TutorReviewsRoute: typeof TutorReviewsRoute
   TutorSessionsRoute: typeof TutorSessionsRoute
   TutorSettingsRoute: typeof TutorSettingsRoute
   TutorStudentsRoute: typeof TutorStudentsRouteWithChildren
@@ -668,11 +768,16 @@ interface TutorRouteChildren {
 const TutorRouteChildren: TutorRouteChildren = {
   TutorAnalyticsRoute: TutorAnalyticsRoute,
   TutorAvailabilityRoute: TutorAvailabilityRoute,
+  TutorCalendarRoute: TutorCalendarRoute,
   TutorEarningsRoute: TutorEarningsRoute,
   TutorGetListedRoute: TutorGetListedRoute,
+  TutorGrowthRoute: TutorGrowthRoute,
   TutorLessonsRoute: TutorLessonsRoute,
+  TutorMessagesRoute: TutorMessagesRoute,
   TutorNotificationsRoute: TutorNotificationsRoute,
   TutorProfileRoute: TutorProfileRoute,
+  TutorResourcesRoute: TutorResourcesRoute,
+  TutorReviewsRoute: TutorReviewsRoute,
   TutorSessionsRoute: TutorSessionsRoute,
   TutorSettingsRoute: TutorSettingsRoute,
   TutorStudentsRoute: TutorStudentsRouteWithChildren,
