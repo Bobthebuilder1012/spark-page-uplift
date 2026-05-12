@@ -13,7 +13,6 @@ type NavItem = { to: string; label: string; icon: ComponentType<{ className?: st
 
 const nav: NavItem[] = [
   { to: "/tutor", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/tutor/calendar", label: "Calendar", icon: CalendarIcon, gated: true },
   { to: "/tutor/lessons", label: "Lessons", icon: BookOpen, gated: true },
   { to: "/tutor/sessions", label: "Sessions", icon: CalendarDays },
   { to: "/tutor/students", label: "My Students", icon: Users },
@@ -24,7 +23,6 @@ const nav: NavItem[] = [
   { to: "/tutor/reviews", label: "Reviews", icon: Star },
   { to: "/tutor/growth", label: "Growth", icon: Rocket, gated: true },
   { to: "/tutor/tools", label: "iTutor AI", icon: Sparkles },
-  { to: "/tutor/settings", label: "Settings", icon: Settings },
 ];
 
 const COLLAPSE_KEY = "itutor.tutorSidebar.collapsed";
