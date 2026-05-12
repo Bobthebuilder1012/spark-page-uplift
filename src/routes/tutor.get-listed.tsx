@@ -46,6 +46,7 @@ function GetListedPage() {
       <SubjectsCard done={completion.subjects} />
       <AvailabilityCard done={completion.availability} />
       <RateCard done={completion.rate} />
+      <VideoProviderCard done={completion.videoProvider} />
 
       {completion.listed && (
         <div className="rounded-2xl border-2 border-brand bg-brand/5 p-6 text-center">
