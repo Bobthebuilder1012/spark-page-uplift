@@ -165,6 +165,9 @@ function ShellInner() {
               </div>
             </form>
             <div className="flex items-center gap-1">
+              <Link to="/tutor/calendar" className="size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground" title="Calendar">
+                <CalendarIcon className="size-4" />
+              </Link>
               <Link to="/tutor/notifications" className="relative size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground" title="Notifications">
                 <Bell className="size-4" />
                 {unreadNotifs > 0 && <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-brand text-[10px] font-bold text-white grid place-items-center">{unreadNotifs}</span>}
