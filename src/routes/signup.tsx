@@ -567,12 +567,52 @@ function SignupPage() {
                         </div>
                       )}
 
+                      <div className="rounded-2xl border border-border bg-white p-4">
+                        <Label className="text-sm font-semibold">
+                          Video lesson provider <span className="text-destructive">*</span>
+                        </Label>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Choose how you'll host live lessons. You can change this later in Settings.
+                        </p>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                          {[
+                            { v: "zoom", l: "Zoom", d: "Connect your Zoom account" },
+                            { v: "google_meet", l: "Google Meet", d: "Sign in with Google" },
+                            { v: "itutor", l: "iTutor video", d: "Built-in video room" },
+                          ].map((o) => {
+                            const active = videoProvider === o.v;
+                            return (
+                              <button
+                                key={o.v}
+                                type="button"
+                                onClick={() => setVideoProvider(o.v as typeof videoProvider)}
+                                className={cn(
+                                  "rounded-xl border-2 p-3 text-left transition",
+                                  active
+                                    ? "border-brand bg-brand/5"
+                                    : "border-border bg-white hover:border-brand/40",
+                                )}
+                              >
+                                <div className="text-sm font-semibold text-foreground">{o.l}</div>
+                                <div className="mt-0.5 text-xs text-muted-foreground">{o.d}</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {videoProvider && videoProvider !== "itutor" && (
+                          <button type="button" className="mt-3 w-full rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted">
+                            Connect {videoProvider === "zoom" ? "Zoom" : "Google Meet"} →
+                          </button>
+                        )}
+                      </div>
+
                       <Button
                         size="lg"
                         onClick={completeProfile}
                         disabled={
                           tLevels.length === 0 ||
-                          (tLevels.some((l) => l !== "sea") && tSubjects.length === 0)
+                          (tLevels.some((l) => l !== "sea") && tSubjects.length === 0) ||
+                          !videoProvider
                         }
                         className="w-full bg-gradient-to-r from-brand to-forest text-white hover:opacity-95"
                       >
