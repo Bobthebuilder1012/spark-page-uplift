@@ -81,6 +81,7 @@ function SignupPage() {
   const [tLevels, setTLevels] = useState<string[]>([]);
   const [tSubjects, setTSubjects] = useState<string[]>([]);
   const [tQuery, setTQuery] = useState("");
+  const [videoProvider, setVideoProvider] = useState<"" | "zoom" | "google_meet" | "itutor">("");
 
   // Sync hash with step
   useEffect(() => {
