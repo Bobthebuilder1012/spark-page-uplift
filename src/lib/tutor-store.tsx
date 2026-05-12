@@ -306,7 +306,7 @@ export const SUBJECT_OPTIONS = [
 
 type Ctx = {
   profile: TutorProfile;
-  setProfile: (p: TutorProfile) => void;
+  setProfile: React.Dispatch<React.SetStateAction<TutorProfile>>;
   patchProfile: (patch: Partial<TutorProfile>) => void;
   completion: {
     avatar: boolean; bio: boolean; subjects: boolean; availability: boolean; rate: boolean;
