@@ -78,12 +78,14 @@ function Settings() {
               <Select label="Default session length" options={["30 min", "45 min", "60 min", "90 min", "120 min"]} value="60 min" />
               <Select label="Booking window" options={["12 hours notice", "24 hours notice", "48 hours notice", "72 hours notice"]} value="24 hours notice" />
               <div>
-                <label className="text-sm font-medium text-ink mb-2 block">Teaching levels</label>
+                <label className="text-sm font-medium text-ink mb-2 block">Subjects teaching</label>
+                <p className="text-xs text-muted-foreground mb-2">The subjects you currently offer to students.</p>
                 <div className="flex flex-wrap gap-2">
-                  {["SEA", "Form 1-3", "CSEC", "Add. Maths", "CAPE Unit 1", "CAPE Unit 2"].map((s, i) => (
+                  {["CSEC Mathematics", "CSEC Physics", "CSEC Chemistry", "CAPE Pure Maths", "CAPE Physics Unit 1", "Add. Maths"].map((s, i) => (
                     <button key={s} className={cn("px-3 py-1.5 rounded-full text-sm font-medium border",
                       i < 3 ? "bg-brand-soft text-forest border-brand" : "bg-background text-muted-foreground border-border hover:border-ink/30")}>{s}</button>
                   ))}
+                  <button className="px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-border text-muted-foreground hover:border-brand hover:text-brand-deep">+ Add subject</button>
                 </div>
               </div>
               <SaveBar />
@@ -121,9 +123,9 @@ function Settings() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-ink text-sm">Two-factor authentication</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">Add an extra layer of security</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">Add an extra layer of security to your account.</div>
                   </div>
-                  <button className="px-4 py-2 rounded-xl bg-ink text-white text-sm font-semibold hover:bg-forest">Enable</button>
+                  <span className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-peach text-ink">Coming soon</span>
                 </div>
               </div>
               <SaveBar label="Update password" />
@@ -134,8 +136,9 @@ function Settings() {
             <>
               <div className="rounded-2xl bg-mint p-4 flex items-center justify-between">
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Connected method</div>
-                  <div className="font-semibold text-ink mt-1">WiPay · ending ••42</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Connected bank account</div>
+                  <div className="font-semibold text-ink mt-1">Republic Bank · ending ••42</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Payouts deposit directly into this account.</div>
                 </div>
                 <button className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">Manage</button>
               </div>

@@ -13,7 +13,6 @@ type NavItem = { to: string; label: string; icon: ComponentType<{ className?: st
 
 const nav: NavItem[] = [
   { to: "/tutor", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/tutor/calendar", label: "Calendar", icon: CalendarIcon, gated: true },
   { to: "/tutor/lessons", label: "Lessons", icon: BookOpen, gated: true },
   { to: "/tutor/sessions", label: "Sessions", icon: CalendarDays },
   { to: "/tutor/students", label: "My Students", icon: Users },
@@ -24,7 +23,6 @@ const nav: NavItem[] = [
   { to: "/tutor/reviews", label: "Reviews", icon: Star },
   { to: "/tutor/growth", label: "Growth", icon: Rocket, gated: true },
   { to: "/tutor/tools", label: "iTutor AI", icon: Sparkles },
-  { to: "/tutor/settings", label: "Settings", icon: Settings },
 ];
 
 const COLLAPSE_KEY = "itutor.tutorSidebar.collapsed";
@@ -167,6 +165,9 @@ function ShellInner() {
               </div>
             </form>
             <div className="flex items-center gap-1">
+              <Link to="/tutor/calendar" className="size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground" title="Calendar">
+                <CalendarIcon className="size-4" />
+              </Link>
               <Link to="/tutor/notifications" className="relative size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground" title="Notifications">
                 <Bell className="size-4" />
                 {unreadNotifs > 0 && <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-brand text-[10px] font-bold text-white grid place-items-center">{unreadNotifs}</span>}
