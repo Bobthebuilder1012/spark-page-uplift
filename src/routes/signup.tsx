@@ -158,6 +158,7 @@ function SignupPage() {
       if (tLevels.length === 0) return;
       const needsSubjects = tLevels.some((l) => l !== "sea");
       if (needsSubjects && tSubjects.length === 0) return;
+      if (!videoProvider) return;
       navigate({ to: "/student" });
       return;
     }
