@@ -45,6 +45,7 @@ function CreditMeter() {
   const used = 142;
   const total = 500;
   const pct = (used / total) * 100;
+  const [showTopup, setShowTopup] = useState(false);
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
       <div className="flex items-center gap-2">
@@ -57,9 +58,55 @@ function CreditMeter() {
       </div>
       <div className="mt-2 flex items-center justify-between text-xs">
         <span className="text-muted-foreground">Resets June 1</span>
-        <button className="font-semibold text-brand-deep hover:underline">Top up</button>
+        <button onClick={() => setShowTopup(true)} className="font-semibold text-brand-deep hover:underline">Top up</button>
       </div>
+      {showTopup && <TopupModal onClose={() => setShowTopup(false)} />}
       {/* TODO(cursor): wire to real usage/billing system. */}
+    </div>
+  );
+}
+
+function TopupModal({ onClose }: { onClose: () => void }) {
+  const [selected, setSelected] = useState("500");
+  const PACKS = [
+    { id: "250", credits: 250, price: 50, label: "Starter" },
+    { id: "500", credits: 500, price: 90, label: "Standard", badge: "Most popular" },
+    { id: "1500", credits: 1500, price: 240, label: "Pro" },
+    { id: "5000", credits: 5000, price: 700, label: "School" },
+  ];
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg rounded-2xl bg-background border border-border shadow-pop p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2"><Coins className="size-5 text-brand-deep" /><h2 className="text-lg font-bold text-ink">Top up credits</h2></div>
+            <p className="text-xs text-muted-foreground mt-1">Credits are used to grade papers and run AI tools. They don't expire.</p>
+          </div>
+          <button onClick={onClose} className="size-8 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          {PACKS.map((p) => {
+            const active = selected === p.id;
+            return (
+              <button key={p.id} onClick={() => setSelected(p.id)}
+                className={cn("relative text-left rounded-xl border-2 p-3 transition", active ? "border-brand bg-brand-soft/40" : "border-border bg-card hover:border-brand/40")}>
+                {p.badge && <span className="absolute -top-2 right-3 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand text-white">{p.badge}</span>}
+                <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{p.label}</div>
+                <div className="mt-1 font-bold text-ink text-xl tabular-nums">{p.credits.toLocaleString()} <span className="text-xs font-medium text-muted-foreground">credits</span></div>
+                <div className="mt-1 text-sm font-semibold text-brand-deep">TTD ${p.price}</div>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-5 flex items-center justify-between gap-3 pt-4 border-t border-border">
+          <div className="text-xs text-muted-foreground">Charged to your default payment method.</div>
+          <div className="flex gap-2">
+            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-semibold text-muted-foreground hover:bg-muted">Cancel</button>
+            <button className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand-deep">Confirm purchase</button>
+          </div>
+        </div>
+        {/* TODO(cursor): wire to billing/Stripe. */}
+      </div>
     </div>
   );
 }
