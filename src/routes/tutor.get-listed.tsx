@@ -276,3 +276,40 @@ function RateCard({ done }: { done: boolean }) {
     </SectionShell>
   );
 }
+
+function VideoProviderCard({ done }: { done: boolean }) {
+  const { profile, setProfile } = useTutor();
+  const options: { id: "zoom" | "google-meet" | "itutor"; label: string; hint: string }[] = [
+    { id: "zoom", label: "Zoom", hint: "Connect your Zoom account" },
+    { id: "google-meet", label: "Google Meet", hint: "Use your Google account" },
+    { id: "itutor", label: "iTutor video", hint: "Built-in, no setup needed" },
+  ];
+  return (
+    <SectionShell done={done} title="Video lesson provider" subtitle="Pick where your live lessons will happen. Required so students get the right join link.">
+      <div className="grid sm:grid-cols-3 gap-2">
+        {options.map((o) => {
+          const active = profile.videoProvider === o.id;
+          return (
+            <button
+              key={o.id}
+              onClick={() => setProfile((p) => ({ ...p, videoProvider: o.id }))}
+              className={cn(
+                "text-left rounded-xl border p-3 transition",
+                active ? "border-brand bg-brand/5 ring-2 ring-brand/30" : "border-border hover:border-brand/50",
+              )}
+            >
+              <div className="text-sm font-semibold text-ink">{o.label}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{o.hint}</div>
+              {active && o.id !== "itutor" && (
+                <span className="mt-2 inline-block text-[10px] font-bold uppercase tracking-wider text-brand-deep">
+                  {/* TODO(cursor): trigger OAuth connect flow */}
+                  Connect account →
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </SectionShell>
+  );
+}
