@@ -15,6 +15,7 @@ export type TutorProfile = {
   subjects: TutorSubject[];
   availability: AvailabilitySlot[];
   hourlyRateTtd: number | null;
+  videoProvider: "zoom" | "google-meet" | "itutor" | null;
 };
 
 // Lesson schema -- 4 kinds
@@ -144,6 +145,7 @@ const DEFAULT_PROFILE: TutorProfile = {
   subjects: [],
   availability: [],
   hourlyRateTtd: null,
+  videoProvider: null,
 };
 
 // -------------------- Placeholder data --------------------
@@ -357,7 +359,7 @@ type Ctx = {
   setProfile: React.Dispatch<React.SetStateAction<TutorProfile>>;
   patchProfile: (patch: Partial<TutorProfile>) => void;
   completion: {
-    avatar: boolean; bio: boolean; subjects: boolean; availability: boolean; rate: boolean;
+    avatar: boolean; bio: boolean; subjects: boolean; availability: boolean; rate: boolean; videoProvider: boolean;
     listed: boolean; completed: number; total: number;
   };
 };
@@ -384,9 +386,10 @@ export function TutorStoreProvider({ children }: { children: ReactNode }) {
       subjects: profile.subjects.length > 0,
       availability: profile.availability.length > 0,
       rate: !!profile.hourlyRateTtd && profile.hourlyRateTtd > 0,
+      videoProvider: !!profile.videoProvider,
     };
     const completed = Object.values(c).filter(Boolean).length;
-    const total = 5;
+    const total = 6;
     return { ...c, completed, total, listed: completed === total };
   }, [profile]);
 
