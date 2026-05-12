@@ -1,15 +1,15 @@
 import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from "react";
 
 // TODO(cursor): replace this entire mock store with real backend wiring.
-// `listed` is derived from completion of all 5 tertiary requirements.
 
 export type TutorSubject = { id: string; name: string; level: string };
-export type AvailabilitySlot = { day: number; hour: number }; // day 0=Sun..6=Sat, hour 0-23
+export type AvailabilitySlot = { day: number; hour: number };
 
 export type TutorProfile = {
   name: string;
   initials: string;
   email: string;
+  phone: string;
   avatarUrl: string | null;
   bio: string;
   subjects: TutorSubject[];
@@ -17,32 +17,102 @@ export type TutorProfile = {
   hourlyRateTtd: number | null;
 };
 
-export type TutorSession = {
-  id: string;
-  student: string;
-  subject: string;
-  date: string; // ISO
-  durationMin: number;
-  type: "1-on-1" | "Group";
-  status: "upcoming" | "past" | "pending";
+// Lesson schema -- 4 kinds
+export type LessonKind = "1on1-oneoff" | "1on1-recurring" | "group-oneoff" | "group-recurring";
+export type LessonStatus = "draft" | "published" | "full" | "completed" | "cancelled";
+
+export type EnrolledStudent = {
+  studentId: string;
+  name: string;
+  paymentStatus: "paid" | "pending" | "overdue";
 };
 
 export type TutorLesson = {
   id: string;
   title: string;
+  kind: LessonKind;
   subject: string;
-  level: string;
-  students: number;
-  capacity: number;
+  level: string;          // e.g. CSEC / CAPE / Form 5
+  description: string;
+  startDate: string;      // ISO
+  recurrenceRule?: string; // e.g. "Weekly · Mon 4pm"
+  durationMin: number;
+  pricingMode: "per-session" | "per-block" | "per-student";
   rateTtd: number;
-  recurring: boolean;
+  capacity: number;       // 1 for 1:1
+  enrollments: EnrolledStudent[];
+  materialsCount: number;
+  notes: string;
+  status: LessonStatus;
 };
 
-export type ActivityItem = {
+export type TutorSession = {
   id: string;
-  kind: "inquiry" | "review" | "payout" | "booking";
-  text: string;
-  at: string;
+  lessonId?: string;
+  student: string;
+  studentId?: string;
+  subject: string;
+  date: string;
+  durationMin: number;
+  type: "1-on-1" | "Group";
+  status: "upcoming" | "past" | "pending";
+  paymentStatus?: "paid" | "pending" | "overdue";
+  attendance?: "attended" | "no-show" | "cancelled";
+  reviewed?: boolean;
+};
+
+export type ActivityItem = { id: string; kind: "inquiry" | "review" | "payout" | "booking"; text: string; at: string };
+
+// Students CRM
+export type StudentTag = { id: string; label: string; color: string };
+export type StudentRecord = {
+  id: string;
+  name: string;
+  initials: string;
+  level: string;
+  parentName?: string;
+  parentPhone?: string;
+  primarySubjects: string[];
+  tagIds: string[];
+  joinedAt: string;
+  lastSessionAt: string;
+  totalSessions: number;
+  revenueTtd: number;
+  paymentReliability: number; // 0-100
+  outstandingTtd: number;
+  active: boolean;
+  enrollmentLessonIds: string[];
+  notes: { id: string; at: string; text: string; pinned?: boolean }[];
+  performance: { metric: string; value: number; max: number }[];
+  performanceHistory: { date: string; score: number }[];
+};
+
+// Wallet
+export type Transaction = {
+  id: string;
+  date: string;
+  studentId: string;
+  studentName: string;
+  lessonId?: string;
+  lessonName: string;
+  type: LessonKind;
+  sessionNumber?: number;
+  grossTtd: number;
+  feeTtd: number;
+  netTtd: number;
+  status: "paid" | "pending" | "failed" | "refunded";
+};
+
+export type Payout = { id: string; date: string; amount: number; method: string; status: "Paid" | "Scheduled" };
+
+// Notifications
+export type TutorNotif = {
+  id: string;
+  type: "booking" | "reminder" | "payment" | "message" | "review" | "system";
+  title: string;
+  body: string;
+  time: string;
+  unread: boolean;
 };
 
 const STORAGE_KEY = "itutor.tutorProfile.v1";
@@ -51,6 +121,7 @@ const DEFAULT_PROFILE: TutorProfile = {
   name: "Anil Ramdeen",
   initials: "AR",
   email: "anil.ramdeen@example.tt",
+  phone: "+1 868 555 0142",
   avatarUrl: null,
   bio: "",
   subjects: [],
@@ -58,35 +129,167 @@ const DEFAULT_PROFILE: TutorProfile = {
   hourlyRateTtd: null,
 };
 
-export const PLACEHOLDER_SESSIONS: TutorSession[] = [
-  { id: "s1", student: "Aliyah Mohammed", subject: "CSEC Mathematics", date: new Date(Date.now() + 36e5 * 4).toISOString(), durationMin: 60, type: "1-on-1", status: "upcoming" },
-  { id: "s2", student: "Devon Charles", subject: "CSEC Physics", date: new Date(Date.now() + 36e5 * 26).toISOString(), durationMin: 90, type: "1-on-1", status: "upcoming" },
-  { id: "s3", student: "Group · Form 5", subject: "CSEC Maths Revision", date: new Date(Date.now() + 36e5 * 50).toISOString(), durationMin: 60, type: "Group", status: "upcoming" },
-  { id: "s4", student: "Keshawn Boodoo", subject: "CAPE Pure Maths", date: new Date(Date.now() + 36e5 * 74).toISOString(), durationMin: 60, type: "1-on-1", status: "upcoming" },
-  { id: "s5", student: "Sade Williams", subject: "CSEC Add. Maths", date: new Date(Date.now() + 36e5 * 96).toISOString(), durationMin: 60, type: "1-on-1", status: "upcoming" },
+// -------------------- Placeholder data --------------------
+
+const iso = (offsetH: number) => new Date(Date.now() + offsetH * 36e5).toISOString();
+
+export const TAG_LIBRARY: StudentTag[] = [
+  { id: "exam", label: "Exam prep", color: "bg-coral-soft text-coral" },
+  { id: "advanced", label: "Advanced", color: "bg-brand-soft text-brand-deep" },
+  { id: "follow", label: "Needs follow-up", color: "bg-peach text-ink" },
+  { id: "parent", label: "Parent involved", color: "bg-lavender text-ink" },
+  { id: "scholarship", label: "Scholarship", color: "bg-sky text-ink" },
+];
+
+export const PLACEHOLDER_STUDENTS: StudentRecord[] = [
+  {
+    id: "u1", name: "Aliyah Mohammed", initials: "AM", level: "Form 5", parentName: "Ramona Mohammed", parentPhone: "+1 868 555 0188",
+    primarySubjects: ["CSEC Mathematics", "Add. Maths"], tagIds: ["exam", "advanced"], joinedAt: iso(-24*120), lastSessionAt: iso(-26),
+    totalSessions: 14, revenueTtd: 2520, paymentReliability: 96, outstandingTtd: 0, active: true,
+    enrollmentLessonIds: ["l1", "l2"],
+    notes: [
+      { id: "n1", at: iso(-48), text: "Strong on algebra, weak on trig identities. Drill weekly.", pinned: true },
+      { id: "n2", at: iso(-200), text: "Mum prefers WhatsApp updates over email.", pinned: false },
+    ],
+    performance: [{ metric: "Confidence", value: 8, max: 10 }, { metric: "Topic mastery", value: 4, max: 5 }],
+    performanceHistory: [{date: "Wk 1", score: 62},{date: "Wk 2", score: 68},{date: "Wk 3", score: 71},{date: "Wk 4", score: 78},{date: "Wk 5", score: 82},{date: "Wk 6", score: 85}],
+  },
+  {
+    id: "u2", name: "Devon Charles", initials: "DC", level: "Form 5", primarySubjects: ["CSEC Physics"],
+    tagIds: ["exam"], joinedAt: iso(-24*60), lastSessionAt: iso(-72),
+    totalSessions: 7, revenueTtd: 1260, paymentReliability: 78, outstandingTtd: 360, active: true,
+    enrollmentLessonIds: ["l3"],
+    notes: [{ id: "n1", at: iso(-72), text: "Pays late but always pays. Send reminder day before.", pinned: true }],
+    performance: [{ metric: "Lab skills", value: 6, max: 10 }],
+    performanceHistory: [{date: "Wk 1", score: 55},{date: "Wk 2", score: 58},{date: "Wk 3", score: 62},{date: "Wk 4", score: 60},{date: "Wk 5", score: 65}],
+  },
+  {
+    id: "u3", name: "Keshawn Boodoo", initials: "KB", level: "Lower 6", primarySubjects: ["CAPE Pure Maths"],
+    tagIds: ["advanced", "scholarship"], joinedAt: iso(-24*40), lastSessionAt: iso(-150),
+    totalSessions: 4, revenueTtd: 720, paymentReliability: 100, outstandingTtd: 0, active: true,
+    enrollmentLessonIds: ["l2"], notes: [],
+    performance: [{ metric: "Calculus", value: 9, max: 10 }],
+    performanceHistory: [{date: "Wk 1", score: 70},{date: "Wk 2", score: 74},{date: "Wk 3", score: 80},{date: "Wk 4", score: 88}],
+  },
+  {
+    id: "u4", name: "Sade Williams", initials: "SW", level: "Form 4", parentName: "Pat Williams", parentPhone: "+1 868 555 0177",
+    primarySubjects: ["CSEC Add. Maths"], tagIds: ["follow", "parent"], joinedAt: iso(-24*200), lastSessionAt: iso(-24*9),
+    totalSessions: 9, revenueTtd: 1620, paymentReliability: 88, outstandingTtd: 180, active: true,
+    enrollmentLessonIds: ["l1"], notes: [],
+    performance: [{ metric: "Confidence", value: 5, max: 10 }],
+    performanceHistory: [{date: "Wk 1", score: 50},{date: "Wk 2", score: 55},{date: "Wk 3", score: 58}],
+  },
+  {
+    id: "u5", name: "Renée Phillip", initials: "RP", level: "Form 5", primarySubjects: ["CSEC English A"],
+    tagIds: [], joinedAt: iso(-24*15), lastSessionAt: iso(-24*15),
+    totalSessions: 1, revenueTtd: 180, paymentReliability: 100, outstandingTtd: 0, active: false,
+    enrollmentLessonIds: [], notes: [],
+    performance: [],
+    performanceHistory: [],
+  },
 ];
 
 export const PLACEHOLDER_LESSONS: TutorLesson[] = [
-  { id: "l1", title: "CSEC Maths Crash Course", subject: "Mathematics", level: "CSEC", students: 8, capacity: 12, rateTtd: 120, recurring: true },
-  { id: "l2", title: "CAPE Pure Maths Unit 1", subject: "Pure Mathematics", level: "CAPE", students: 4, capacity: 8, rateTtd: 180, recurring: true },
+  {
+    id: "l1", title: "CSEC Maths Crash Course", kind: "group-recurring", subject: "Mathematics", level: "CSEC",
+    description: "6-week intensive review covering all 9 topics on the CSEC Maths syllabus.",
+    startDate: iso(48), recurrenceRule: "Weekly · Sat 10:00 AM AST", durationMin: 90,
+    pricingMode: "per-session", rateTtd: 120, capacity: 12,
+    enrollments: [
+      { studentId: "u1", name: "Aliyah Mohammed", paymentStatus: "paid" },
+      { studentId: "u4", name: "Sade Williams", paymentStatus: "overdue" },
+      { studentId: "u5", name: "Renée Phillip", paymentStatus: "pending" },
+    ],
+    materialsCount: 6, notes: "", status: "published",
+  },
+  {
+    id: "l2", title: "CAPE Pure Maths · Unit 1", kind: "group-recurring", subject: "Pure Mathematics", level: "CAPE",
+    description: "Unit 1 syllabus deep-dive. Past paper drills every other week.",
+    startDate: iso(72), recurrenceRule: "Weekly · Tue 5:00 PM AST", durationMin: 120,
+    pricingMode: "per-block", rateTtd: 180, capacity: 8,
+    enrollments: [
+      { studentId: "u1", name: "Aliyah Mohammed", paymentStatus: "paid" },
+      { studentId: "u3", name: "Keshawn Boodoo", paymentStatus: "paid" },
+    ],
+    materialsCount: 9, notes: "", status: "published",
+  },
+  {
+    id: "l3", title: "Physics 1:1 · Devon", kind: "1on1-recurring", subject: "Physics", level: "CSEC",
+    description: "Weekly 1:1 focusing on lab reports and SBA.",
+    startDate: iso(26), recurrenceRule: "Weekly · Wed 4:00 PM AST", durationMin: 60,
+    pricingMode: "per-session", rateTtd: 200, capacity: 1,
+    enrollments: [{ studentId: "u2", name: "Devon Charles", paymentStatus: "pending" }],
+    materialsCount: 3, notes: "", status: "published",
+  },
+  {
+    id: "l4", title: "SBA Trial Run · Group", kind: "group-oneoff", subject: "Mathematics", level: "Form 5",
+    description: "One-off mock SBA session before final submission.",
+    startDate: iso(120), durationMin: 120,
+    pricingMode: "per-student", rateTtd: 90, capacity: 10,
+    enrollments: [{ studentId: "u1", name: "Aliyah Mohammed", paymentStatus: "paid" }],
+    materialsCount: 2, notes: "", status: "published",
+  },
+  {
+    id: "l5", title: "Diagnostic Session · Renée", kind: "1on1-oneoff", subject: "English A", level: "CSEC",
+    description: "First-time diagnostic to assess English A readiness.",
+    startDate: iso(-24*15), durationMin: 60,
+    pricingMode: "per-session", rateTtd: 180, capacity: 1,
+    enrollments: [{ studentId: "u5", name: "Renée Phillip", paymentStatus: "paid" }],
+    materialsCount: 1, notes: "Recommend enrolling in recurring CSEC English starting next month.", status: "completed",
+  },
 ];
 
-export const PLACEHOLDER_STUDENTS = [
-  { id: "u1", name: "Aliyah Mohammed", level: "Form 5", subject: "CSEC Maths", sessions: 12 },
-  { id: "u2", name: "Devon Charles", level: "Form 5", subject: "CSEC Physics", sessions: 7 },
-  { id: "u3", name: "Keshawn Boodoo", level: "Lower 6", subject: "CAPE Pure Maths", sessions: 4 },
-  { id: "u4", name: "Sade Williams", level: "Form 4", subject: "CSEC Add. Maths", sessions: 9 },
+const now = Date.now();
+export const PLACEHOLDER_SESSIONS: TutorSession[] = [
+  // Upcoming (future)
+  { id: "s1", lessonId: "l3", student: "Devon Charles", studentId: "u2", subject: "CSEC Physics", date: iso(4), durationMin: 60, type: "1-on-1", status: "upcoming", paymentStatus: "paid" },
+  { id: "s2", lessonId: "l1", student: "Group · CSEC Maths (3)", subject: "CSEC Maths Crash Course", date: iso(26), durationMin: 90, type: "Group", status: "upcoming" },
+  { id: "s3", lessonId: "l2", student: "Group · CAPE Pure (2)", subject: "CAPE Pure Maths", date: iso(50), durationMin: 120, type: "Group", status: "upcoming" },
+  { id: "s4", lessonId: "l4", student: "Group · SBA Trial (1)", subject: "Mathematics SBA", date: iso(120), durationMin: 120, type: "Group", status: "upcoming" },
+  // Past
+  { id: "s5", lessonId: "l3", student: "Devon Charles", studentId: "u2", subject: "CSEC Physics", date: iso(-72), durationMin: 60, type: "1-on-1", status: "past", attendance: "attended", paymentStatus: "paid", reviewed: true },
+  { id: "s6", lessonId: "l5", student: "Renée Phillip", studentId: "u5", subject: "English A · Diagnostic", date: iso(-24*15), durationMin: 60, type: "1-on-1", status: "past", attendance: "attended", paymentStatus: "paid", reviewed: false },
+  { id: "s7", lessonId: "l1", student: "Aliyah Mohammed", studentId: "u1", subject: "CSEC Maths Crash Course", date: iso(-26), durationMin: 90, type: "Group", status: "past", attendance: "attended", paymentStatus: "paid", reviewed: true },
+  { id: "s8", lessonId: "l1", student: "Sade Williams", studentId: "u4", subject: "CSEC Maths Crash Course", date: iso(-24*9), durationMin: 90, type: "Group", status: "past", attendance: "no-show", paymentStatus: "overdue", reviewed: false },
+  // Pending (awaiting confirmation / payment)
+  { id: "s9", student: "Trinity Hosein", subject: "CSEC Add. Maths", date: iso(48), durationMin: 60, type: "1-on-1", status: "pending", paymentStatus: "pending" },
+  { id: "s10", student: "Marcus Ali", subject: "CAPE Pure Maths", date: iso(72), durationMin: 90, type: "1-on-1", status: "pending", paymentStatus: "pending" },
+];
+
+export const PLACEHOLDER_TRANSACTIONS: Transaction[] = [
+  { id: "t1", date: iso(-26), studentId: "u1", studentName: "Aliyah Mohammed", lessonId: "l1", lessonName: "CSEC Maths Crash Course", type: "group-recurring", sessionNumber: 5, grossTtd: 120, feeTtd: 18, netTtd: 102, status: "paid" },
+  { id: "t2", date: iso(-72), studentId: "u2", studentName: "Devon Charles", lessonId: "l3", lessonName: "Physics 1:1", type: "1on1-recurring", sessionNumber: 7, grossTtd: 200, feeTtd: 30, netTtd: 170, status: "paid" },
+  { id: "t3", date: iso(-24*4), studentId: "u3", studentName: "Keshawn Boodoo", lessonId: "l2", lessonName: "CAPE Pure Maths", type: "group-recurring", sessionNumber: 3, grossTtd: 180, feeTtd: 27, netTtd: 153, status: "paid" },
+  { id: "t4", date: iso(-24*9), studentId: "u4", studentName: "Sade Williams", lessonId: "l1", lessonName: "CSEC Maths Crash Course", type: "group-recurring", sessionNumber: 4, grossTtd: 120, feeTtd: 18, netTtd: 102, status: "failed" },
+  { id: "t5", date: iso(-24*15), studentId: "u5", studentName: "Renée Phillip", lessonId: "l5", lessonName: "English A Diagnostic", type: "1on1-oneoff", grossTtd: 180, feeTtd: 27, netTtd: 153, status: "paid" },
+  { id: "t6", date: iso(-24*20), studentId: "u1", studentName: "Aliyah Mohammed", lessonId: "l1", lessonName: "CSEC Maths Crash Course", type: "group-recurring", sessionNumber: 4, grossTtd: 120, feeTtd: 18, netTtd: 102, status: "paid" },
+  { id: "t7", date: iso(-24*28), studentId: "u2", studentName: "Devon Charles", lessonId: "l3", lessonName: "Physics 1:1", type: "1on1-recurring", sessionNumber: 6, grossTtd: 200, feeTtd: 30, netTtd: 170, status: "refunded" },
+];
+
+export const PLACEHOLDER_PAYOUTS: Payout[] = [
+  { id: "p0", date: iso(24*4), amount: 740, method: "WiPay · ••42", status: "Scheduled" },
+  { id: "p1", date: iso(-24*10), amount: 1840, method: "WiPay · ••42", status: "Paid" },
+  { id: "p2", date: iso(-24*24), amount: 2120, method: "WiPay · ••42", status: "Paid" },
+  { id: "p3", date: iso(-24*38), amount: 1560, method: "WiPay · ••42", status: "Paid" },
+];
+
+export const PLACEHOLDER_NOTIFS: TutorNotif[] = [
+  { id: "n1", type: "booking", title: "New booking from Trinity Hosein", body: "Requested CSEC Add. Maths · Sat 12:00 PM AST.", time: "10m ago", unread: true },
+  { id: "n2", type: "payment", title: "Payment received · Aliyah M.", body: "TTD 120 for CSEC Maths Crash Course.", time: "1h ago", unread: true },
+  { id: "n3", type: "review", title: "Aliyah Mohammed left a 5-star review", body: "“Patient and explains everything clearly.”", time: "Yesterday", unread: true },
+  { id: "n4", type: "message", title: "Sade Williams sent a message", body: "Can we move Tuesday's class to 6 PM?", time: "Yesterday", unread: false },
+  { id: "n5", type: "reminder", title: "Session in 30 minutes", body: "1:1 Physics with Devon Charles.", time: "2d ago", unread: false },
+  { id: "n6", type: "system", title: "Profile is now public", body: "You're listed and visible to students.", time: "5d ago", unread: false },
 ];
 
 export const PLACEHOLDER_ACTIVITY: ActivityItem[] = [
-  { id: "a1", kind: "inquiry", text: "New inquiry from Renée P. about CSEC Add. Maths", at: "2h ago" },
+  { id: "a1", kind: "inquiry", text: "New inquiry from Renée P. about CSEC English A", at: "2h ago" },
   { id: "a2", kind: "review", text: "Aliyah M. left a 5-star review", at: "Yesterday" },
-  { id: "a3", kind: "payout", text: "Payout of TTD 1,840 processed to your bank", at: "3 days ago" },
+  { id: "a3", kind: "payout", text: "Payout of TTD 1,840 processed to WiPay", at: "3 days ago" },
   { id: "a4", kind: "booking", text: "Devon C. booked 90 mins for Saturday 4:00 PM", at: "5 days ago" },
 ];
 
 export const SUBJECT_OPTIONS = [
-  // TODO(cursor): replace with real subject taxonomy from the backend.
   { name: "Mathematics", levels: ["SEA", "Form 1-3", "CSEC", "Add. Maths", "CAPE Pure", "CAPE Applied"] },
   { name: "Physics", levels: ["Form 1-3", "CSEC", "CAPE Unit 1", "CAPE Unit 2"] },
   { name: "Chemistry", levels: ["Form 1-3", "CSEC", "CAPE Unit 1", "CAPE Unit 2"] },
@@ -99,57 +302,62 @@ export const SUBJECT_OPTIONS = [
   { name: "Economics", levels: ["CSEC", "CAPE"] },
 ];
 
-type TutorContextValue = {
+// -------------------- Provider --------------------
+
+type Ctx = {
   profile: TutorProfile;
-  setProfile: (updater: (p: TutorProfile) => TutorProfile) => void;
+  setProfile: React.Dispatch<React.SetStateAction<TutorProfile>>;
+  patchProfile: (patch: Partial<TutorProfile>) => void;
   completion: {
-    avatar: boolean;
-    bio: boolean;
-    subjects: boolean;
-    availability: boolean;
-    rate: boolean;
-    completed: number;
-    total: number;
-    listed: boolean;
+    avatar: boolean; bio: boolean; subjects: boolean; availability: boolean; rate: boolean;
+    listed: boolean; completed: number; total: number;
   };
 };
 
-const TutorCtx = createContext<TutorContextValue | null>(null);
+const C = createContext<Ctx | null>(null);
 
 export function TutorStoreProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfileState] = useState<TutorProfile>(DEFAULT_PROFILE);
+  const [profile, setProfile] = useState<TutorProfile>(DEFAULT_PROFILE);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setProfileState({ ...DEFAULT_PROFILE, ...JSON.parse(raw) });
+      if (raw) setProfile({ ...DEFAULT_PROFILE, ...JSON.parse(raw) });
     } catch {}
   }, []);
-
-  const setProfile = (updater: (p: TutorProfile) => TutorProfile) => {
-    setProfileState((prev) => {
-      const next = updater(prev);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
-      return next;
-    });
-  };
-
-  const completion = useMemo(() => {
-    const avatar = !!profile.avatarUrl;
-    const bio = profile.bio.trim().length >= 150;
-    const subjects = profile.subjects.length >= 1;
-    const availability = profile.availability.length >= 1;
-    const rate = !!profile.hourlyRateTtd && profile.hourlyRateTtd > 0;
-    const checks = [avatar, bio, subjects, availability, rate];
-    const completed = checks.filter(Boolean).length;
-    return { avatar, bio, subjects, availability, rate, completed, total: 5, listed: completed === 5 };
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)); } catch {}
   }, [profile]);
 
-  return <TutorCtx.Provider value={{ profile, setProfile, completion }}>{children}</TutorCtx.Provider>;
+  const completion = useMemo(() => {
+    const c = {
+      avatar: !!profile.avatarUrl,
+      bio: profile.bio.trim().length >= 150,
+      subjects: profile.subjects.length > 0,
+      availability: profile.availability.length > 0,
+      rate: !!profile.hourlyRateTtd && profile.hourlyRateTtd > 0,
+    };
+    const completed = Object.values(c).filter(Boolean).length;
+    const total = 5;
+    return { ...c, completed, total, listed: completed === total };
+  }, [profile]);
+
+  return (
+    <C.Provider value={{ profile, setProfile, patchProfile: (p) => setProfile((cur) => ({ ...cur, ...p })), completion }}>
+      {children}
+    </C.Provider>
+  );
 }
 
 export function useTutor() {
-  const v = useContext(TutorCtx);
-  if (!v) throw new Error("useTutor must be used inside TutorStoreProvider");
+  const v = useContext(C);
+  if (!v) throw new Error("useTutor must be used within TutorStoreProvider");
   return v;
 }
+
+export const LESSON_KIND_META: Record<LessonKind, { label: string; short: string; chip: string; dot: string }> = {
+  "1on1-oneoff":     { label: "1:1 · One-off",        short: "1:1",   chip: "bg-sky text-ink",         dot: "bg-sky-500" },
+  "1on1-recurring":  { label: "1:1 · Recurring",      short: "1:1↻",  chip: "bg-brand-soft text-brand-deep", dot: "bg-brand" },
+  "group-oneoff":    { label: "Group · One-off",      short: "Group", chip: "bg-peach text-ink",       dot: "bg-amber-500" },
+  "group-recurring": { label: "Group · Recurring",    short: "Group↻",chip: "bg-lavender text-ink",    dot: "bg-purple-500" },
+};
