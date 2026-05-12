@@ -78,12 +78,14 @@ function Settings() {
               <Select label="Default session length" options={["30 min", "45 min", "60 min", "90 min", "120 min"]} value="60 min" />
               <Select label="Booking window" options={["12 hours notice", "24 hours notice", "48 hours notice", "72 hours notice"]} value="24 hours notice" />
               <div>
-                <label className="text-sm font-medium text-ink mb-2 block">Teaching levels</label>
+                <label className="text-sm font-medium text-ink mb-2 block">Subjects teaching</label>
+                <p className="text-xs text-muted-foreground mb-2">The subjects you currently offer to students.</p>
                 <div className="flex flex-wrap gap-2">
-                  {["SEA", "Form 1-3", "CSEC", "Add. Maths", "CAPE Unit 1", "CAPE Unit 2"].map((s, i) => (
+                  {["CSEC Mathematics", "CSEC Physics", "CSEC Chemistry", "CAPE Pure Maths", "CAPE Physics Unit 1", "Add. Maths"].map((s, i) => (
                     <button key={s} className={cn("px-3 py-1.5 rounded-full text-sm font-medium border",
                       i < 3 ? "bg-brand-soft text-forest border-brand" : "bg-background text-muted-foreground border-border hover:border-ink/30")}>{s}</button>
                   ))}
+                  <button className="px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-border text-muted-foreground hover:border-brand hover:text-brand-deep">+ Add subject</button>
                 </div>
               </div>
               <SaveBar />
