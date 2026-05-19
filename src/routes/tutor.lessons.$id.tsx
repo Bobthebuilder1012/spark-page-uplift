@@ -294,16 +294,18 @@ function SessionsTab({ lesson }: { lesson: TutorLesson }) {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-lg font-bold text-ink">Sessions</h2>
-          <p className="text-xs text-muted-foreground">Next {upcoming.length} upcoming · attach meeting links, manage attendance.</p>
+          <p className="text-xs text-muted-foreground">Next {upcoming.length} upcoming · manage attendance and join links.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold hover:bg-muted">
-            <Video className="size-3.5" /> Attach Meeting Link
-          </button>
           <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90">
             <Plus className="size-3.5" /> Add Session
           </button>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground flex items-start gap-2">
+        <Video className="size-3.5 mt-0.5 shrink-0 text-brand-deep" />
+        <span>Meeting links are generated automatically from the video provider connected to your tutor account (Zoom or Google Meet) — no manual setup per session.</span>
       </div>
 
       {sessions.length === 0 && <EmptyState icon={CalendarIcon} title="No sessions scheduled" body="Add your first session to publish a calendar entry to enrolled students." />}
@@ -331,12 +333,13 @@ function SessionsTab({ lesson }: { lesson: TutorLesson }) {
               <div className="flex flex-1 items-center gap-2 flex-wrap">
                 <Pill tone={att === "attended" ? "emerald" : att === "no-show" ? "rose" : "slate"} label={`Attendance: ${att ?? (future ? "—" : "pending")}`} />
                 <Pill tone={pay === "paid" ? "emerald" : pay === "overdue" ? "rose" : "amber"} label={`Payment: ${pay}`} />
-                {!s.lessonId && <Pill tone="amber" label="No meeting link" />}
               </div>
               <div className="flex items-center gap-1.5">
-                <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold hover:bg-muted">
-                  <Video className="size-3.5" /> Attach link
-                </button>
+                {future && (
+                  <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90">
+                    <Video className="size-3.5" /> Join
+                  </button>
+                )}
                 <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-rose-600 hover:bg-rose-50">
                   <X className="size-3.5" /> Cancel
                 </button>
