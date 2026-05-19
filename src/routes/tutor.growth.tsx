@@ -2,11 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   PLACEHOLDER_LESSONS, PLACEHOLDER_FEEDBACK_DRAFTS, LESSON_KIND_META,
-  type TutorLesson, type FeedbackDraft, type ClassPromotion, type PromotionKind,
+  FEEDBACK_PROMPTS, PROMO_INFO,
+  type TutorLesson, type FeedbackDraft, type ClassPromotion, type PromotionKind, type FeedbackPromptResponse,
 } from "@/lib/tutor-store";
 import {
   Briefcase, Tag, BarChart3, FileText, Plus, Check, X, Sparkles, ArrowUp, ArrowDown,
   Users, DollarSign, Star, Edit3, Send, Calendar as CalendarIcon, Search, ChevronRight, BookOpen,
+  Info, Zap, Clock, Infinity as InfinityIcon, Wand2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
