@@ -97,7 +97,7 @@ function ClassesTab({ enrollments, onUnenroll }: { enrollments: ChildEnrollment[
         </div>
         <h2 className="font-bold text-ink">No classes enrolled yet</h2>
         <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">Browse classes and enroll your child to get started.</p>
-        <Link to="/student/classes" className="mt-5 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">
+        <Link to="/parent/classes" className="mt-5 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">
           Browse classes
         </Link>
       </div>
