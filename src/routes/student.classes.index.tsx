@@ -65,7 +65,7 @@ function Marketplace() {
           {(["browse", "loading", "empty"] as const).map((s) => (
             <button
               key={s}
-              onClick={() => navigate({ search: (p: { q: string; subject: string; state: "browse" | "loading" | "empty" }) => ({ ...p, state: s }) })}
+              onClick={() => navigate({ search: { q: query, subject, state: s } })}
               className={cn("px-3 py-1.5 rounded-xl font-semibold capitalize transition", state === s ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink")}
             >
               {s}
@@ -78,7 +78,7 @@ function Marketplace() {
         {SUBJECTS.map((c) => (
           <button
             key={c}
-            onClick={() => navigate({ search: (p: { q: string; subject: string; state: "browse" | "loading" | "empty" }) => ({ ...p, subject: c }) })}
+            onClick={() => navigate({ search: { q: query, subject: c, state } })}
             className={cn(
               "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition border",
               subject === c ? "bg-ink text-white border-ink" : "bg-background text-muted-foreground border-border hover:border-ink/30",
