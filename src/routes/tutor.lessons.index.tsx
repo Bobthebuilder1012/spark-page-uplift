@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTutor, PLACEHOLDER_LESSONS, LESSON_KIND_META, type TutorLesson } from "@/lib/tutor-store";
-import { Plus, Lock, Users, BookOpen, Search, Archive } from "lucide-react";
+import { Plus, Lock, Users, BookOpen, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tutor/lessons/")({
