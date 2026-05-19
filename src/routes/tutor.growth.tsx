@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import {
   PLACEHOLDER_LESSONS, PLACEHOLDER_FEEDBACK_DRAFTS, LESSON_KIND_META,
   FEEDBACK_PROMPTS, PROMO_INFO,
-  type TutorLesson, type FeedbackDraft, type ClassPromotion, type PromotionKind, type FeedbackPromptResponse,
+  type TutorLesson, type FeedbackDraft, type ClassPromotion, type PromotionKind,
 } from "@/lib/tutor-store";
 import {
   Briefcase, Tag, BarChart3, FileText, Plus, Check, X, Sparkles, ArrowUp, ArrowDown,
