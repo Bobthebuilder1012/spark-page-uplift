@@ -8,7 +8,6 @@ import {
   BookOpen,
   Settings,
   Bell,
-  MessageSquare,
   GraduationCap,
   PanelLeftClose,
   PanelLeftOpen,
@@ -25,11 +24,10 @@ type NavItem = { to: string; label: string; icon: ComponentType<{ className?: st
 
 const nav: NavItem[] = [
   { to: "/student", label: "Home", icon: LayoutDashboard, exact: true, tint: "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/30" },
-  { to: "/student/tutors", label: "Explore", icon: Search, tint: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/30" },
-  { to: "/student/lessons", label: "My Lessons", icon: GraduationCap, tint: "bg-sky-500/20 text-sky-300 ring-1 ring-sky-400/30" },
+  { to: "/student/classes", label: "Classes", icon: Search, tint: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/30" },
+  { to: "/student/lessons", label: "My Classes", icon: GraduationCap, tint: "bg-sky-500/20 text-sky-300 ring-1 ring-sky-400/30" },
   { to: "/student/bookings", label: "My Bookings", icon: CalendarDays, tint: "bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30" },
   { to: "/student/tools", label: "Tools", icon: BookOpen, tint: "bg-violet-500/20 text-violet-300 ring-1 ring-violet-400/30" },
-  { to: "/student/messages", label: "Messages", icon: MessageSquare, tint: "bg-teal-500/20 text-teal-300 ring-1 ring-teal-400/30" },
 ];
 
 const COLLAPSE_KEY = "itutor.sidebarCollapsed";
