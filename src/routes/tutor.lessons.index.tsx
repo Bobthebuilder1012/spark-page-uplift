@@ -43,9 +43,9 @@ function LessonsPage() {
           <h1 className="text-2xl lg:text-3xl font-bold text-ink">Lesson Marketplace</h1>
           <p className="text-sm text-muted-foreground mt-1">Create, manage, and discover lesson sessions</p>
         </div>
-        <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90 shadow-sm">
+        <Link to="/tutor/lessons/new" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90 shadow-sm">
           <Plus className="size-4" /> Create a Class
-        </button>
+        </Link>
       </header>
 
       {/* Tabs */}
