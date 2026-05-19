@@ -190,7 +190,7 @@ function ShellInner() {
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate({ to: "/student/tutors", search: { q: query } as any });
+    navigate({ to: "/student/classes", search: { q: query } as any });
   };
 
   return (
