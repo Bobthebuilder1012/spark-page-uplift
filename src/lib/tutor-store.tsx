@@ -475,3 +475,90 @@ export const LESSON_KIND_META: Record<LessonKind, { label: string; short: string
   "group-oneoff":    { label: "Group · One-off",      short: "Group", chip: "bg-peach text-ink",       dot: "bg-amber-500" },
   "group-recurring": { label: "Group · Recurring",    short: "Group↻",chip: "bg-lavender text-ink",    dot: "bg-purple-500" },
 };
+
+// -------------------- New mock data for Class Hub / My Business --------------------
+
+export const PLACEHOLDER_RECURRING_REQUESTS: RecurringRequest[] = [
+  { id: "rq1", studentId: "u6", studentName: "Trinity Hosein", initials: "TH", subject: "CSEC Add. Maths", level: "Form 5", preferredTime: "Sat 10:00 AM AST · weekly", message: "Hi Sir, I'd love to do recurring 1:1s before my exam. I'm weak on calculus.", receivedAt: iso(-6) },
+  { id: "rq2", studentId: "u7", studentName: "Marcus Ali", initials: "MA", subject: "CAPE Pure Maths · Unit 1", level: "Lower 6", preferredTime: "Wed 6:00 PM AST · weekly", message: "Looking for a long-term tutor through Unit 1. Budget flexible.", receivedAt: iso(-24) },
+  { id: "rq3", studentId: "u8", studentName: "Jada Pierre", initials: "JP", subject: "CSEC Physics", level: "Form 5", preferredTime: "Sun afternoons", message: "Need help with lab reports and SBA.", receivedAt: iso(-48) },
+];
+
+export const PLACEHOLDER_FEEDBACK_DRAFTS: FeedbackDraft[] = [
+  {
+    id: "fb1", studentId: "u1", studentName: "Aliyah Mohammed", initials: "AM",
+    lessonId: "l1", lessonName: "CSEC Maths Crash Course", month: "May 2026",
+    status: "pending",
+    bullets: ["Attended 4 of 4 sessions", "Mastered quadratic equations", "Still shaky on trig identities — assigned 10 extra past-paper questions", "Engagement: high · asks great clarifying questions"],
+    draftBody: "Aliyah had a strong month. She attended every session and her work on quadratics is now exam-ready. Trig identities remain her weakest topic — I've assigned targeted past-paper drills for the next two weeks. Recommend continued focus on Paper 2 long-form questions before the May 18 exam.",
+  },
+  {
+    id: "fb2", studentId: "u2", studentName: "Devon Charles", initials: "DC",
+    lessonId: "l3", lessonName: "Physics 1:1", month: "May 2026",
+    status: "pending",
+    bullets: ["Attended 3 of 4 sessions (missed May 12 — no notice)", "Lab report quality improved significantly", "Still struggles with circuit analysis"],
+    draftBody: "Devon's lab reports have improved markedly this month. Circuit analysis remains a challenge — we'll dedicate the next 2 sessions to series/parallel networks. Please remind him to message in advance if he can't attend.",
+  },
+  {
+    id: "fb3", studentId: "u4", studentName: "Sade Williams", initials: "SW",
+    lessonId: "l1", lessonName: "CSEC Maths Crash Course", month: "May 2026",
+    status: "pending",
+    bullets: ["Attended 2 of 4 sessions", "Outstanding balance: TTD 180", "Engagement low when present — recommend conversation with parent"],
+    draftBody: "Sade's attendance has slipped to 50% this month and there's an outstanding balance. When she is present, engagement is mixed. I'd recommend a quick parent conversation before exams ramp up.",
+  },
+  {
+    id: "fb4", studentId: "u3", studentName: "Keshawn Boodoo", initials: "KB",
+    lessonId: "l2", lessonName: "CAPE Pure Maths · Unit 1", month: "May 2026",
+    status: "approved",
+    bullets: ["Attended 4 of 4 sessions", "Top of cohort on the May diagnostic (94%)", "Ready to start Unit 2 prep"],
+    draftBody: "Keshawn continues to lead the cohort. Diagnostic score of 94% in May. We've started informal Unit 2 preview work — strong candidate for Grade I.",
+  },
+];
+
+export const PLACEHOLDER_STREAM_POSTS: StreamPost[] = [
+  { id: "sp1", kind: "announcement", title: "📌 Bring past-paper booklets to Saturday's session", body: "Make sure you have the 2019–2023 CSEC Maths booklet printed and on hand. We'll work through Paper 2 Q1–5 together.", at: "Pinned · 2 days ago", pinned: true },
+  { id: "sp2", kind: "ai-recap", title: "AI Recap · Saturday's session", body: "Covered: simultaneous equations (substitution + elimination), word-problem translation, exam strategy for Paper 1 Section A. 92% attendance. Next session: trig identities deep-dive.", at: "Yesterday", pendingApproval: true },
+  { id: "sp3", kind: "attachment", title: "Worksheet · Trig Identities Drill", body: "20 questions, answer key included. Due before next session.", at: "Yesterday", attachmentName: "trig-drill-w8.pdf" },
+  { id: "sp4", kind: "link", title: "Useful video · Khan Academy Trig Identities", body: "10-minute primer before Saturday's class.", at: "3 days ago", linkUrl: "https://khanacademy.org/math/trigonometry" },
+  { id: "sp5", kind: "announcement", title: "Welcome to the cohort!", body: "Looking forward to a great term. Bring your textbook and a positive attitude.", at: "1 week ago" },
+];
+
+// Payment grid helpers
+export const PAYMENT_PERIODS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep"] as const;
+export type PaymentCellStatus = "paid" | "due" | "overdue" | "waived" | "n/a";
+export function generatePaymentGrid(members: EnrolledStudent[]): Record<string, Record<string, PaymentCellStatus>> {
+  const out: Record<string, Record<string, PaymentCellStatus>> = {};
+  members.forEach((m, mi) => {
+    out[m.studentId] = {};
+    PAYMENT_PERIODS.forEach((p, pi) => {
+      // Deterministic-ish placeholder distribution
+      const seed = (mi * 7 + pi * 3) % 11;
+      let s: PaymentCellStatus = "paid";
+      if (m.paymentStatus === "overdue" && pi >= PAYMENT_PERIODS.length - 2) s = "overdue";
+      else if (m.paymentStatus === "pending" && pi === PAYMENT_PERIODS.length - 1) s = "due";
+      else if (pi === PAYMENT_PERIODS.length - 1 && seed > 7) s = "due";
+      else if (seed === 0) s = "waived";
+      else s = "paid";
+      // future-ish gating
+      if (pi >= PAYMENT_PERIODS.length) s = "n/a";
+      out[m.studentId][p] = s;
+    });
+  });
+  return out;
+}
+
+export const PAYMENT_STATUS_META: Record<PaymentCellStatus, { label: string; chip: string }> = {
+  paid:    { label: "Paid",    chip: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+  due:     { label: "Due",     chip: "bg-amber-100 text-amber-800 border-amber-200" },
+  overdue: { label: "Overdue", chip: "bg-rose-100 text-rose-700 border-rose-200" },
+  waived:  { label: "Waived",  chip: "bg-slate-100 text-slate-600 border-slate-200" },
+  "n/a":   { label: "—",       chip: "bg-muted text-muted-foreground border-border" },
+};
+
+export const MEMBER_STATUS_META: Record<MemberStatus, { label: string; chip: string }> = {
+  invited:   { label: "Invited",   chip: "bg-sky-100 text-sky-700 border-sky-200" },
+  active:    { label: "Active",    chip: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+  suspended: { label: "Suspended", chip: "bg-amber-100 text-amber-800 border-amber-200" },
+  removed:   { label: "Removed",   chip: "bg-rose-100 text-rose-700 border-rose-200" },
+};
+
