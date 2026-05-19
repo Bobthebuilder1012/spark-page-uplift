@@ -41,11 +41,13 @@ import { Route as StudentBookingsRouteImport } from './routes/student.bookings'
 import { Route as TutorLessonsIndexRouteImport } from './routes/tutor.lessons.index'
 import { Route as StudentTutorsIndexRouteImport } from './routes/student.tutors.index'
 import { Route as StudentLessonsIndexRouteImport } from './routes/student.lessons.index'
+import { Route as StudentClassesIndexRouteImport } from './routes/student.classes.index'
 import { Route as TutorStudentsIdRouteImport } from './routes/tutor.students.$id'
 import { Route as TutorLessonsNewRouteImport } from './routes/tutor.lessons.new'
 import { Route as TutorLessonsIdRouteImport } from './routes/tutor.lessons.$id'
 import { Route as StudentTutorsIdRouteImport } from './routes/student.tutors.$id'
 import { Route as StudentLessonsIdRouteImport } from './routes/student.lessons.$id'
+import { Route as StudentClassesIdRouteImport } from './routes/student.classes.$id'
 
 const TutorRoute = TutorRouteImport.update({
   id: '/tutor',
@@ -207,6 +209,11 @@ const StudentLessonsIndexRoute = StudentLessonsIndexRouteImport.update({
   path: '/lessons/',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentClassesIndexRoute = StudentClassesIndexRouteImport.update({
+  id: '/classes/',
+  path: '/classes/',
+  getParentRoute: () => StudentRoute,
+} as any)
 const TutorStudentsIdRoute = TutorStudentsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -230,6 +237,11 @@ const StudentTutorsIdRoute = StudentTutorsIdRouteImport.update({
 const StudentLessonsIdRoute = StudentLessonsIdRouteImport.update({
   id: '/lessons/$id',
   path: '/lessons/$id',
+  getParentRoute: () => StudentRoute,
+} as any)
+const StudentClassesIdRoute = StudentClassesIdRouteImport.update({
+  id: '/classes/$id',
+  path: '/classes/$id',
   getParentRoute: () => StudentRoute,
 } as any)
 
@@ -263,11 +275,13 @@ export interface FileRoutesByFullPath {
   '/tutor/wallet': typeof TutorWalletRoute
   '/student/': typeof StudentIndexRoute
   '/tutor/': typeof TutorIndexRoute
+  '/student/classes/$id': typeof StudentClassesIdRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
   '/tutor/lessons/$id': typeof TutorLessonsIdRoute
   '/tutor/lessons/new': typeof TutorLessonsNewRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
+  '/student/classes/': typeof StudentClassesIndexRoute
   '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
   '/tutor/lessons/': typeof TutorLessonsIndexRoute
@@ -300,11 +314,13 @@ export interface FileRoutesByTo {
   '/tutor/wallet': typeof TutorWalletRoute
   '/student': typeof StudentIndexRoute
   '/tutor': typeof TutorIndexRoute
+  '/student/classes/$id': typeof StudentClassesIdRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
   '/tutor/lessons/$id': typeof TutorLessonsIdRoute
   '/tutor/lessons/new': typeof TutorLessonsNewRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
+  '/student/classes': typeof StudentClassesIndexRoute
   '/student/lessons': typeof StudentLessonsIndexRoute
   '/student/tutors': typeof StudentTutorsIndexRoute
   '/tutor/lessons': typeof TutorLessonsIndexRoute
@@ -340,11 +356,13 @@ export interface FileRoutesById {
   '/tutor/wallet': typeof TutorWalletRoute
   '/student/': typeof StudentIndexRoute
   '/tutor/': typeof TutorIndexRoute
+  '/student/classes/$id': typeof StudentClassesIdRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
   '/tutor/lessons/$id': typeof TutorLessonsIdRoute
   '/tutor/lessons/new': typeof TutorLessonsNewRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
+  '/student/classes/': typeof StudentClassesIndexRoute
   '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
   '/tutor/lessons/': typeof TutorLessonsIndexRoute
@@ -381,11 +399,13 @@ export interface FileRouteTypes {
     | '/tutor/wallet'
     | '/student/'
     | '/tutor/'
+    | '/student/classes/$id'
     | '/student/lessons/$id'
     | '/student/tutors/$id'
     | '/tutor/lessons/$id'
     | '/tutor/lessons/new'
     | '/tutor/students/$id'
+    | '/student/classes/'
     | '/student/lessons/'
     | '/student/tutors/'
     | '/tutor/lessons/'
@@ -418,11 +438,13 @@ export interface FileRouteTypes {
     | '/tutor/wallet'
     | '/student'
     | '/tutor'
+    | '/student/classes/$id'
     | '/student/lessons/$id'
     | '/student/tutors/$id'
     | '/tutor/lessons/$id'
     | '/tutor/lessons/new'
     | '/tutor/students/$id'
+    | '/student/classes'
     | '/student/lessons'
     | '/student/tutors'
     | '/tutor/lessons'
@@ -457,11 +479,13 @@ export interface FileRouteTypes {
     | '/tutor/wallet'
     | '/student/'
     | '/tutor/'
+    | '/student/classes/$id'
     | '/student/lessons/$id'
     | '/student/tutors/$id'
     | '/tutor/lessons/$id'
     | '/tutor/lessons/new'
     | '/tutor/students/$id'
+    | '/student/classes/'
     | '/student/lessons/'
     | '/student/tutors/'
     | '/tutor/lessons/'
@@ -701,6 +725,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentLessonsIndexRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/classes/': {
+      id: '/student/classes/'
+      path: '/classes'
+      fullPath: '/student/classes/'
+      preLoaderRoute: typeof StudentClassesIndexRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/tutor/students/$id': {
       id: '/tutor/students/$id'
       path: '/$id'
@@ -736,6 +767,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentLessonsIdRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/classes/$id': {
+      id: '/student/classes/$id'
+      path: '/classes/$id'
+      fullPath: '/student/classes/$id'
+      preLoaderRoute: typeof StudentClassesIdRouteImport
+      parentRoute: typeof StudentRoute
+    }
   }
 }
 
@@ -747,8 +785,10 @@ interface StudentRouteChildren {
   StudentSettingsRoute: typeof StudentSettingsRoute
   StudentToolsRoute: typeof StudentToolsRoute
   StudentIndexRoute: typeof StudentIndexRoute
+  StudentClassesIdRoute: typeof StudentClassesIdRoute
   StudentLessonsIdRoute: typeof StudentLessonsIdRoute
   StudentTutorsIdRoute: typeof StudentTutorsIdRoute
+  StudentClassesIndexRoute: typeof StudentClassesIndexRoute
   StudentLessonsIndexRoute: typeof StudentLessonsIndexRoute
   StudentTutorsIndexRoute: typeof StudentTutorsIndexRoute
 }
@@ -761,8 +801,10 @@ const StudentRouteChildren: StudentRouteChildren = {
   StudentSettingsRoute: StudentSettingsRoute,
   StudentToolsRoute: StudentToolsRoute,
   StudentIndexRoute: StudentIndexRoute,
+  StudentClassesIdRoute: StudentClassesIdRoute,
   StudentLessonsIdRoute: StudentLessonsIdRoute,
   StudentTutorsIdRoute: StudentTutorsIdRoute,
+  StudentClassesIndexRoute: StudentClassesIndexRoute,
   StudentLessonsIndexRoute: StudentLessonsIndexRoute,
   StudentTutorsIndexRoute: StudentTutorsIndexRoute,
 }
