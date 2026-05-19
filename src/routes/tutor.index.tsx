@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useTutor, PLACEHOLDER_SESSIONS, PLACEHOLDER_ACTIVITY, PLACEHOLDER_RECURRING_REQUESTS } from "@/lib/tutor-store";
+import { useTutor, PLACEHOLDER_SESSIONS, PLACEHOLDER_ACTIVITY } from "@/lib/tutor-store";
 import {
   Users, CalendarDays, DollarSign, Eye, Lock, Plus, Clock, BookOpen,
-  UserCircle, ArrowRight, Video, MessageSquare, Star, Wallet, UserPlus, ChevronRight,
+  UserCircle, ArrowRight, Video, MessageSquare, Star, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
