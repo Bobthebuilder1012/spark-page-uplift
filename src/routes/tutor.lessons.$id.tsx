@@ -569,7 +569,7 @@ function PaymentCell({ status }: { status: PaymentCellStatus }) {
 /* ---------------- Settings ---------------- */
 
 function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; isOneOnOne: boolean }) {
-  const u = <K extends keyof TutorLesson>(k: K, v: TutorLesson[K]) => setLesson({ ...lesson, [k]: v });
+  const u = <K extends keyof TutorLesson>(k: K, v: TutorLesson[K]) => { setLesson({ ...lesson, [k]: v }); toast.success("Saved"); };
   const gradients = [
     "from-orange-500 to-amber-400","from-fuchsia-500 to-purple-500","from-sky-500 to-cyan-400","from-emerald-500 to-teal-400",
     "from-rose-500 to-pink-400","from-indigo-500 to-blue-500","from-yellow-500 to-orange-500","from-slate-600 to-slate-400",
