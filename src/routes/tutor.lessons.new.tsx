@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PLACEHOLDER_RECURRING_REQUESTS, type RecurringRequest } from "@/lib/tutor-store";
 import {
   ArrowLeft, Users, User as UserIcon, ChevronRight, Check, Inbox, Clock, MessageCircle, X,
-  Globe, Lock, Eye, Video, MessageSquare, Sparkles, DollarSign,
+  Globe, Lock, Eye, MessageSquare, Sparkles, DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +37,6 @@ function CreateClassPage() {
   const [whatsapp, setWhatsapp] = useState("");
   const [classroom, setClassroom] = useState("");
   const [primary, setPrimary] = useState<"native" | "whatsapp" | "classroom">("native");
-  const [video, setVideo] = useState<"zoom" | "google-meet">("zoom");
   const [feedback, setFeedback] = useState<"off" | "included" | "paid">("off");
   const [feedbackPrice, setFeedbackPrice] = useState(50);
 
@@ -215,7 +214,7 @@ function CreateClassPage() {
             )}
           </Card>
 
-          <Card title="Channels & video">
+          <Card title="Communication">
             <Field label="WhatsApp group link"><input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="https://chat.whatsapp.com/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" /></Field>
             <Field label="Google Classroom link"><input value={classroom} onChange={(e) => setClassroom(e.target.value)} placeholder="https://classroom.google.com/c/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" /></Field>
             <Field label="Primary channel">
@@ -227,15 +226,9 @@ function CreateClassPage() {
                 ))}
               </div>
             </Field>
-            <Field label="Video provider">
-              <div className="grid grid-cols-2 gap-2">
-                {(["zoom", "google-meet"] as const).map((v) => (
-                  <button key={v} onClick={() => setVideo(v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold inline-flex items-center justify-center gap-1.5", video === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                    <Video className="size-3.5" /> {v === "google-meet" ? "Google Meet" : "Zoom"}
-                  </button>
-                ))}
-              </div>
-            </Field>
+            <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+              Sessions use the video provider on your tutor account. Meeting links are attached per-session in the Sessions tab.
+            </div>
           </Card>
 
           <Card title="Parent feedback">

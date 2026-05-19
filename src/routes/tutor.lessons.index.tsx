@@ -5,7 +5,7 @@ import { Plus, Lock, Users, BookOpen, Search, Archive } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tutor/lessons/")({
-  head: () => ({ meta: [{ title: "Lessons — iTutor Tutor" }] }),
+  head: () => ({ meta: [{ title: "My Classes — iTutor Tutor" }] }),
   component: LessonsPage,
 });
 
@@ -29,8 +29,8 @@ function LessonsPage() {
     return (
       <div className="max-w-2xl mx-auto mt-12 text-center">
         <div className="size-14 mx-auto rounded-full bg-muted grid place-items-center text-muted-foreground"><Lock className="size-6" /></div>
-        <h1 className="mt-4 text-xl font-bold text-ink">Lessons are locked</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Complete your tutor profile to create and manage lessons.</p>
+        <h1 className="mt-4 text-xl font-bold text-ink">My Classes is locked</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Complete your tutor profile to create and manage your classes.</p>
         <Link to="/tutor/get-listed" className="mt-5 inline-flex px-5 py-2.5 rounded-lg bg-brand text-white font-semibold hover:bg-brand/90">Complete profile</Link>
       </div>
     );
@@ -40,8 +40,8 @@ function LessonsPage() {
     <div className="max-w-7xl space-y-8">
       <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-ink">Lesson Marketplace</h1>
-          <p className="text-sm text-muted-foreground mt-1">Create, manage, and discover lesson sessions</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-ink">My Classes</h1>
+          <p className="text-sm text-muted-foreground mt-1">Create, manage, and grow your classes</p>
         </div>
         <Link to="/tutor/lessons/new" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90 shadow-sm">
           <Plus className="size-4" /> Create a Class
@@ -50,7 +50,7 @@ function LessonsPage() {
 
       {/* Tabs */}
       <div className="border-b border-border flex items-center gap-6">
-        {([["mine", "My Lessons", counts.mine], ["archived", "Archived", counts.archived]] as const).map(([k, label, c]) => (
+        {([["mine", "My Classes", counts.mine], ["archived", "Archived", counts.archived]] as const).map(([k, label, c]) => (
           <button key={k} onClick={() => setTab(k)} className={cn("relative pb-3 text-sm font-semibold flex items-center gap-2 transition", tab === k ? "text-brand-deep" : "text-muted-foreground hover:text-ink")}>
             {label}
             <span className={cn("text-[11px] px-1.5 py-0.5 rounded-full", tab === k ? "bg-brand-soft text-brand-deep" : "bg-muted text-muted-foreground")}>{c}</span>
@@ -59,7 +59,7 @@ function LessonsPage() {
         ))}
         <div className="ml-auto relative w-72 max-w-full hidden md:block pb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search lessons"
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search classes"
             className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
         </div>
       </div>
@@ -70,7 +70,7 @@ function LessonsPage() {
         {lessons.length === 0 && (
           <div className="col-span-full text-center py-20 text-sm text-muted-foreground">
             <Archive className="size-10 mx-auto text-muted-foreground/50" />
-            <p className="mt-3">{tab === "archived" ? "No archived lessons." : "No lessons yet — create your first class."}</p>
+            <p className="mt-3">{tab === "archived" ? "No archived classes." : "No classes yet — create your first class."}</p>
           </div>
         )}
       </div>
