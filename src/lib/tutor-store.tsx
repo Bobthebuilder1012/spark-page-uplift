@@ -56,13 +56,6 @@ export type RecurringRequest = {
   receivedAt: string;
 };
 
-export type FeedbackPromptKey = "worked-on" | "strength" | "struggle" | "engagement" | "recommendation";
-export type FeedbackPromptResponse = {
-  key: FeedbackPromptKey;
-  question: string;
-  tutorResponse: string;       // tutor writes this themselves
-  refinedByAi?: boolean;       // marker after "Refine with AI"
-};
 export type FeedbackDraft = {
   id: string;
   studentId: string;
@@ -74,8 +67,10 @@ export type FeedbackDraft = {
   status: "pending" | "approved" | "sent";
   // System-filled facts (never written by tutor or AI)
   stats: { attendance: string; sessionsAttended: number; sessionsScheduled: number };
-  // Tutor-authored prompts
-  prompts: FeedbackPromptResponse[];
+  // Tutor writes ONE narrative report. Suggested prompts (FEEDBACK_PROMPTS) are
+  // shown as guidance only — they're not separate fields.
+  body: string;
+  refinedByAi?: boolean;
 };
 
 export type StreamPost = {
