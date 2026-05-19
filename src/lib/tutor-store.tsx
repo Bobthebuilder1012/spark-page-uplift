@@ -115,6 +115,16 @@ export type TutorLesson = {
   retention?: number;               // 0-100
   rating?: number | null;           // 0-5
   reviewCount?: number;
+  // New: billing & policies
+  billingModel?: BillingModel;
+  memberServiceFee?: number;         // TTD per member
+  autoSuspend?: boolean;
+  graceWindowDays?: number;
+  joinRequests?: boolean;
+  primaryChannel?: PrimaryChannel;
+  parentFeedbackMode?: ParentFeedbackMode;
+  parentFeedbackPrice?: number;
+  promotion?: ClassPromotion | null;
 };
 
 export type TutorSession = {
