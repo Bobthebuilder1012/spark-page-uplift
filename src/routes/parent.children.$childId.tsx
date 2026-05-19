@@ -59,7 +59,7 @@ function ChildPage() {
       {/* Tabs */}
       <div className="inline-flex p-1 rounded-2xl bg-muted">
         {(["classes", "feedback"] as const).map((t) => (
-          <button key={t} onClick={() => navigate({ search: (p) => ({ ...p, tab: t, report: "" }) })}
+          <button key={t} onClick={() => navigate({ search: { tab: t, report: "", state } })}
             className={cn("inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold capitalize transition",
               tab === t ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink")}>
             {t === "classes" ? <GraduationCap className="size-4" /> : <FileText className="size-4" />}
@@ -71,12 +71,12 @@ function ChildPage() {
       {tab === "classes" ? (
         <ClassesTab enrollments={child.enrollments} onUnenroll={setConfirmUnenroll} />
       ) : (
-        <FeedbackTab feedback={feedback} state={state} onSwitchState={(s) => navigate({ search: (p) => ({ ...p, state: s }) })}
-          onOpenReport={(id) => navigate({ search: (p) => ({ ...p, report: id }) })} />
+        <FeedbackTab feedback={feedback} state={state} onSwitchState={(s) => navigate({ search: { tab, report, state: s } })}
+          onOpenReport={(id) => navigate({ search: { tab, report: id, state } })} />
       )}
 
       {/* Report viewer modal */}
-      {openReport && <ReportViewer report={openReport} onClose={() => navigate({ search: (p) => ({ ...p, report: "" }) })} />}
+      {openReport && <ReportViewer report={openReport} onClose={() => navigate({ search: { tab, report: "", state } })} />}
 
       {/* Unenroll confirm */}
       {confirmUnenroll && (
