@@ -699,7 +699,6 @@ function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; s
       {/* Danger zone */}
       <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-5 space-y-3">
         <h3 className="text-sm font-bold text-rose-700">Danger zone</h3>
-        <DangerRow icon={Archive} label={lesson.archived ? "Unarchive class" : "Archive class"} hint="Hide from the marketplace and stop new enrollments." onClick={() => u("archived", !lesson.archived)} />
         <DangerRow icon={ArrowUpRight} label="Transfer ownership" hint="Move this class to another tutor on iTutor." />
         <DangerRow icon={Trash2} label="Delete class" hint="Permanently remove this class and its data." destructive />
       </div>
