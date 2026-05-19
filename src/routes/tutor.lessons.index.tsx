@@ -11,19 +11,13 @@ export const Route = createFileRoute("/tutor/lessons/")({
 
 function LessonsPage() {
   const { completion } = useTutor();
-  const [tab, setTab] = useState<"mine" | "archived">("mine");
   const [search, setSearch] = useState("");
 
   const lessons = useMemo(() => PLACEHOLDER_LESSONS.filter((l) => {
-    const archMatch = tab === "archived" ? !!l.archived : !l.archived;
+    if (l.archived) return false;
     const sMatch = search === "" || l.title.toLowerCase().includes(search.toLowerCase()) || l.subject.toLowerCase().includes(search.toLowerCase());
-    return archMatch && sMatch;
-  }), [tab, search]);
-
-  const counts = {
-    mine: PLACEHOLDER_LESSONS.filter((l) => !l.archived).length,
-    archived: PLACEHOLDER_LESSONS.filter((l) => !!l.archived).length,
-  };
+    return sMatch;
+  }), [search]);
 
   if (!completion.listed) {
     return (
@@ -48,16 +42,9 @@ function LessonsPage() {
         </Link>
       </header>
 
-      {/* Tabs */}
-      <div className="border-b border-border flex items-center gap-6">
-        {([["mine", "My Classes", counts.mine], ["archived", "Archived", counts.archived]] as const).map(([k, label, c]) => (
-          <button key={k} onClick={() => setTab(k)} className={cn("relative pb-3 text-sm font-semibold flex items-center gap-2 transition", tab === k ? "text-brand-deep" : "text-muted-foreground hover:text-ink")}>
-            {label}
-            <span className={cn("text-[11px] px-1.5 py-0.5 rounded-full", tab === k ? "bg-brand-soft text-brand-deep" : "bg-muted text-muted-foreground")}>{c}</span>
-            {tab === k && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-brand" />}
-          </button>
-        ))}
-        <div className="ml-auto relative w-72 max-w-full hidden md:block pb-3">
+      <div className="flex items-center gap-3 pb-3 border-b border-border">
+        <span className="text-sm font-semibold text-ink">{lessons.length} active class{lessons.length === 1 ? "" : "es"}</span>
+        <div className="ml-auto relative w-72 max-w-full hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search classes"
             className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
@@ -69,12 +56,11 @@ function LessonsPage() {
         {lessons.map((l) => <LessonCard key={l.id} l={l} />)}
         {lessons.length === 0 && (
           <div className="col-span-full text-center py-20 text-sm text-muted-foreground">
-            <Archive className="size-10 mx-auto text-muted-foreground/50" />
-            <p className="mt-3">{tab === "archived" ? "No archived classes." : "No classes yet — create your first class."}</p>
+            <BookOpen className="size-10 mx-auto text-muted-foreground/50" />
+            <p className="mt-3">No classes yet — create your first class.</p>
           </div>
         )}
       </div>
-      {/* TODO(cursor): wire CRUD + recurrence + materials uploads + per-student payment ops to backend. */}
     </div>
   );
 }
