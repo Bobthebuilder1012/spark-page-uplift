@@ -168,6 +168,9 @@ function ClassCard({ c, saved, onSave }: { c: MarketClass; saved: boolean; onSav
           <div className="mt-1 text-xs text-muted-foreground">
             by {c.tutorName} · <span className="text-ink/60">{c.subject} · {c.level}</span>
           </div>
+          <div className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-ink">
+            {c.formLevel}
+          </div>
         </div>
 
         {/* Badges row */}
