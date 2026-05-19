@@ -56,6 +56,13 @@ export type RecurringRequest = {
   receivedAt: string;
 };
 
+export type FeedbackPromptKey = "worked-on" | "strength" | "struggle" | "engagement" | "recommendation";
+export type FeedbackPromptResponse = {
+  key: FeedbackPromptKey;
+  question: string;
+  tutorResponse: string;       // tutor writes this themselves
+  refinedByAi?: boolean;       // marker after "Refine with AI"
+};
 export type FeedbackDraft = {
   id: string;
   studentId: string;
@@ -65,8 +72,10 @@ export type FeedbackDraft = {
   lessonName: string;
   month: string;
   status: "pending" | "approved" | "sent";
-  bullets: string[];
-  draftBody: string;
+  // System-filled facts (never written by tutor or AI)
+  stats: { attendance: string; sessionsAttended: number; sessionsScheduled: number };
+  // Tutor-authored prompts
+  prompts: FeedbackPromptResponse[];
 };
 
 export type StreamPost = {
@@ -487,36 +496,63 @@ export const PLACEHOLDER_RECURRING_REQUESTS: RecurringRequest[] = [
   { id: "rq3", studentId: "u8", studentName: "Jada Pierre", initials: "JP", subject: "CSEC Physics", level: "Form 5", preferredTime: "Sun afternoons", message: "Need help with lab reports and SBA.", receivedAt: iso(-48) },
 ];
 
+export const FEEDBACK_PROMPTS: { key: FeedbackPromptKey; question: string; placeholder: string }[] = [
+  { key: "worked-on",      question: "What did the student work on this month?",            placeholder: "e.g. quadratics, simultaneous equations, past-paper Section A drills…" },
+  { key: "strength",       question: "Where did they shine? (a specific strength)",         placeholder: "e.g. consistently nailed substitution method; asks great clarifying questions." },
+  { key: "struggle",       question: "Where are they still struggling?",                    placeholder: "e.g. trig identities; loses marks on Paper 2 long-form answers." },
+  { key: "engagement",     question: "How was their engagement and attitude?",              placeholder: "e.g. always early, completes homework, asked to do extra practice." },
+  { key: "recommendation", question: "What's your recommendation for next month?",          placeholder: "e.g. focus on Paper 2; do 2 timed mocks; revisit indices before exam." },
+];
+
+const blankPrompts = (): FeedbackPromptResponse[] =>
+  FEEDBACK_PROMPTS.map((p) => ({ key: p.key, question: p.question, tutorResponse: "" }));
+
 export const PLACEHOLDER_FEEDBACK_DRAFTS: FeedbackDraft[] = [
   {
     id: "fb1", studentId: "u1", studentName: "Aliyah Mohammed", initials: "AM",
     lessonId: "l1", lessonName: "CSEC Maths Crash Course", month: "May 2026",
     status: "pending",
-    bullets: ["Attended 4 of 4 sessions", "Mastered quadratic equations", "Still shaky on trig identities — assigned 10 extra past-paper questions", "Engagement: high · asks great clarifying questions"],
-    draftBody: "Aliyah had a strong month. She attended every session and her work on quadratics is now exam-ready. Trig identities remain her weakest topic — I've assigned targeted past-paper drills for the next two weeks. Recommend continued focus on Paper 2 long-form questions before the May 18 exam.",
+    stats: { attendance: "100%", sessionsAttended: 4, sessionsScheduled: 4 },
+    prompts: blankPrompts(),
   },
   {
     id: "fb2", studentId: "u2", studentName: "Devon Charles", initials: "DC",
     lessonId: "l3", lessonName: "Physics 1:1", month: "May 2026",
     status: "pending",
-    bullets: ["Attended 3 of 4 sessions (missed May 12 — no notice)", "Lab report quality improved significantly", "Still struggles with circuit analysis"],
-    draftBody: "Devon's lab reports have improved markedly this month. Circuit analysis remains a challenge — we'll dedicate the next 2 sessions to series/parallel networks. Please remind him to message in advance if he can't attend.",
+    stats: { attendance: "75%", sessionsAttended: 3, sessionsScheduled: 4 },
+    prompts: blankPrompts(),
   },
   {
     id: "fb3", studentId: "u4", studentName: "Sade Williams", initials: "SW",
     lessonId: "l1", lessonName: "CSEC Maths Crash Course", month: "May 2026",
     status: "pending",
-    bullets: ["Attended 2 of 4 sessions", "Outstanding balance: TTD 180", "Engagement low when present — recommend conversation with parent"],
-    draftBody: "Sade's attendance has slipped to 50% this month and there's an outstanding balance. When she is present, engagement is mixed. I'd recommend a quick parent conversation before exams ramp up.",
+    stats: { attendance: "50%", sessionsAttended: 2, sessionsScheduled: 4 },
+    prompts: blankPrompts(),
   },
   {
     id: "fb4", studentId: "u3", studentName: "Keshawn Boodoo", initials: "KB",
     lessonId: "l2", lessonName: "CAPE Pure Maths · Unit 1", month: "May 2026",
     status: "approved",
-    bullets: ["Attended 4 of 4 sessions", "Top of cohort on the May diagnostic (94%)", "Ready to start Unit 2 prep"],
-    draftBody: "Keshawn continues to lead the cohort. Diagnostic score of 94% in May. We've started informal Unit 2 preview work — strong candidate for Grade I.",
+    stats: { attendance: "100%", sessionsAttended: 4, sessionsScheduled: 4 },
+    prompts: FEEDBACK_PROMPTS.map((p, i) => ({
+      key: p.key, question: p.question, refinedByAi: true,
+      tutorResponse: [
+        "Continued through Unit 1: differentiation, integration techniques, and a full diagnostic.",
+        "Diagnostic top score in cohort (94%). Calculus is now genuinely a strength.",
+        "Still a little rushed on multi-step word problems — small careless errors.",
+        "Excellent engagement throughout. Always prepared, asks ahead.",
+        "Begin informal Unit 2 preview work; aim for Grade I prep over the next term.",
+      ][i],
+    })),
   },
 ];
+
+// Promotion explanations (used by Promotions UI)
+export const PROMO_INFO: Record<PromotionKind, { title: string; blurb: string }> = {
+  "early-bird":   { title: "Early-bird", blurb: "The first set number of students to join pay a reduced price. Once that cap is hit, the price returns to normal." },
+  "time-limited": { title: "Time-limited", blurb: "Everyone who joins before the end date gets the discounted price. After the date, price reverts." },
+  "open-ended":   { title: "Open-ended", blurb: "An ongoing discount with no end date. Stays active until you remove it manually." },
+};
 
 export const PLACEHOLDER_STREAM_POSTS: StreamPost[] = [
   { id: "sp1", kind: "announcement", title: "📌 Bring past-paper booklets to Saturday's session", body: "Make sure you have the 2019–2023 CSEC Maths booklet printed and on hand. We'll work through Paper 2 Q1–5 together.", at: "Pinned · 2 days ago", pinned: true },
