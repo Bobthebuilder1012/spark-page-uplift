@@ -278,13 +278,23 @@ function PromoEditor({ lesson, initial, onClose, onSave }: { lesson: TutorLesson
         </header>
         <div className="p-6 space-y-5">
           <div>
-            <div className="text-sm font-semibold text-ink mb-2">Type</div>
-            <div className="grid grid-cols-3 gap-2">
-              {(["early-bird", "time-limited", "open-ended"] as PromotionKind[]).map((k) => (
-                <button key={k} onClick={() => setKind(k)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", kind === k ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                  {k.replace("-", " ")}
-                </button>
-              ))}
+            <div className="text-sm font-semibold text-ink mb-2">Promotion type</div>
+            <div className="grid sm:grid-cols-3 gap-2">
+              {(["early-bird", "time-limited", "open-ended"] as PromotionKind[]).map((k) => {
+                const Icon = k === "early-bird" ? Zap : k === "time-limited" ? Clock : InfinityIcon;
+                const active = kind === k;
+                return (
+                  <button key={k} onClick={() => setKind(k)}
+                    className={cn("relative text-left rounded-xl border p-3 transition", active ? "bg-brand-soft border-brand ring-2 ring-brand/30" : "border-border bg-background hover:border-brand")}>
+                    <div className="flex items-center gap-2">
+                      <Icon className={cn("size-4", active ? "text-brand-deep" : "text-muted-foreground")} />
+                      <span className="text-sm font-bold text-ink capitalize">{k.replace("-", " ")}</span>
+                      <InfoPop title={PROMO_INFO[k].title} blurb={PROMO_INFO[k].blurb} />
+                    </div>
+                    <div className="mt-1 text-[11px] text-muted-foreground line-clamp-2">{PROMO_INFO[k].blurb}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div>
