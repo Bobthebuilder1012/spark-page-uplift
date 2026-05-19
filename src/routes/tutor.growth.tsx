@@ -398,9 +398,9 @@ function FeedbackTab() {
       <div className="rounded-2xl border border-border bg-card p-4 flex items-start gap-3">
         <div className="size-9 rounded-xl bg-brand-soft text-brand-deep grid place-items-center shrink-0"><FileText className="size-4" /></div>
         <div className="text-sm">
-          <div className="font-semibold text-ink">You write the monthly report. AI only polishes if you want.</div>
+          <div className="font-semibold text-ink">You write one short report per student. AI only polishes if you want.</div>
           <div className="text-muted-foreground">
-            Each student gets a short set of prompts to fill in. Attendance and session counts are filled in automatically. Once you're happy, tap <span className="font-semibold text-ink">Refine with AI</span> on any field to polish the wording, then approve and send.
+            Attendance and session counts are filled in automatically. Suggested questions appear as guidance — you write a single narrative in your own voice, then tap <span className="font-semibold text-ink">Refine with AI</span> to polish it before sending.
           </div>
         </div>
       </div>
