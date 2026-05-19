@@ -110,9 +110,10 @@ function ClassCard({ c }: { c: MarketClass }) {
         )}
       </div>
       <div className="p-4 flex-1 flex flex-col">
-        <div className="flex items-center gap-1.5 mb-1">
+        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
           <span className="text-[10px] uppercase tracking-wider font-bold text-brand-deep bg-brand-soft px-1.5 py-0.5 rounded">{c.subject}</span>
           <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{c.level}</span>
+          <span className="text-[10px] font-bold text-ink bg-muted px-1.5 py-0.5 rounded">{c.formLevel}</span>
         </div>
         <h3 className="font-bold text-ink leading-tight">{c.title}</h3>
         <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">

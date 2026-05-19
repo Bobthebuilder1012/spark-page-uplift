@@ -8,7 +8,6 @@ import {
   BookOpen,
   Settings,
   Bell,
-  MessageSquare,
   GraduationCap,
   PanelLeftClose,
   PanelLeftOpen,
@@ -25,11 +24,10 @@ type NavItem = { to: string; label: string; icon: ComponentType<{ className?: st
 
 const nav: NavItem[] = [
   { to: "/student", label: "Home", icon: LayoutDashboard, exact: true, tint: "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/30" },
-  { to: "/student/tutors", label: "Explore", icon: Search, tint: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/30" },
-  { to: "/student/lessons", label: "My Lessons", icon: GraduationCap, tint: "bg-sky-500/20 text-sky-300 ring-1 ring-sky-400/30" },
+  { to: "/student/classes", label: "Classes", icon: Search, tint: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/30" },
+  { to: "/student/lessons", label: "My Classes", icon: GraduationCap, tint: "bg-sky-500/20 text-sky-300 ring-1 ring-sky-400/30" },
   { to: "/student/bookings", label: "My Bookings", icon: CalendarDays, tint: "bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30" },
   { to: "/student/tools", label: "Tools", icon: BookOpen, tint: "bg-violet-500/20 text-violet-300 ring-1 ring-violet-400/30" },
-  { to: "/student/messages", label: "Messages", icon: MessageSquare, tint: "bg-teal-500/20 text-teal-300 ring-1 ring-teal-400/30" },
 ];
 
 const COLLAPSE_KEY = "itutor.sidebarCollapsed";
@@ -63,7 +61,7 @@ function MyLessonsSection({ collapsed }: { collapsed: boolean }) {
     <div className="px-3 mt-5">
       <div className="h-px bg-border mx-2 mb-3" />
       <div className="flex items-center justify-between px-2 mb-2">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">My Lessons</div>
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">My Classes</div>
         <button
           onClick={() => setShowAdd((s) => !s)}
           className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-deep hover:bg-brand-soft px-2 py-1 rounded-md"
@@ -192,7 +190,7 @@ function ShellInner() {
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate({ to: "/student/tutors", search: { q: query } as any });
+    navigate({ to: "/student/classes", search: { q: query } as any });
   };
 
   return (
@@ -267,9 +265,6 @@ function ShellInner() {
               <button onClick={() => setCalOpen(true)} className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Calendar">
                 <CalendarDays className="size-4" />
               </button>
-              <Link to="/student/messages" className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Messages">
-                <MessageSquare className="size-4" />
-              </Link>
               <Link to="/student/notifications" className="relative size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Notifications">
                 <Bell className="size-4" />
                 <span className="absolute top-2 right-2 size-2 rounded-full bg-coral" />

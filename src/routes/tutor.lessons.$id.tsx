@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { useMemo, useState } from "react";
 import {
   PLACEHOLDER_LESSONS, PLACEHOLDER_SESSIONS, PLACEHOLDER_STREAM_POSTS,
@@ -294,16 +295,18 @@ function SessionsTab({ lesson }: { lesson: TutorLesson }) {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-lg font-bold text-ink">Sessions</h2>
-          <p className="text-xs text-muted-foreground">Next {upcoming.length} upcoming · attach meeting links, manage attendance.</p>
+          <p className="text-xs text-muted-foreground">Next {upcoming.length} upcoming · manage attendance and join links.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold hover:bg-muted">
-            <Video className="size-3.5" /> Attach Meeting Link
-          </button>
           <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90">
             <Plus className="size-3.5" /> Add Session
           </button>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground flex items-start gap-2">
+        <Video className="size-3.5 mt-0.5 shrink-0 text-brand-deep" />
+        <span>Meeting links are generated automatically from the video provider connected to your tutor account (Zoom or Google Meet) — no manual setup per session.</span>
       </div>
 
       {sessions.length === 0 && <EmptyState icon={CalendarIcon} title="No sessions scheduled" body="Add your first session to publish a calendar entry to enrolled students." />}
@@ -331,12 +334,13 @@ function SessionsTab({ lesson }: { lesson: TutorLesson }) {
               <div className="flex flex-1 items-center gap-2 flex-wrap">
                 <Pill tone={att === "attended" ? "emerald" : att === "no-show" ? "rose" : "slate"} label={`Attendance: ${att ?? (future ? "—" : "pending")}`} />
                 <Pill tone={pay === "paid" ? "emerald" : pay === "overdue" ? "rose" : "amber"} label={`Payment: ${pay}`} />
-                {!s.lessonId && <Pill tone="amber" label="No meeting link" />}
               </div>
               <div className="flex items-center gap-1.5">
-                <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold hover:bg-muted">
-                  <Video className="size-3.5" /> Attach link
-                </button>
+                {future && (
+                  <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90">
+                    <Video className="size-3.5" /> Join
+                  </button>
+                )}
                 <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-rose-600 hover:bg-rose-50">
                   <X className="size-3.5" /> Cancel
                 </button>
@@ -566,7 +570,7 @@ function PaymentCell({ status }: { status: PaymentCellStatus }) {
 /* ---------------- Settings ---------------- */
 
 function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; isOneOnOne: boolean }) {
-  const u = <K extends keyof TutorLesson>(k: K, v: TutorLesson[K]) => setLesson({ ...lesson, [k]: v });
+  const u = <K extends keyof TutorLesson>(k: K, v: TutorLesson[K]) => { setLesson({ ...lesson, [k]: v }); toast.success("Saved"); };
   const gradients = [
     "from-orange-500 to-amber-400","from-fuchsia-500 to-purple-500","from-sky-500 to-cyan-400","from-emerald-500 to-teal-400",
     "from-rose-500 to-pink-400","from-indigo-500 to-blue-500","from-yellow-500 to-orange-500","from-slate-600 to-slate-400",
@@ -699,7 +703,6 @@ function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; s
       {/* Danger zone */}
       <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-5 space-y-3">
         <h3 className="text-sm font-bold text-rose-700">Danger zone</h3>
-        <DangerRow icon={Archive} label={lesson.archived ? "Unarchive class" : "Archive class"} hint="Hide from the marketplace and stop new enrollments." onClick={() => u("archived", !lesson.archived)} />
         <DangerRow icon={ArrowUpRight} label="Transfer ownership" hint="Move this class to another tutor on iTutor." />
         <DangerRow icon={Trash2} label="Delete class" hint="Permanently remove this class and its data." destructive />
       </div>

@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { User, Bell, Lock, Wallet, GraduationCap, ChevronRight, Camera } from "lucide-react";
@@ -191,10 +192,11 @@ function Select({ label, options, value }: { label: string; options: string[]; v
   );
 }
 function SaveBar({ label = "Save changes" }: { label?: string }) {
+  const onSave = () => toast.success(label === "Save changes" ? "Settings saved" : `${label} successful`);
   return (
     <div className="flex justify-end gap-2 pt-4 border-t border-border">
-      <button className="px-4 py-2 rounded-xl text-sm font-semibold text-muted-foreground hover:bg-muted">Cancel</button>
-      <button className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">{label}</button>
+      <button type="button" className="px-4 py-2 rounded-xl text-sm font-semibold text-muted-foreground hover:bg-muted">Cancel</button>
+      <button type="button" onClick={onSave} className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">{label}</button>
     </div>
   );
 }
