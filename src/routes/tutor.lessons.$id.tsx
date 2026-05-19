@@ -11,7 +11,7 @@ import {
   ArrowLeft, Settings, Calendar as CalendarIcon, Users, UserPlus, Copy, Check, Star,
   Bell, FileText, MessageCircle, X, Plus, ExternalLink, Trash2, Archive, ArrowUpRight, Lock, Globe, Eye,
   Image as ImageIcon, Video, MoreVertical, Pin, Sparkles, Link as LinkIcon, Paperclip, AlertTriangle, ShieldAlert,
-  Mail, MessageSquare, DollarSign, BarChart3, ArrowUp, ArrowDown, Pencil,
+  Mail, MessageSquare, DollarSign, BarChart3, ArrowUp, ArrowDown, Pencil, Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -615,7 +615,7 @@ function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; s
             </div>
           </Field>
         )}
-        <Field label="Billing model">
+        <Field label="Billing model" infoTitle="Billing model" infoBlurb="Per-session: charged after each class. Per-month: a flat monthly fee. Prepaid: students pay upfront for a block of sessions.">
           <div className="grid grid-cols-3 gap-2">
             {(["per-session", "per-month", "prepaid"] as const).map((b) => (
               <button key={b} onClick={() => u("billingModel", b)}
@@ -629,7 +629,7 @@ function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; s
           <Field label="Price (TTD)">
             <input type="number" value={lesson.rateTtd} onChange={(e) => u("rateTtd", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
           </Field>
-          <Field label="Per-member service fee (TTD)">
+          <Field label="Per-member service fee (TTD)" infoTitle="Service fee" infoBlurb="A small flat fee added to each member's bill — useful to cover materials, platform costs, or admin overhead.">
             <input type="number" value={lesson.memberServiceFee ?? 0} onChange={(e) => u("memberServiceFee", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
           </Field>
         </div>
@@ -647,9 +647,9 @@ function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; s
           </div>
         </Field>
         <Toggle label="Enable join requests" hint="Members must request approval before joining." value={!!lesson.joinRequests} onChange={(v) => u("joinRequests", v)} />
-        <Toggle label="Auto-suspend on overdue payment" hint="When a payment goes overdue, suspend the member until they pay." value={!!lesson.autoSuspend} onChange={(v) => u("autoSuspend", v)} />
+        <Toggle label="Auto-suspend on overdue payment" hint="When a payment goes overdue past the grace window, the member is suspended until they pay." value={!!lesson.autoSuspend} onChange={(v) => u("autoSuspend", v)} />
         {lesson.autoSuspend && (
-          <Field label="Grace window (days)">
+          <Field label="Grace window (days)" infoTitle="Grace window" infoBlurb="How many days after a missed payment before the member is auto-suspended. Set to 0 to suspend immediately.">
             <input type="number" value={lesson.graceWindowDays ?? 7} onChange={(e) => u("graceWindowDays", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
           </Field>
         )}
@@ -663,7 +663,7 @@ function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; s
         <Field label="Google Classroom link">
           <input value={lesson.classroomLink ?? ""} onChange={(e) => u("classroomLink", e.target.value)} placeholder="https://classroom.google.com/c/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
         </Field>
-        <Field label="Primary channel" hint="Where members are pointed for class chatter.">
+        <Field label="Primary channel" infoTitle="Primary channel" infoBlurb="Where members are pointed for class chatter. iTutor native keeps everything in-app; WhatsApp/Classroom hands chat off to your existing group.">
           <div className="grid grid-cols-3 gap-2">
             {(["native", "whatsapp", "classroom"] as const).map((c) => (
               <button key={c} onClick={() => u("primaryChannel", c)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.primaryChannel === c ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
@@ -672,20 +672,15 @@ function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; s
             ))}
           </div>
         </Field>
-        <Field label="Video provider">
-          <div className="grid grid-cols-2 gap-2">
-            {(["zoom","google-meet"] as const).map((v) => (
-              <button key={v} onClick={() => u("videoProvider", v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold inline-flex items-center justify-center gap-1.5", lesson.videoProvider === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                <Video className="size-3.5" /> {v === "google-meet" ? "Google Meet" : "Zoom"}
-              </button>
-            ))}
-          </div>
-        </Field>
+        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground inline-flex items-start gap-2">
+          <Video className="size-3.5 mt-0.5 shrink-0" />
+          <span>Sessions use the video provider on your tutor account — meeting links are attached per-session in the <strong className="text-ink">Sessions</strong> tab.</span>
+        </div>
       </Card>
 
       {/* Parent feedback */}
       <Card title="Parent feedback">
-        <Field label="Mode" hint="Send AI-drafted monthly reports to parents. You review and approve before send.">
+        <Field label="Mode" infoTitle="Parent feedback" infoBlurb="A short monthly report you write for each student's parent. AI can optionally polish your wording. Charge for it as a paid add-on or include it free.">
           <div className="grid grid-cols-3 gap-2">
             {(["off", "included", "paid"] as const).map((m) => (
               <button key={m} onClick={() => u("parentFeedbackMode", m)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", lesson.parentFeedbackMode === m ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
@@ -844,13 +839,34 @@ function Card({ title, children }: any) {
     </div>
   );
 }
-function Field({ label, hint, children }: any) {
+function Field({ label, hint, infoTitle, infoBlurb, children }: any) {
   return (
     <div>
-      <div className="text-sm font-semibold text-ink">{label}</div>
+      <div className="text-sm font-semibold text-ink inline-flex items-center gap-1.5">
+        {label}
+        {infoTitle && <InfoPop title={infoTitle} blurb={infoBlurb} />}
+      </div>
       {hint && <div className="text-xs text-muted-foreground mt-0.5 mb-2">{hint}</div>}
       <div className={cn(!hint && "mt-2")}>{children}</div>
     </div>
+  );
+}
+function InfoPop({ title, blurb }: { title: string; blurb: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative inline-flex">
+      <button type="button" onClick={(e) => { e.preventDefault(); setOpen((o) => !o); }}
+        onBlur={() => setTimeout(() => setOpen(false), 120)}
+        className="size-4 grid place-items-center rounded-full text-muted-foreground hover:text-brand-deep" aria-label={`About ${title}`}>
+        <Info className="size-3.5" />
+      </button>
+      {open && (
+        <span className="absolute z-20 left-1/2 -translate-x-1/2 top-6 w-56 rounded-lg border border-border bg-background shadow-pop p-3 text-left">
+          <span className="block text-[11px] font-bold uppercase tracking-wider text-ink">{title}</span>
+          <span className="block text-xs text-muted-foreground mt-1 font-normal normal-case">{blurb}</span>
+        </span>
+      )}
+    </span>
   );
 }
 function Toggle({ label, hint, value, onChange }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void }) {

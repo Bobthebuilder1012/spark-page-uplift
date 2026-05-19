@@ -599,3 +599,22 @@ function KpiCard({ icon: Icon, label, value, delta, positive }: { icon: any; lab
     </div>
   );
 }
+
+function InfoPop({ title, blurb }: { title: string; blurb: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative inline-flex">
+      <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen((o) => !o); }}
+        onBlur={() => setTimeout(() => setOpen(false), 120)}
+        className="size-4 grid place-items-center rounded-full text-muted-foreground hover:text-brand-deep" aria-label={`About ${title}`}>
+        <Info className="size-3.5" />
+      </button>
+      {open && (
+        <span className="absolute z-20 left-1/2 -translate-x-1/2 top-6 w-56 rounded-lg border border-border bg-background shadow-pop p-3 text-left">
+          <span className="block text-[11px] font-bold uppercase tracking-wider text-ink">{title}</span>
+          <span className="block text-xs text-muted-foreground mt-1">{blurb}</span>
+        </span>
+      )}
+    </span>
+  );
+}
