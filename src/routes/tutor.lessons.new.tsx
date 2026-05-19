@@ -214,7 +214,7 @@ function CreateClassPage() {
             )}
           </Card>
 
-          <Card title="Channels & video">
+          <Card title="Communication">
             <Field label="WhatsApp group link"><input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="https://chat.whatsapp.com/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" /></Field>
             <Field label="Google Classroom link"><input value={classroom} onChange={(e) => setClassroom(e.target.value)} placeholder="https://classroom.google.com/c/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" /></Field>
             <Field label="Primary channel">
