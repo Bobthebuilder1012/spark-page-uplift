@@ -235,7 +235,9 @@ function PromotionsTab() {
                     <span className="text-2xl font-bold text-ink">TTD {promo.discountedPrice}</span>
                     <span className="text-sm line-through text-muted-foreground">TTD {promo.originalPrice}</span>
                   </div>
-                  {promo.endsAt && <div className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><CalendarIcon className="size-3" /> Ends {new Date(promo.endsAt).toLocaleDateString()}</div>}
+                  {promo.kind === "time-limited" && promo.endsAt && <div className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><CalendarIcon className="size-3" /> Ends {new Date(promo.endsAt).toLocaleDateString()}</div>}
+                  {promo.kind === "early-bird" && promo.seatCap !== undefined && <div className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><Users className="size-3" /> First {promo.seatCap} student{promo.seatCap === 1 ? "" : "s"}</div>}
+                  {promo.kind === "open-ended" && <div className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><InfinityIcon className="size-3" /> No end date</div>}
                   <button onClick={() => setEditing(l.id)} className="mt-3 text-xs font-semibold text-brand-deep hover:underline inline-flex items-center gap-1"><Edit3 className="size-3" /> Edit promotion</button>
                 </div>
               ) : (
