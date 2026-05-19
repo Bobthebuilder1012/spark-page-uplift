@@ -385,18 +385,20 @@ function FeedbackTab() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-mint border border-brand-soft p-4 flex items-start gap-3">
-        <Sparkles className="size-4 text-brand-deep mt-0.5" />
+      <div className="rounded-2xl border border-border bg-card p-4 flex items-start gap-3">
+        <div className="size-9 rounded-xl bg-brand-soft text-brand-deep grid place-items-center shrink-0"><FileText className="size-4" /></div>
         <div className="text-sm">
-          <div className="font-semibold text-ink">AI drafts monthly reports for each enrolled student.</div>
-          <div className="text-muted-foreground">Review, edit and approve before they're sent to parents. Pending reports below.</div>
+          <div className="font-semibold text-ink">You write the monthly report. AI only polishes if you want.</div>
+          <div className="text-muted-foreground">
+            Each student gets a short set of prompts to fill in. Attendance and session counts are filled in automatically. Once you're happy, tap <span className="font-semibold text-ink">Refine with AI</span> on any field to polish the wording, then approve and send.
+          </div>
         </div>
       </div>
 
       <section>
-        <h2 className="font-bold text-ink mb-3">Pending approval · {pending.length}</h2>
+        <h2 className="font-bold text-ink mb-3">Reports to write · {pending.length}</h2>
         {pending.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-border bg-card/50 p-10 text-center text-sm text-muted-foreground">All caught up — no reports waiting for review.</div>
+          <div className="rounded-2xl border-2 border-dashed border-border bg-card/50 p-10 text-center text-sm text-muted-foreground">All caught up — no reports to write.</div>
         ) : (
           <div className="grid md:grid-cols-2 gap-3">
             {pending.map((f) => <FeedbackCard key={f.id} f={f} onOpen={() => setOpen(f.id)} />)}
@@ -406,7 +408,7 @@ function FeedbackTab() {
 
       {done.length > 0 && (
         <section>
-          <h2 className="font-bold text-ink mb-3">Recently approved</h2>
+          <h2 className="font-bold text-ink mb-3">Recently sent / approved</h2>
           <div className="grid md:grid-cols-2 gap-3">
             {done.map((f) => <FeedbackCard key={f.id} f={f} onOpen={() => setOpen(f.id)} />)}
           </div>
@@ -417,7 +419,7 @@ function FeedbackTab() {
         <FeedbackEditor
           draft={drafts.find((d) => d.id === open)!}
           onClose={() => setOpen(null)}
-          onSave={(patch) => { update(open, patch); }}
+          onSave={(patch) => update(open, patch)}
           onApprove={() => { update(open, { status: "approved" }); setOpen(null); }}
           onSend={() => { update(open, { status: "sent" }); setOpen(null); }}
         />
@@ -427,6 +429,9 @@ function FeedbackTab() {
 }
 
 function FeedbackCard({ f, onOpen }: { f: FeedbackDraft; onOpen: () => void }) {
+  const filled = f.prompts.filter((p) => p.tutorResponse.trim().length > 0).length;
+  const total = f.prompts.length;
+  const pct = Math.round((filled / total) * 100);
   return (
     <button onClick={onOpen} className="text-left rounded-2xl bg-card border border-border p-5 hover:border-brand transition w-full">
       <div className="flex items-start gap-3">
@@ -437,13 +442,22 @@ function FeedbackCard({ f, onOpen }: { f: FeedbackDraft; onOpen: () => void }) {
         </div>
         <StatusChip status={f.status} />
       </div>
-      <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-        {f.bullets.slice(0, 3).map((b, i) => (
-          <li key={i} className="flex items-start gap-1.5"><span className="text-brand mt-1">•</span> <span className="line-clamp-1">{b}</span></li>
-        ))}
-      </ul>
+      <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1"><Check className="size-3 text-brand-deep" /> Attendance {f.stats.attendance}</span>
+        <span>·</span>
+        <span>{f.stats.sessionsAttended}/{f.stats.sessionsScheduled} sessions</span>
+      </div>
+      <div className="mt-3">
+        <div className="flex items-center justify-between text-[11px] font-semibold">
+          <span className="text-muted-foreground">Your prompts filled</span>
+          <span className={cn(pct === 100 ? "text-emerald-700" : "text-ink")}>{filled}/{total}</span>
+        </div>
+        <div className="mt-1 h-1.5 rounded-full bg-muted overflow-hidden">
+          <div className={cn("h-full rounded-full", pct === 100 ? "bg-emerald-500" : "bg-brand")} style={{ width: `${pct}%` }} />
+        </div>
+      </div>
       <div className="mt-3 text-xs font-semibold text-brand-deep inline-flex items-center gap-1">
-        {f.status === "pending" ? <>Review & approve <ChevronRight className="size-3" /></> : <>View report <ChevronRight className="size-3" /></>}
+        {f.status === "pending" ? <>Write report <ChevronRight className="size-3" /></> : <>View report <ChevronRight className="size-3" /></>}
       </div>
     </button>
   );
@@ -451,11 +465,36 @@ function FeedbackCard({ f, onOpen }: { f: FeedbackDraft; onOpen: () => void }) {
 
 function StatusChip({ status }: { status: FeedbackDraft["status"] }) {
   const m = { pending: "bg-amber-100 text-amber-800", approved: "bg-sky-100 text-sky-700", sent: "bg-emerald-100 text-emerald-700" }[status];
-  return <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", m)}>{status === "pending" ? "Pending" : status === "approved" ? "Approved" : "Sent"}</span>;
+  return <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", m)}>{status === "pending" ? "Draft" : status === "approved" ? "Approved" : "Sent"}</span>;
+}
+
+// Fake "AI polish": just dresses up the tutor's raw text. UI-only demo.
+function fakeAiPolish(text: string): string {
+  const t = text.trim();
+  if (!t) return t;
+  return t.charAt(0).toUpperCase() + t.slice(1).replace(/\s+/g, " ") + (t.endsWith(".") ? "" : ".");
 }
 
 function FeedbackEditor({ draft, onClose, onSave, onApprove, onSend }: { draft: FeedbackDraft; onClose: () => void; onSave: (p: Partial<FeedbackDraft>) => void; onApprove: () => void; onSend: () => void }) {
-  const [body, setBody] = useState(draft.draftBody);
+  const [prompts, setPrompts] = useState<FeedbackPromptResponse[]>(draft.prompts);
+  const allFilled = prompts.every((p) => p.tutorResponse.trim().length > 0);
+
+  const updatePrompt = (key: string, patch: Partial<FeedbackPromptResponse>) => {
+    const next = prompts.map((p) => p.key === key ? { ...p, ...patch } : p);
+    setPrompts(next);
+    onSave({ prompts: next });
+  };
+  const refineOne = (key: string) => {
+    const target = prompts.find((p) => p.key === key);
+    if (!target) return;
+    updatePrompt(key, { tutorResponse: fakeAiPolish(target.tutorResponse), refinedByAi: true });
+  };
+  const refineAll = () => {
+    const next = prompts.map((p) => p.tutorResponse.trim() ? { ...p, tutorResponse: fakeAiPolish(p.tutorResponse), refinedByAi: true } : p);
+    setPrompts(next);
+    onSave({ prompts: next });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex" onClick={onClose}>
       <div className="flex-1 bg-ink/50 backdrop-blur-sm" />
@@ -468,28 +507,67 @@ function FeedbackEditor({ draft, onClose, onSave, onApprove, onSend }: { draft: 
           <button onClick={onClose} className="size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
         </header>
         <div className="p-6 space-y-5">
-          <div className="rounded-xl bg-mint border border-brand-soft p-4">
-            <div className="text-[10px] uppercase tracking-wider font-bold text-brand-deep inline-flex items-center gap-1"><Sparkles className="size-3" /> AI-drafted highlights</div>
-            <ul className="mt-2 space-y-1 text-sm text-ink">
-              {draft.bullets.map((b, i) => (<li key={i} className="flex items-start gap-2"><Check className="size-3.5 text-brand-deep mt-1 shrink-0" /> {b}</li>))}
-            </ul>
+          {/* Auto-filled stats */}
+          <div className="rounded-xl border border-border bg-muted/40 p-4">
+            <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-1">
+              <Check className="size-3 text-brand-deep" /> Auto-filled facts
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-3 text-sm">
+              <div><div className="text-[11px] text-muted-foreground">Attendance</div><div className="font-bold text-ink">{draft.stats.attendance}</div></div>
+              <div><div className="text-[11px] text-muted-foreground">Sessions</div><div className="font-bold text-ink">{draft.stats.sessionsAttended} of {draft.stats.sessionsScheduled}</div></div>
+            </div>
           </div>
 
+          {/* Tutor prompts */}
           <div>
-            <div className="text-sm font-semibold text-ink mb-2 flex items-center justify-between">
-              <span>Report body (sent to parent)</span>
-              <button onClick={() => onSave({ draftBody: body })} className="text-xs font-semibold text-brand-deep hover:underline">Save edits</button>
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm font-semibold text-ink">Your responses</div>
+              <button onClick={refineAll} className="inline-flex items-center gap-1 text-xs font-semibold text-brand-deep hover:underline">
+                <Wand2 className="size-3.5" /> Refine all with AI
+              </button>
             </div>
-            <textarea value={body} onChange={(e) => setBody(e.target.value)} className="w-full min-h-48 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+            <div className="space-y-3">
+              {prompts.map((p) => {
+                const meta = FEEDBACK_PROMPTS.find((f) => f.key === p.key)!;
+                return (
+                  <div key={p.key} className="rounded-xl border border-border bg-background p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <label className="text-sm font-semibold text-ink">{p.question}</label>
+                      {p.refinedByAi && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-soft text-brand-deep inline-flex items-center gap-1"><Sparkles className="size-3" /> Refined</span>}
+                    </div>
+                    <textarea
+                      value={p.tutorResponse}
+                      onChange={(e) => updatePrompt(p.key, { tutorResponse: e.target.value, refinedByAi: false })}
+                      placeholder={meta.placeholder}
+                      className="mt-2 w-full min-h-20 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    />
+                    <div className="mt-2 flex justify-end">
+                      <button
+                        disabled={!p.tutorResponse.trim()}
+                        onClick={() => refineOne(p.key)}
+                        className={cn("inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md", p.tutorResponse.trim() ? "text-brand-deep hover:bg-brand-soft" : "text-muted-foreground cursor-not-allowed")}>
+                        <Wand2 className="size-3" /> Refine with AI
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
+
+          {!allFilled && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs px-3 py-2">
+              Fill in every prompt before you can approve and send.
+            </div>
+          )}
         </div>
         <footer className="sticky bottom-0 bg-background border-t border-border px-6 py-4 flex justify-end gap-2">
           {draft.status === "pending" && (
-            <button onClick={onApprove} className="px-4 py-2 rounded-lg border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5">
+            <button disabled={!allFilled} onClick={onApprove} className={cn("px-4 py-2 rounded-lg border text-sm font-semibold inline-flex items-center gap-1.5", allFilled ? "border-border hover:bg-muted text-ink" : "border-border text-muted-foreground cursor-not-allowed")}>
               <Check className="size-4" /> Approve
             </button>
           )}
-          <button onClick={onSend} className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90 inline-flex items-center gap-1.5">
+          <button disabled={!allFilled} onClick={onSend} className={cn("px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-1.5", allFilled ? "bg-brand text-white hover:bg-brand/90" : "bg-muted text-muted-foreground cursor-not-allowed")}>
             <Send className="size-4" /> Send to parent
           </button>
         </footer>
