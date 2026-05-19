@@ -38,7 +38,8 @@ export type ClassPromotion = {
   kind: PromotionKind;
   originalPrice: number;
   discountedPrice: number;
-  endsAt?: string;
+  endsAt?: string;       // required for time-limited
+  seatCap?: number;      // required for early-bird (first N students)
   label?: string;
 };
 export type ParentFeedbackMode = "off" | "included" | "paid";
