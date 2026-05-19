@@ -56,13 +56,6 @@ export type RecurringRequest = {
   receivedAt: string;
 };
 
-export type FeedbackPromptKey = "worked-on" | "strength" | "struggle" | "engagement" | "recommendation";
-export type FeedbackPromptResponse = {
-  key: FeedbackPromptKey;
-  question: string;
-  tutorResponse: string;       // tutor writes this themselves
-  refinedByAi?: boolean;       // marker after "Refine with AI"
-};
 export type FeedbackDraft = {
   id: string;
   studentId: string;
@@ -74,8 +67,10 @@ export type FeedbackDraft = {
   status: "pending" | "approved" | "sent";
   // System-filled facts (never written by tutor or AI)
   stats: { attendance: string; sessionsAttended: number; sessionsScheduled: number };
-  // Tutor-authored prompts
-  prompts: FeedbackPromptResponse[];
+  // Tutor writes ONE narrative report. Suggested prompts (FEEDBACK_PROMPTS) are
+  // shown as guidance only — they're not separate fields.
+  body: string;
+  refinedByAi?: boolean;
 };
 
 export type StreamPost = {
@@ -496,16 +491,15 @@ export const PLACEHOLDER_RECURRING_REQUESTS: RecurringRequest[] = [
   { id: "rq3", studentId: "u8", studentName: "Jada Pierre", initials: "JP", subject: "CSEC Physics", level: "Form 5", preferredTime: "Sun afternoons", message: "Need help with lab reports and SBA.", receivedAt: iso(-48) },
 ];
 
-export const FEEDBACK_PROMPTS: { key: FeedbackPromptKey; question: string; placeholder: string }[] = [
-  { key: "worked-on",      question: "What did the student work on this month?",            placeholder: "e.g. quadratics, simultaneous equations, past-paper Section A drills…" },
-  { key: "strength",       question: "Where did they shine? (a specific strength)",         placeholder: "e.g. consistently nailed substitution method; asks great clarifying questions." },
-  { key: "struggle",       question: "Where are they still struggling?",                    placeholder: "e.g. trig identities; loses marks on Paper 2 long-form answers." },
-  { key: "engagement",     question: "How was their engagement and attitude?",              placeholder: "e.g. always early, completes homework, asked to do extra practice." },
-  { key: "recommendation", question: "What's your recommendation for next month?",          placeholder: "e.g. focus on Paper 2; do 2 timed mocks; revisit indices before exam." },
+// Suggested questions shown as helper text in the editor. The tutor writes
+// ONE narrative report — these are just thinking prompts, not separate fields.
+export const FEEDBACK_PROMPTS: { question: string }[] = [
+  { question: "What did the student work on this month?" },
+  { question: "Where did they shine? (a specific strength)" },
+  { question: "Where are they still struggling?" },
+  { question: "How was their engagement and attitude?" },
+  { question: "What's your recommendation for next month?" },
 ];
-
-const blankPrompts = (): FeedbackPromptResponse[] =>
-  FEEDBACK_PROMPTS.map((p) => ({ key: p.key, question: p.question, tutorResponse: "" }));
 
 export const PLACEHOLDER_FEEDBACK_DRAFTS: FeedbackDraft[] = [
   {
@@ -513,37 +507,29 @@ export const PLACEHOLDER_FEEDBACK_DRAFTS: FeedbackDraft[] = [
     lessonId: "l1", lessonName: "CSEC Maths Crash Course", month: "May 2026",
     status: "pending",
     stats: { attendance: "100%", sessionsAttended: 4, sessionsScheduled: 4 },
-    prompts: blankPrompts(),
+    body: "",
   },
   {
     id: "fb2", studentId: "u2", studentName: "Devon Charles", initials: "DC",
     lessonId: "l3", lessonName: "Physics 1:1", month: "May 2026",
     status: "pending",
     stats: { attendance: "75%", sessionsAttended: 3, sessionsScheduled: 4 },
-    prompts: blankPrompts(),
+    body: "",
   },
   {
     id: "fb3", studentId: "u4", studentName: "Sade Williams", initials: "SW",
     lessonId: "l1", lessonName: "CSEC Maths Crash Course", month: "May 2026",
     status: "pending",
     stats: { attendance: "50%", sessionsAttended: 2, sessionsScheduled: 4 },
-    prompts: blankPrompts(),
+    body: "",
   },
   {
     id: "fb4", studentId: "u3", studentName: "Keshawn Boodoo", initials: "KB",
     lessonId: "l2", lessonName: "CAPE Pure Maths · Unit 1", month: "May 2026",
     status: "approved",
     stats: { attendance: "100%", sessionsAttended: 4, sessionsScheduled: 4 },
-    prompts: FEEDBACK_PROMPTS.map((p, i) => ({
-      key: p.key, question: p.question, refinedByAi: true,
-      tutorResponse: [
-        "Continued through Unit 1: differentiation, integration techniques, and a full diagnostic.",
-        "Diagnostic top score in cohort (94%). Calculus is now genuinely a strength.",
-        "Still a little rushed on multi-step word problems — small careless errors.",
-        "Excellent engagement throughout. Always prepared, asks ahead.",
-        "Begin informal Unit 2 preview work; aim for Grade I prep over the next term.",
-      ][i],
-    })),
+    refinedByAi: true,
+    body: "Keshawn continued through Unit 1 this month — differentiation, integration techniques, and a full diagnostic. He topped the cohort on the diagnostic (94%) and calculus is now genuinely a strength. He still rushes multi-step word problems and loses small marks on careless errors. Engagement was excellent throughout: always prepared, often asks ahead. Next month I'd like to begin informal Unit 2 preview work and aim for Grade I prep over the next term.",
   },
 ];
 

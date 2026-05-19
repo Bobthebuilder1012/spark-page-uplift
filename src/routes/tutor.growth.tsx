@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import {
   PLACEHOLDER_LESSONS, PLACEHOLDER_FEEDBACK_DRAFTS, LESSON_KIND_META,
   FEEDBACK_PROMPTS, PROMO_INFO,
-  type TutorLesson, type FeedbackDraft, type ClassPromotion, type PromotionKind, type FeedbackPromptResponse,
+  type TutorLesson, type FeedbackDraft, type ClassPromotion, type PromotionKind,
 } from "@/lib/tutor-store";
 import {
   Briefcase, Tag, BarChart3, FileText, Plus, Check, X, Sparkles, ArrowUp, ArrowDown,
@@ -398,9 +398,9 @@ function FeedbackTab() {
       <div className="rounded-2xl border border-border bg-card p-4 flex items-start gap-3">
         <div className="size-9 rounded-xl bg-brand-soft text-brand-deep grid place-items-center shrink-0"><FileText className="size-4" /></div>
         <div className="text-sm">
-          <div className="font-semibold text-ink">You write the monthly report. AI only polishes if you want.</div>
+          <div className="font-semibold text-ink">You write one short report per student. AI only polishes if you want.</div>
           <div className="text-muted-foreground">
-            Each student gets a short set of prompts to fill in. Attendance and session counts are filled in automatically. Once you're happy, tap <span className="font-semibold text-ink">Refine with AI</span> on any field to polish the wording, then approve and send.
+            Attendance and session counts are filled in automatically. Suggested questions appear as guidance — you write a single narrative in your own voice, then tap <span className="font-semibold text-ink">Refine with AI</span> to polish it before sending.
           </div>
         </div>
       </div>
@@ -439,9 +439,8 @@ function FeedbackTab() {
 }
 
 function FeedbackCard({ f, onOpen }: { f: FeedbackDraft; onOpen: () => void }) {
-  const filled = f.prompts.filter((p) => p.tutorResponse.trim().length > 0).length;
-  const total = f.prompts.length;
-  const pct = Math.round((filled / total) * 100);
+  const wordCount = f.body.trim() ? f.body.trim().split(/\s+/).length : 0;
+  const hasContent = wordCount > 0;
   return (
     <button onClick={onOpen} className="text-left rounded-2xl bg-card border border-border p-5 hover:border-brand transition w-full">
       <div className="flex items-start gap-3">
@@ -457,17 +456,16 @@ function FeedbackCard({ f, onOpen }: { f: FeedbackDraft; onOpen: () => void }) {
         <span>·</span>
         <span>{f.stats.sessionsAttended}/{f.stats.sessionsScheduled} sessions</span>
       </div>
-      <div className="mt-3">
-        <div className="flex items-center justify-between text-[11px] font-semibold">
-          <span className="text-muted-foreground">Your prompts filled</span>
-          <span className={cn(pct === 100 ? "text-emerald-700" : "text-ink")}>{filled}/{total}</span>
-        </div>
-        <div className="mt-1 h-1.5 rounded-full bg-muted overflow-hidden">
-          <div className={cn("h-full rounded-full", pct === 100 ? "bg-emerald-500" : "bg-brand")} style={{ width: `${pct}%` }} />
-        </div>
+      <div className="mt-3 text-xs text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+        {hasContent ? f.body : <span className="italic">No report written yet.</span>}
       </div>
-      <div className="mt-3 text-xs font-semibold text-brand-deep inline-flex items-center gap-1">
-        {f.status === "pending" ? <>Write report <ChevronRight className="size-3" /></> : <>View report <ChevronRight className="size-3" /></>}
+      <div className="mt-3 flex items-center justify-between text-[11px] font-semibold">
+        <span className={cn(hasContent ? "text-emerald-700" : "text-muted-foreground")}>
+          {hasContent ? `${wordCount} word${wordCount === 1 ? "" : "s"} written` : "Not started"}
+        </span>
+        <span className="text-brand-deep inline-flex items-center gap-1">
+          {f.status === "pending" ? <>Write report <ChevronRight className="size-3" /></> : <>View report <ChevronRight className="size-3" /></>}
+        </span>
       </div>
     </button>
   );
@@ -482,27 +480,29 @@ function StatusChip({ status }: { status: FeedbackDraft["status"] }) {
 function fakeAiPolish(text: string): string {
   const t = text.trim();
   if (!t) return t;
-  return t.charAt(0).toUpperCase() + t.slice(1).replace(/\s+/g, " ") + (t.endsWith(".") ? "" : ".");
+  // Mock: normalise whitespace, capitalise sentences, ensure trailing period.
+  const cleaned = t.replace(/\s+/g, " ");
+  const sentences = cleaned.split(/(?<=[.!?])\s+/).map((s) => s.charAt(0).toUpperCase() + s.slice(1));
+  let out = sentences.join(" ");
+  if (!/[.!?]$/.test(out)) out += ".";
+  return out;
 }
 
 function FeedbackEditor({ draft, onClose, onSave, onApprove, onSend }: { draft: FeedbackDraft; onClose: () => void; onSave: (p: Partial<FeedbackDraft>) => void; onApprove: () => void; onSend: () => void }) {
-  const [prompts, setPrompts] = useState<FeedbackPromptResponse[]>(draft.prompts);
-  const allFilled = prompts.every((p) => p.tutorResponse.trim().length > 0);
+  const [body, setBody] = useState(draft.body);
+  const [refined, setRefined] = useState(!!draft.refinedByAi);
+  const hasContent = body.trim().length > 0;
 
-  const updatePrompt = (key: string, patch: Partial<FeedbackPromptResponse>) => {
-    const next = prompts.map((p) => p.key === key ? { ...p, ...patch } : p);
-    setPrompts(next);
-    onSave({ prompts: next });
+  const onChangeBody = (v: string) => {
+    setBody(v);
+    setRefined(false);
+    onSave({ body: v, refinedByAi: false });
   };
-  const refineOne = (key: string) => {
-    const target = prompts.find((p) => p.key === key);
-    if (!target) return;
-    updatePrompt(key, { tutorResponse: fakeAiPolish(target.tutorResponse), refinedByAi: true });
-  };
-  const refineAll = () => {
-    const next = prompts.map((p) => p.tutorResponse.trim() ? { ...p, tutorResponse: fakeAiPolish(p.tutorResponse), refinedByAi: true } : p);
-    setPrompts(next);
-    onSave({ prompts: next });
+  const refine = () => {
+    const next = fakeAiPolish(body);
+    setBody(next);
+    setRefined(true);
+    onSave({ body: next, refinedByAi: true });
   };
 
   return (
@@ -528,56 +528,58 @@ function FeedbackEditor({ draft, onClose, onSave, onApprove, onSend }: { draft: 
             </div>
           </div>
 
-          {/* Tutor prompts */}
+          {/* Suggested prompts — guidance only */}
+          <div className="rounded-xl border border-dashed border-border bg-card p-4">
+            <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-2 flex items-center gap-1">
+              <Sparkles className="size-3 text-brand-deep" /> Suggested things to cover
+            </div>
+            <ul className="space-y-1.5 text-xs text-muted-foreground">
+              {FEEDBACK_PROMPTS.map((p, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-brand-deep mt-0.5">·</span>
+                  <span>{p.question}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[11px] text-muted-foreground italic">These are just thinking prompts — write one short report below in your own voice.</p>
+          </div>
+
+          {/* Single narrative report */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <div className="text-sm font-semibold text-ink">Your responses</div>
-              <button onClick={refineAll} className="inline-flex items-center gap-1 text-xs font-semibold text-brand-deep hover:underline">
-                <Wand2 className="size-3.5" /> Refine all with AI
-              </button>
+              <label htmlFor="report-body" className="text-sm font-semibold text-ink">Monthly report</label>
+              {refined && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-soft text-brand-deep inline-flex items-center gap-1"><Sparkles className="size-3" /> Refined</span>}
             </div>
-            <div className="space-y-3">
-              {prompts.map((p) => {
-                const meta = FEEDBACK_PROMPTS.find((f) => f.key === p.key)!;
-                return (
-                  <div key={p.key} className="rounded-xl border border-border bg-background p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <label className="text-sm font-semibold text-ink">{p.question}</label>
-                      {p.refinedByAi && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-soft text-brand-deep inline-flex items-center gap-1"><Sparkles className="size-3" /> Refined</span>}
-                    </div>
-                    <textarea
-                      value={p.tutorResponse}
-                      onChange={(e) => updatePrompt(p.key, { tutorResponse: e.target.value, refinedByAi: false })}
-                      placeholder={meta.placeholder}
-                      className="mt-2 w-full min-h-20 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                    />
-                    <div className="mt-2 flex justify-end">
-                      <button
-                        disabled={!p.tutorResponse.trim()}
-                        onClick={() => refineOne(p.key)}
-                        className={cn("inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md", p.tutorResponse.trim() ? "text-brand-deep hover:bg-brand-soft" : "text-muted-foreground cursor-not-allowed")}>
-                        <Wand2 className="size-3" /> Refine with AI
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+            <textarea
+              id="report-body"
+              value={body}
+              onChange={(e) => onChangeBody(e.target.value)}
+              placeholder="Write a short paragraph for the parent. Cover what their child worked on, where they shone, what's still tricky, and what's next…"
+              className="w-full min-h-48 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <div className="mt-2 flex justify-end">
+              <button
+                disabled={!hasContent}
+                onClick={refine}
+                className={cn("inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md", hasContent ? "text-brand-deep hover:bg-brand-soft" : "text-muted-foreground cursor-not-allowed")}>
+                <Wand2 className="size-3" /> Refine with AI
+              </button>
             </div>
           </div>
 
-          {!allFilled && (
+          {!hasContent && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs px-3 py-2">
-              Fill in every prompt before you can approve and send.
+              Write a short report before you can approve and send.
             </div>
           )}
         </div>
         <footer className="sticky bottom-0 bg-background border-t border-border px-6 py-4 flex justify-end gap-2">
           {draft.status === "pending" && (
-            <button disabled={!allFilled} onClick={onApprove} className={cn("px-4 py-2 rounded-lg border text-sm font-semibold inline-flex items-center gap-1.5", allFilled ? "border-border hover:bg-muted text-ink" : "border-border text-muted-foreground cursor-not-allowed")}>
+            <button disabled={!hasContent} onClick={onApprove} className={cn("px-4 py-2 rounded-lg border text-sm font-semibold inline-flex items-center gap-1.5", hasContent ? "border-border hover:bg-muted text-ink" : "border-border text-muted-foreground cursor-not-allowed")}>
               <Check className="size-4" /> Approve
             </button>
           )}
-          <button disabled={!allFilled} onClick={onSend} className={cn("px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-1.5", allFilled ? "bg-brand text-white hover:bg-brand/90" : "bg-muted text-muted-foreground cursor-not-allowed")}>
+          <button disabled={!hasContent} onClick={onSend} className={cn("px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-1.5", hasContent ? "bg-brand text-white hover:bg-brand/90" : "bg-muted text-muted-foreground cursor-not-allowed")}>
             <Send className="size-4" /> Send to parent
           </button>
         </footer>
