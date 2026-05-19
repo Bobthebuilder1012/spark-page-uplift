@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useTutor, PLACEHOLDER_SESSIONS, PLACEHOLDER_ACTIVITY, PLACEHOLDER_RECURRING_REQUESTS } from "@/lib/tutor-store";
+import { useTutor, PLACEHOLDER_SESSIONS, PLACEHOLDER_ACTIVITY } from "@/lib/tutor-store";
 import {
   Users, CalendarDays, DollarSign, Eye, Lock, Plus, Clock, BookOpen,
-  UserCircle, ArrowRight, Video, MessageSquare, Star, Wallet, UserPlus, ChevronRight,
+  UserCircle, ArrowRight, Video, MessageSquare, Star, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,24 +43,6 @@ function TutorDashboard() {
         </p>
       </header>
 
-      {listed && PLACEHOLDER_RECURRING_REQUESTS.length > 0 && (
-        <Link to="/tutor/lessons/new"
-          className="group flex items-center gap-4 rounded-2xl border-2 border-brand bg-gradient-to-r from-brand-soft to-mint p-4 lg:p-5 hover:shadow-md transition">
-          <div className="size-11 rounded-xl bg-brand text-white grid place-items-center shrink-0">
-            <UserPlus className="size-5" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-ink">{PLACEHOLDER_RECURRING_REQUESTS.length} new recurring 1:1 request{PLACEHOLDER_RECURRING_REQUESTS.length === 1 ? "" : "s"}</span>
-              <span className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-full bg-coral text-white">Action needed</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">
-              From {PLACEHOLDER_RECURRING_REQUESTS.slice(0, 2).map((r) => r.studentName.split(" ")[0]).join(", ")}{PLACEHOLDER_RECURRING_REQUESTS.length > 2 ? ` +${PLACEHOLDER_RECURRING_REQUESTS.length - 2} more` : ""} — accept to start a Class.
-            </p>
-          </div>
-          <ChevronRight className="size-5 text-brand-deep group-hover:translate-x-0.5 transition" />
-        </Link>
-      )}
 
       <section>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">

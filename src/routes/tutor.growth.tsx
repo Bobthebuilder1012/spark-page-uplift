@@ -235,7 +235,9 @@ function PromotionsTab() {
                     <span className="text-2xl font-bold text-ink">TTD {promo.discountedPrice}</span>
                     <span className="text-sm line-through text-muted-foreground">TTD {promo.originalPrice}</span>
                   </div>
-                  {promo.endsAt && <div className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><CalendarIcon className="size-3" /> Ends {new Date(promo.endsAt).toLocaleDateString()}</div>}
+                  {promo.kind === "time-limited" && promo.endsAt && <div className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><CalendarIcon className="size-3" /> Ends {new Date(promo.endsAt).toLocaleDateString()}</div>}
+                  {promo.kind === "early-bird" && promo.seatCap !== undefined && <div className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><Users className="size-3" /> First {promo.seatCap} student{promo.seatCap === 1 ? "" : "s"}</div>}
+                  {promo.kind === "open-ended" && <div className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><InfinityIcon className="size-3" /> No end date</div>}
                   <button onClick={() => setEditing(l.id)} className="mt-3 text-xs font-semibold text-brand-deep hover:underline inline-flex items-center gap-1"><Edit3 className="size-3" /> Edit promotion</button>
                 </div>
               ) : (
@@ -264,6 +266,27 @@ function PromoEditor({ lesson, initial, onClose, onSave }: { lesson: TutorLesson
   const [kind, setKind] = useState<PromotionKind>(initial?.kind ?? "early-bird");
   const [discounted, setDiscounted] = useState(initial?.discountedPrice ?? Math.round(lesson.rateTtd * 0.8));
   const [endsAt, setEndsAt] = useState(initial?.endsAt ?? "");
+  const [seatCap, setSeatCap] = useState<number>(initial?.seatCap ?? Math.max(1, Math.min(5, lesson.capacity ?? 5)));
+
+  const priceInvalid = !(discounted > 0) || discounted >= lesson.rateTtd;
+  const endsInvalid = kind === "time-limited" && !endsAt;
+  const seatInvalid = kind === "early-bird" && (!seatCap || seatCap < 1);
+  const errors: string[] = [];
+  if (priceInvalid) errors.push("Discounted price must be greater than 0 and less than the original price.");
+  if (endsInvalid) errors.push("Pick an end date for a time-limited promotion.");
+  if (seatInvalid) errors.push("Set how many of the first students get the early-bird price.");
+  const canSave = errors.length === 0;
+
+  const save = () => {
+    if (!canSave) return;
+    onSave({
+      kind,
+      originalPrice: lesson.rateTtd,
+      discountedPrice: discounted,
+      endsAt: kind === "time-limited" ? endsAt : undefined,
+      seatCap: kind === "early-bird" ? seatCap : undefined,
+    });
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex" onClick={onClose}>
@@ -299,26 +322,52 @@ function PromoEditor({ lesson, initial, onClose, onSave }: { lesson: TutorLesson
           </div>
           <div>
             <div className="text-sm font-semibold text-ink mb-2">Discounted price (TTD)</div>
-            <input type="number" value={discounted} onChange={(e) => setDiscounted(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+            <input type="number" min={1} value={discounted} onChange={(e) => setDiscounted(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
             <div className="text-xs text-muted-foreground mt-1">Original price: TTD {lesson.rateTtd} (struck through on the listing)</div>
           </div>
-          {kind !== "open-ended" && (
+
+          {kind === "early-bird" && (
             <div>
-              <div className="text-sm font-semibold text-ink mb-2">Ends on</div>
-              <input type="date" value={endsAt ? endsAt.slice(0, 10) : ""} onChange={(e) => setEndsAt(new Date(e.target.value).toISOString())} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+              <div className="text-sm font-semibold text-ink mb-2">First how many students get this price?</div>
+              <input type="number" min={1} max={lesson.capacity} value={seatCap} onChange={(e) => setSeatCap(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+              <div className="text-xs text-muted-foreground mt-1">After {seatCap || 0} student{seatCap === 1 ? "" : "s"} join, the price reverts to TTD {lesson.rateTtd}. Class capacity is {lesson.capacity}.</div>
             </div>
           )}
+
+          {kind === "time-limited" && (
+            <div>
+              <div className="text-sm font-semibold text-ink mb-2">Ends on</div>
+              <input type="date" value={endsAt ? endsAt.slice(0, 10) : ""} onChange={(e) => setEndsAt(e.target.value ? new Date(e.target.value).toISOString() : "")} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+              <div className="text-xs text-muted-foreground mt-1">Anyone who joins before this date locks in the discount.</div>
+            </div>
+          )}
+
+          {kind === "open-ended" && (
+            <div className="rounded-xl border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+              No end date or seat cap. The discount stays active until you remove it manually from this page.
+            </div>
+          )}
+
           <div className="rounded-xl bg-mint p-4">
             <div className="text-[10px] uppercase tracking-wider font-bold text-brand-deep">Preview</div>
             <div className="mt-1 flex items-baseline gap-2">
               <span className="text-2xl font-bold text-ink">TTD {discounted}</span>
               <span className="text-sm line-through text-muted-foreground">TTD {lesson.rateTtd}</span>
             </div>
+            {kind === "early-bird" && <div className="text-[11px] text-ink/70 mt-1">For the first {seatCap || 0} student{seatCap === 1 ? "" : "s"} to enroll</div>}
+            {kind === "time-limited" && endsAt && <div className="text-[11px] text-ink/70 mt-1">Ends {new Date(endsAt).toLocaleDateString()}</div>}
+            {kind === "open-ended" && <div className="text-[11px] text-ink/70 mt-1">Open-ended · no end date</div>}
           </div>
+
+          {errors.length > 0 && (
+            <ul className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs px-3 py-2 space-y-1">
+              {errors.map((e) => <li key={e}>· {e}</li>)}
+            </ul>
+          )}
         </div>
         <footer className="sticky bottom-0 bg-background border-t border-border px-6 py-4 flex justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 rounded-lg border border-border text-sm font-semibold hover:bg-muted">Cancel</button>
-          <button onClick={() => onSave({ kind, originalPrice: lesson.rateTtd, discountedPrice: discounted, endsAt: kind === "open-ended" ? undefined : endsAt || undefined })} className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">
+          <button disabled={!canSave} onClick={save} className={cn("px-4 py-2 rounded-lg text-sm font-semibold", canSave ? "bg-brand text-white hover:bg-brand/90" : "bg-muted text-muted-foreground cursor-not-allowed")}>
             Save promotion
           </button>
         </footer>
