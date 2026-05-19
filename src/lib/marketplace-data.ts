@@ -62,7 +62,7 @@ export const LOW_STOCK_THRESHOLD = 4;
 
 export const MARKET_CLASSES: MarketClass[] = [
   {
-    id: "csec-maths-mastery",
+    id: "csec-maths-mastery", formLevel: "Form 4–5 (14–16)",
     title: "CSEC Maths Mastery",
     subject: "Mathematics", level: "CSEC",
     tutorId: "ramdeen", tutorName: "Mr. Ramdeen", tutorHue: 145, tutorRating: 4.95, tutorReviews: 211,
@@ -88,7 +88,7 @@ export const MARKET_CLASSES: MarketClass[] = [
     startDate: "Ongoing · join anytime",
   },
   {
-    id: "physics-power-hour",
+    id: "physics-power-hour", formLevel: "Form 4–5 (14–16)",
     title: "Physics Power Hour",
     subject: "Physics", level: "CSEC",
     tutorId: "ramdeen", tutorName: "Mr. Ramdeen", tutorHue: 145, tutorRating: 4.9, tutorReviews: 128,
@@ -114,7 +114,7 @@ export const MARKET_CLASSES: MarketClass[] = [
     startDate: "Ongoing · join anytime",
   },
   {
-    id: "essay-lab",
+    id: "essay-lab", formLevel: "Form 4–5 (14–16)",
     title: "Essay Lab",
     subject: "English Lit", level: "CSEC",
     tutorId: "joseph", tutorName: "Mr. Joseph", tutorHue: 20, tutorRating: 4.85, tutorReviews: 142,
@@ -139,7 +139,7 @@ export const MARKET_CLASSES: MarketClass[] = [
     startDate: "New cohort starts 1 June 2026",
   },
   {
-    id: "cape-chem-bootcamp",
+    id: "cape-chem-bootcamp", formLevel: "Lower & Upper 6 (16–18)",
     title: "CAPE Chem Bootcamp",
     subject: "Chemistry", level: "CAPE",
     tutorId: "thomas", tutorName: "Mr. Thomas", tutorHue: 165, tutorRating: 4.9, tutorReviews: 142,
@@ -164,7 +164,7 @@ export const MARKET_CLASSES: MarketClass[] = [
     startDate: "Ongoing · waitlist only",
   },
   {
-    id: "sea-sprint",
+    id: "sea-sprint", formLevel: "Std 4–5 (9–11)",
     title: "SEA Sprint Friday",
     subject: "SEA Prep", level: "Primary",
     tutorId: "khan", tutorName: "Ms. Khan", tutorHue: 35, tutorRating: 4.92, tutorReviews: 178,
@@ -189,7 +189,7 @@ export const MARKET_CLASSES: MarketClass[] = [
     startDate: "Ongoing · join anytime",
   },
   {
-    id: "addmaths-11",
+    id: "addmaths-11", formLevel: "Form 4–5 (14–16)",
     title: "CSEC Additional Maths · Recurring 1:1",
     subject: "Mathematics", level: "CSEC",
     tutorId: "ramdeen", tutorName: "Mr. Ramdeen", tutorHue: 145, tutorRating: 4.95, tutorReviews: 211,
