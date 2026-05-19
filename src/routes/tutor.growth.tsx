@@ -1,275 +1,511 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Copy, QrCode, Share2, Tag, Gift, Megaphone, Rocket, TrendingUp, Plus, Eye, Lightbulb, Users } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import {
+  PLACEHOLDER_LESSONS, PLACEHOLDER_FEEDBACK_DRAFTS, LESSON_KIND_META,
+  type TutorLesson, type FeedbackDraft, type ClassPromotion, type PromotionKind,
+} from "@/lib/tutor-store";
+import {
+  Briefcase, Tag, BarChart3, FileText, Plus, Check, X, Sparkles, ArrowUp, ArrowDown,
+  Users, DollarSign, Star, Edit3, Send, Calendar as CalendarIcon, Search, ChevronRight, BookOpen,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tutor/growth")({
-  head: () => ({ meta: [{ title: "Growth — iTutor Tutor" }] }),
-  component: GrowthPage,
+  head: () => ({ meta: [{ title: "My Business — iTutor Tutor" }] }),
+  component: MyBusinessPage,
 });
 
-// TODO(cursor): wire share intents, code redemption, referral tracking, image generation, monetization.
+type Tab = "overview" | "classes" | "promotions" | "analytics" | "feedback";
 
-type View = "home" | "profile" | "promo" | "referral" | "social" | "boost" | "insights";
+function MyBusinessPage() {
+  const [tab, setTab] = useState<Tab>("overview");
 
-function GrowthPage() {
-  const [view, setView] = useState<View>("home");
-  if (view !== "home") return <DetailWrapper view={view} onBack={() => setView("home")} />;
-
-  const cards = [
-    { id: "profile" as View, icon: Share2, title: "My profile link", desc: "Share your tutor page anywhere", color: "from-brand to-brand-deep" },
-    { id: "promo" as View, icon: Tag, title: "Promo codes", desc: "Discounts for your lessons", color: "from-amber-400 to-amber-600" },
-    { id: "referral" as View, icon: Gift, title: "Referral program", desc: "Earn when others sign up", color: "from-purple-400 to-purple-600" },
-    { id: "social" as View, icon: Megaphone, title: "Social templates", desc: "Pre-designed share posts", color: "from-sky-400 to-sky-600" },
-    { id: "boost" as View, icon: Rocket, title: "Profile boost", desc: "Appear higher in search", color: "from-coral to-rose-600" },
-    { id: "insights" as View, icon: TrendingUp, title: "Growth insights", desc: "Stats and tips to grow", color: "from-emerald-400 to-emerald-600" },
+  const tabs: { key: Tab; label: string; icon: any; badge?: number }[] = [
+    { key: "overview", label: "Overview", icon: Briefcase },
+    { key: "classes", label: "Classes", icon: BookOpen, badge: PLACEHOLDER_LESSONS.filter((l) => !l.archived).length },
+    { key: "promotions", label: "Promotions", icon: Tag },
+    { key: "analytics", label: "Analytics", icon: BarChart3 },
+    { key: "feedback", label: "Parent feedback", icon: FileText, badge: PLACEHOLDER_FEEDBACK_DRAFTS.filter((f) => f.status === "pending").length },
   ];
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-7xl space-y-6">
       <header>
-        <h1 className="text-2xl lg:text-3xl font-bold text-ink">Growth</h1>
-        <p className="text-sm text-muted-foreground mt-1">Tools to grow your tutoring business.</p>
+        <div className="flex items-center gap-2 text-xs uppercase tracking-wider font-bold text-brand-deep"><Briefcase className="size-3.5" /> My Business</div>
+        <h1 className="text-2xl lg:text-3xl font-bold text-ink mt-1">Your tutoring command centre</h1>
+        <p className="text-sm text-muted-foreground mt-1">All your Classes, promotions, analytics, and parent feedback in one place.</p>
       </header>
 
-      {/* Quick stats strip */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: "Profile views (7d)", value: "284", trend: "+12%" },
-          { label: "Booking conversion", value: "18%", trend: "+3%" },
-          { label: "Search ranking", value: "#7", trend: "↑ 2" },
-          { label: "Referrals", value: "3", trend: "+1" },
-        ].map((s) => (
-          <div key={s.label} className="rounded-2xl bg-background border border-border p-4">
-            <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{s.label}</div>
-            <div className="text-2xl font-bold text-ink mt-1 tabular-nums">{s.value}</div>
-            <div className="text-xs text-brand-deep font-semibold mt-0.5">{s.trend}</div>
-          </div>
-        ))}
-      </section>
-
-      <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cards.map((c) => {
-          const Icon = c.icon;
+      <div className="border-b border-border flex items-center gap-6 overflow-x-auto">
+        {tabs.map((t) => {
+          const Icon = t.icon;
           return (
-            <button key={c.id} onClick={() => setView(c.id)}
-              className="group text-left rounded-2xl bg-background border border-border p-5 hover:border-brand hover:shadow-pop transition">
-              <div className={cn("size-12 rounded-xl bg-gradient-to-br grid place-items-center text-white mb-3", c.color)}>
-                <Icon className="size-6" />
-              </div>
-              <div className="font-bold text-ink">{c.title}</div>
-              <div className="text-sm text-muted-foreground mt-1">{c.desc}</div>
-              <div className="text-xs font-semibold text-brand-deep mt-3 group-hover:underline">Open →</div>
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={cn("relative pb-3 text-sm font-semibold whitespace-nowrap inline-flex items-center gap-2", tab === t.key ? "text-brand-deep" : "text-muted-foreground hover:text-ink")}>
+              <Icon className="size-4" /> {t.label}
+              {t.badge !== undefined && t.badge > 0 && (
+                <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full", tab === t.key ? "bg-brand-soft text-brand-deep" : "bg-muted text-muted-foreground")}>{t.badge}</span>
+              )}
+              {tab === t.key && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-brand" />}
             </button>
           );
         })}
+      </div>
+
+      {tab === "overview"   && <OverviewTab />}
+      {tab === "classes"    && <ClassesTab />}
+      {tab === "promotions" && <PromotionsTab />}
+      {tab === "analytics"  && <BusinessAnalyticsTab />}
+      {tab === "feedback"   && <FeedbackTab />}
+      {/* TODO(cursor): persist promotions, business analytics ranges, and parent-feedback approvals. */}
+    </div>
+  );
+}
+
+/* ---------------- Overview ---------------- */
+
+function OverviewTab() {
+  const active = PLACEHOLDER_LESSONS.filter((l) => !l.archived);
+  const totalRevenue = active.reduce((s, l) => s + (l.earningsTtd ?? 0), 0);
+  const totalStudents = new Set(active.flatMap((l) => l.enrollments.map((e) => e.studentId))).size;
+  const activePromos = active.filter((l) => !!l.promotion).length;
+  const pendingFeedback = PLACEHOLDER_FEEDBACK_DRAFTS.filter((f) => f.status === "pending").length;
+
+  return (
+    <div className="space-y-6">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <KpiCard icon={DollarSign} label="Revenue (all classes)" value={`TTD ${totalRevenue.toLocaleString()}`} delta="+18% MoM" positive />
+        <KpiCard icon={Users} label="Unique students" value={String(totalStudents)} delta="+2 this month" positive />
+        <KpiCard icon={Tag} label="Active promotions" value={String(activePromos)} delta={activePromos > 0 ? "1 ending soon" : "None active"} positive={activePromos > 0} />
+        <KpiCard icon={FileText} label="Feedback to review" value={String(pendingFeedback)} delta={pendingFeedback > 0 ? "Action needed" : "All caught up"} positive={pendingFeedback === 0} />
+      </section>
+
+      <section className="grid lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 rounded-2xl bg-card border border-border p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-ink">Your Classes</h2>
+            <Link to="/tutor/lessons" className="text-xs font-semibold text-brand-deep hover:underline inline-flex items-center gap-1">View all <ChevronRight className="size-3" /></Link>
+          </div>
+          <ul className="mt-4 divide-y divide-border">
+            {active.slice(0, 4).map((l) => <ClassRowMini key={l.id} l={l} />)}
+          </ul>
+        </div>
+
+        <div className="rounded-2xl bg-card border border-border p-5">
+          <h2 className="font-bold text-ink">Quick actions</h2>
+          <div className="mt-3 space-y-2">
+            <QuickAction to="/tutor/lessons/new" icon={Plus} label="Create a Class" />
+            <QuickAction to="/tutor/growth" icon={Tag} label="Launch a promotion" onClick={() => {}} />
+            <QuickAction to="/tutor/growth" icon={FileText} label="Review parent feedback" />
+            <QuickAction to="/tutor/wallet" icon={DollarSign} label="View wallet & payouts" />
+          </div>
+        </div>
       </section>
     </div>
   );
 }
 
-function DetailWrapper({ view, onBack }: { view: View; onBack: () => void }) {
+function QuickAction({ to, icon: Icon, label, onClick }: { to: string; icon: any; label: string; onClick?: () => void }) {
   return (
-    <div className="max-w-5xl space-y-5">
-      <button onClick={onBack} className="text-sm text-muted-foreground hover:text-ink font-medium">← Back to Growth</button>
-      {view === "profile" && <ProfileLink />}
-      {view === "promo" && <PromoCodes />}
-      {view === "referral" && <Referral />}
-      {view === "social" && <SocialTemplates />}
-      {view === "boost" && <Boost />}
-      {view === "insights" && <Insights />}
+    <Link to={to} onClick={onClick} className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border hover:border-brand hover:bg-brand-soft/40">
+      <div className="size-8 rounded-lg bg-brand-soft text-brand-deep grid place-items-center"><Icon className="size-4" /></div>
+      <span className="text-sm font-semibold text-ink flex-1">{label}</span>
+      <ChevronRight className="size-4 text-muted-foreground" />
+    </Link>
+  );
+}
+
+function ClassRowMini({ l }: { l: TutorLesson }) {
+  const m = LESSON_KIND_META[l.kind];
+  return (
+    <li className="py-3 flex items-center gap-3">
+      <div className={cn("size-10 rounded-xl bg-gradient-to-br grid place-items-center text-white", l.thumbnailGradient ?? "from-brand to-emerald-400")}>
+        <BookOpen className="size-4" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <Link to="/tutor/lessons/$id" params={{ id: l.id }} className="font-semibold text-ink hover:underline truncate block">{l.title}</Link>
+        <div className="text-[11px] text-muted-foreground">{l.subject} · {m.label}</div>
+      </div>
+      <div className="text-xs text-muted-foreground hidden sm:flex items-center gap-3">
+        <span className="inline-flex items-center gap-1"><Users className="size-3" /> {l.enrollments.length}/{l.capacity}</span>
+        <span className="inline-flex items-center gap-1 text-brand-deep font-semibold">TTD {(l.earningsTtd ?? 0).toLocaleString()}</span>
+        {l.promotion && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-coral-soft text-coral">Promo</span>}
+      </div>
+    </li>
+  );
+}
+
+/* ---------------- Classes ---------------- */
+
+function ClassesTab() {
+  const [q, setQ] = useState("");
+  const rows = useMemo(() => PLACEHOLDER_LESSONS.filter((l) => !l.archived && (q === "" || l.title.toLowerCase().includes(q.toLowerCase()))), [q]);
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search your Classes…" className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+        </div>
+        <Link to="/tutor/lessons/new" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">
+          <Plus className="size-4" /> New Class
+        </Link>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <tr>
+              <th className="text-left font-bold px-4 py-2">Class</th>
+              <th className="text-left font-bold px-4 py-2">Type</th>
+              <th className="text-right font-bold px-4 py-2">Members</th>
+              <th className="text-right font-bold px-4 py-2">Earnings</th>
+              <th className="text-right font-bold px-4 py-2">Rating</th>
+              <th className="px-4 py-2"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {rows.map((l) => {
+              const m = LESSON_KIND_META[l.kind];
+              return (
+                <tr key={l.id}>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={cn("size-9 rounded-lg bg-gradient-to-br grid place-items-center text-white", l.thumbnailGradient ?? "from-brand to-emerald-400")}><BookOpen className="size-3.5" /></div>
+                      <div>
+                        <Link to="/tutor/lessons/$id" params={{ id: l.id }} className="font-semibold text-ink hover:underline">{l.title}</Link>
+                        <div className="text-[11px] text-muted-foreground">{l.subject} · {l.level}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3"><span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", m.chip)}>{m.short}</span></td>
+                  <td className="px-4 py-3 text-right tabular-nums">{l.enrollments.length}/{l.capacity}</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-brand-deep font-semibold">TTD {(l.earningsTtd ?? 0).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-right">
+                    {l.rating ? <span className="inline-flex items-center gap-1 text-amber-600 font-semibold"><Star className="size-3.5 fill-amber-400 text-amber-400" /> {l.rating.toFixed(1)}</span> : <span className="text-muted-foreground">—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link to="/tutor/lessons/$id" params={{ id: l.id }} className="text-xs font-semibold text-brand-deep hover:underline">Manage →</Link>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-function ProfileLink() {
-  const url = "itutor.tt/anil-ramdeen";
-  return (
-    <>
-      <header><h2 className="text-2xl font-bold text-ink">My profile link</h2><p className="text-sm text-muted-foreground mt-1">Your shareable tutor page.</p></header>
-      <div className="rounded-2xl bg-background border border-border p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1 px-4 py-3 rounded-xl bg-mint font-mono text-sm text-ink truncate">{url}</div>
-          <button className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90"><Copy className="size-4" /> Copy</button>
-        </div>
-        <div className="grid sm:grid-cols-[180px_1fr] gap-4">
-          <div className="aspect-square rounded-xl bg-mint border border-border grid place-items-center"><QrCode className="size-24 text-ink" /></div>
-          <div className="space-y-2">
-            <div className="text-sm font-semibold text-ink">Share to…</div>
-            <div className="flex flex-wrap gap-2">
-              {["WhatsApp", "Facebook", "Instagram", "Email", "Copy link"].map((p) => (
-                <button key={p} className="px-3 py-2 rounded-lg border border-border hover:border-brand hover:bg-brand-soft text-sm font-semibold">{p}</button>
-              ))}
-            </div>
-            <button className="mt-2 px-3 py-2 rounded-lg bg-ink text-white text-sm font-semibold hover:bg-ink/90">Download QR (PNG)</button>
-          </div>
-        </div>
-      </div>
-      <div className="rounded-2xl bg-background border border-border p-5">
-        <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Profile preview</div>
-        <div className="rounded-xl bg-gradient-to-br from-brand-soft to-mint p-6 flex items-center gap-4">
-          <div className="size-16 rounded-full bg-brand text-white grid place-items-center text-xl font-bold">AR</div>
-          <div>
-            <div className="font-bold text-ink">Anil Ramdeen</div>
-            <div className="text-sm text-muted-foreground">CSEC & CAPE Maths · Physics · Trinidad</div>
-            <div className="text-xs text-brand-deep mt-1">★ 4.8 · 14 reviews</div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
+/* ---------------- Promotions ---------------- */
 
-function PromoCodes() {
-  const codes = [
-    { code: "FIRST10", desc: "10% off first session", uses: 12, revenue: 1620, status: "active" },
-    { code: "GROUP5", desc: "5% off group classes", uses: 8, revenue: 720, status: "active" },
-    { code: "EXAM2024", desc: "TTD 50 off · Exam prep", uses: 23, revenue: 3450, status: "expired" },
-  ];
-  return (
-    <>
-      <header className="flex items-center justify-between flex-wrap gap-3">
-        <div><h2 className="text-2xl font-bold text-ink">Promo codes</h2><p className="text-sm text-muted-foreground mt-1">Create discounts to win and retain students.</p></div>
-        <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90"><Plus className="size-4" /> Create code</button>
-      </header>
-      <div className="rounded-2xl bg-background border border-border divide-y divide-border">
-        {codes.map((c) => (
-          <div key={c.code} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2"><div className="font-mono font-bold text-ink">{c.code}</div>{c.status === "expired" ? <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Expired</span> : <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-brand-soft text-brand-deep">Active</span>}</div>
-              <div className="text-sm text-muted-foreground">{c.desc}</div>
-            </div>
-            <div className="text-sm grid grid-cols-2 gap-6">
-              <div><div className="text-[10px] uppercase text-muted-foreground font-bold">Used</div><div className="font-semibold text-ink tabular-nums">{c.uses}×</div></div>
-              <div><div className="text-[10px] uppercase text-muted-foreground font-bold">Revenue</div><div className="font-semibold text-ink tabular-nums">TTD {c.revenue}</div></div>
-            </div>
-            <button className="text-sm font-semibold text-brand-deep hover:underline">Manage</button>
-          </div>
-        ))}
-      </div>
-      <div className="rounded-2xl bg-mint border border-brand-soft p-4">
-        <div className="text-sm font-semibold text-ink mb-2">💡 Suggested codes</div>
-        <div className="flex flex-wrap gap-2">
-          <button className="text-xs font-semibold px-3 py-1.5 rounded-full bg-background border border-border hover:border-brand">+ FIRST10 (10% off first session)</button>
-          <button className="text-xs font-semibold px-3 py-1.5 rounded-full bg-background border border-border hover:border-brand">+ REFER15 (15% off via referral)</button>
-        </div>
-      </div>
-    </>
-  );
-}
+function PromotionsTab() {
+  const [overrides, setOverrides] = useState<Record<string, ClassPromotion | null>>({});
+  const [editing, setEditing] = useState<string | null>(null);
 
-function Referral() {
+  const get = (l: TutorLesson) => (overrides[l.id] !== undefined ? overrides[l.id] : l.promotion ?? null);
+
   return (
-    <>
-      <header><h2 className="text-2xl font-bold text-ink">Referral program</h2><p className="text-sm text-muted-foreground mt-1">Invite tutors and students. Earn when they join.</p></header>
-      <div className="rounded-2xl bg-background border border-border p-5">
-        <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Your referral link</div>
-        <div className="flex gap-2">
-          <div className="flex-1 px-4 py-3 rounded-xl bg-mint font-mono text-sm truncate">itutor.tt/r/anil-ar99</div>
-          <button className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90"><Copy className="size-4" /> Copy</button>
-        </div>
-      </div>
-      <div className="grid sm:grid-cols-3 gap-3">
-        {[{ label: "Sign-ups", value: "11", icon: Users },{ label: "Conversions", value: "6", icon: TrendingUp },{ label: "Earnings", value: "TTD 420", icon: Gift }].map((s) => {
-          const Icon = s.icon;
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">One active promotion per Class. Students see the new price with the original struck through.</p>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        {PLACEHOLDER_LESSONS.filter((l) => !l.archived).map((l) => {
+          const promo = get(l);
           return (
-            <div key={s.label} className="rounded-2xl bg-background border border-border p-4">
-              <Icon className="size-5 text-brand-deep mb-2" />
-              <div className="text-2xl font-bold text-ink tabular-nums">{s.value}</div>
-              <div className="text-xs text-muted-foreground">{s.label}</div>
+            <div key={l.id} className="rounded-2xl bg-card border border-border p-5">
+              <div className="flex items-start gap-3">
+                <div className={cn("size-10 rounded-xl bg-gradient-to-br grid place-items-center text-white", l.thumbnailGradient ?? "from-brand to-emerald-400")}><BookOpen className="size-4" /></div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-ink truncate">{l.title}</div>
+                  <div className="text-xs text-muted-foreground">{l.subject} · TTD {l.rateTtd}</div>
+                </div>
+                {promo && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-coral-soft text-coral">Active</span>}
+              </div>
+
+              {promo ? (
+                <div className="mt-4 rounded-xl border border-coral/30 bg-coral-soft/40 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold uppercase tracking-wider text-coral capitalize">{promo.kind.replace("-", " ")}</div>
+                    <button onClick={() => setOverrides({ ...overrides, [l.id]: null })} className="text-[11px] font-semibold text-rose-700 hover:underline">Remove</button>
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-ink">TTD {promo.discountedPrice}</span>
+                    <span className="text-sm line-through text-muted-foreground">TTD {promo.originalPrice}</span>
+                  </div>
+                  {promo.endsAt && <div className="mt-1 text-[11px] text-muted-foreground inline-flex items-center gap-1"><CalendarIcon className="size-3" /> Ends {new Date(promo.endsAt).toLocaleDateString()}</div>}
+                  <button onClick={() => setEditing(l.id)} className="mt-3 text-xs font-semibold text-brand-deep hover:underline inline-flex items-center gap-1"><Edit3 className="size-3" /> Edit promotion</button>
+                </div>
+              ) : (
+                <button onClick={() => setEditing(l.id)} className="mt-4 w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground hover:border-brand hover:text-brand-deep">
+                  <Plus className="size-4" /> Create promotion
+                </button>
+              )}
             </div>
           );
         })}
       </div>
-    </>
+
+      {editing && (
+        <PromoEditor
+          lesson={PLACEHOLDER_LESSONS.find((l) => l.id === editing)!}
+          initial={get(PLACEHOLDER_LESSONS.find((l) => l.id === editing)!)}
+          onClose={() => setEditing(null)}
+          onSave={(p) => { setOverrides({ ...overrides, [editing!]: p }); setEditing(null); }}
+        />
+      )}
+    </div>
   );
 }
 
-function SocialTemplates() {
-  const templates = [
-    { id: "t1", title: "Now offering CSEC Math!", color: "from-brand to-emerald-700" },
-    { id: "t2", title: "Spaces open in my group class", color: "from-amber-400 to-orange-600" },
-    { id: "t3", title: "Just got a 5-star review ⭐", color: "from-purple-400 to-purple-700" },
-    { id: "t4", title: "Limited-time discount", color: "from-coral to-rose-600" },
-  ];
+function PromoEditor({ lesson, initial, onClose, onSave }: { lesson: TutorLesson; initial: ClassPromotion | null; onClose: () => void; onSave: (p: ClassPromotion) => void }) {
+  const [kind, setKind] = useState<PromotionKind>(initial?.kind ?? "early-bird");
+  const [discounted, setDiscounted] = useState(initial?.discountedPrice ?? Math.round(lesson.rateTtd * 0.8));
+  const [endsAt, setEndsAt] = useState(initial?.endsAt ?? "");
+
   return (
-    <>
-      <header><h2 className="text-2xl font-bold text-ink">Social share templates</h2><p className="text-sm text-muted-foreground mt-1">Customize and share to your channels.</p></header>
-      <div className="grid sm:grid-cols-2 gap-4">
-        {templates.map((t) => (
-          <div key={t.id} className="rounded-2xl bg-background border border-border overflow-hidden">
-            <div className={cn("aspect-square bg-gradient-to-br grid place-items-center text-white p-6", t.color)}>
-              <div className="text-2xl font-extrabold text-center">{t.title}</div>
-            </div>
-            <div className="p-4 space-y-2">
-              <input defaultValue={t.title} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:border-brand" />
-              <div className="flex gap-2">
-                <button className="flex-1 px-3 py-2 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90">Share</button>
-                <button className="px-3 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-muted">Download</button>
-              </div>
+    <div className="fixed inset-0 z-50 flex" onClick={onClose}>
+      <div className="flex-1 bg-ink/50 backdrop-blur-sm" />
+      <aside className="w-full max-w-md bg-background h-full overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <header className="sticky top-0 z-10 bg-background border-b border-border px-6 py-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-ink">Promotion</h2>
+            <p className="text-xs text-muted-foreground truncate">{lesson.title}</p>
+          </div>
+          <button onClick={onClose} className="size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
+        </header>
+        <div className="p-6 space-y-5">
+          <div>
+            <div className="text-sm font-semibold text-ink mb-2">Type</div>
+            <div className="grid grid-cols-3 gap-2">
+              {(["early-bird", "time-limited", "open-ended"] as PromotionKind[]).map((k) => (
+                <button key={k} onClick={() => setKind(k)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", kind === k ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                  {k.replace("-", " ")}
+                </button>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-    </>
+          <div>
+            <div className="text-sm font-semibold text-ink mb-2">Discounted price (TTD)</div>
+            <input type="number" value={discounted} onChange={(e) => setDiscounted(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+            <div className="text-xs text-muted-foreground mt-1">Original price: TTD {lesson.rateTtd} (struck through on the listing)</div>
+          </div>
+          {kind !== "open-ended" && (
+            <div>
+              <div className="text-sm font-semibold text-ink mb-2">Ends on</div>
+              <input type="date" value={endsAt ? endsAt.slice(0, 10) : ""} onChange={(e) => setEndsAt(new Date(e.target.value).toISOString())} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+            </div>
+          )}
+          <div className="rounded-xl bg-mint p-4">
+            <div className="text-[10px] uppercase tracking-wider font-bold text-brand-deep">Preview</div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-2xl font-bold text-ink">TTD {discounted}</span>
+              <span className="text-sm line-through text-muted-foreground">TTD {lesson.rateTtd}</span>
+            </div>
+          </div>
+        </div>
+        <footer className="sticky bottom-0 bg-background border-t border-border px-6 py-4 flex justify-end gap-2">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg border border-border text-sm font-semibold hover:bg-muted">Cancel</button>
+          <button onClick={() => onSave({ kind, originalPrice: lesson.rateTtd, discountedPrice: discounted, endsAt: kind === "open-ended" ? undefined : endsAt || undefined })} className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">
+            Save promotion
+          </button>
+        </footer>
+      </aside>
+    </div>
   );
 }
 
-function Boost() {
+/* ---------------- Business Analytics ---------------- */
+
+function BusinessAnalyticsTab() {
+  const months = ["Dec", "Jan", "Feb", "Mar", "Apr", "May"];
+  const totalsByMonth = [820, 1180, 1640, 2210, 2980, 3640];
+  const maxRev = Math.max(...totalsByMonth);
+  const byClass = PLACEHOLDER_LESSONS.filter((l) => !l.archived).slice(0, 5);
+  const maxClassRev = Math.max(...byClass.map((l) => l.earningsTtd ?? 0));
+
   return (
-    <>
-      <header><h2 className="text-2xl font-bold text-ink">Profile boost</h2><p className="text-sm text-muted-foreground mt-1">Appear higher in student search results.</p></header>
-      <div className="rounded-2xl bg-gradient-to-br from-coral to-rose-600 text-white p-8">
-        <Rocket className="size-10 mb-3" />
-        <div className="text-2xl font-extrabold">Boost your profile for 7 days</div>
-        <div className="text-white/90 mt-1">Get up to 3× more profile views and bookings.</div>
-        <div className="mt-5 flex items-center gap-3 flex-wrap">
-          <div className="text-3xl font-extrabold tabular-nums">TTD $50</div>
-          <button className="px-5 py-2.5 rounded-xl bg-white text-coral text-sm font-bold hover:bg-white/90">Boost now</button>
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <KpiCard icon={DollarSign} label="Revenue this month" value="TTD 3,640" delta="+22% MoM" positive />
+        <KpiCard icon={Users} label="Active members" value="14" delta="+3 MoM" positive />
+        <KpiCard icon={Star} label="Avg rating" value="4.85" delta="Stable" positive />
+        <KpiCard icon={CalendarIcon} label="Sessions delivered" value="38" delta="+6 MoM" positive />
+      </div>
+
+      <div className="rounded-2xl bg-card border border-border p-5">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-ink">Revenue across all Classes (TTD)</h3>
+          <span className="text-[11px] text-muted-foreground">Last 6 months</span>
+        </div>
+        <div className="mt-6 h-48 flex items-end gap-3">
+          {totalsByMonth.map((v, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-2">
+              <div className="w-full rounded-t-md bg-gradient-to-t from-brand to-emerald-300" style={{ height: `${(v / maxRev) * 100}%` }} />
+              <div className="text-[10px] text-muted-foreground">{months[i]}</div>
+            </div>
+          ))}
         </div>
       </div>
-      <div className="grid sm:grid-cols-3 gap-3">
-        {[{ d: "Avg. bookings", v: "+170%" }, { d: "Search appearances", v: "+240%" }, { d: "Profile views", v: "+310%" }].map((x) => (
-          <div key={x.d} className="rounded-2xl bg-background border border-border p-4">
-            <div className="text-2xl font-bold text-brand-deep tabular-nums">{x.v}</div>
-            <div className="text-xs text-muted-foreground">{x.d}</div>
-          </div>
-        ))}
+
+      <div className="rounded-2xl bg-card border border-border p-5">
+        <h3 className="font-semibold text-ink">Top earning Classes</h3>
+        <ul className="mt-4 space-y-3">
+          {byClass.sort((a, b) => (b.earningsTtd ?? 0) - (a.earningsTtd ?? 0)).map((l) => {
+            const pct = ((l.earningsTtd ?? 0) / Math.max(1, maxClassRev)) * 100;
+            return (
+              <li key={l.id}>
+                <div className="flex items-center justify-between text-sm">
+                  <Link to="/tutor/lessons/$id" params={{ id: l.id }} className="font-semibold text-ink hover:underline truncate">{l.title}</Link>
+                  <span className="text-brand-deep font-bold tabular-nums">TTD {(l.earningsTtd ?? 0).toLocaleString()}</span>
+                </div>
+                <div className="mt-1 h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-brand to-emerald-400" style={{ width: `${pct}%` }} />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
-    </>
+    </div>
   );
 }
 
-function Insights() {
-  const tips = [
-    "Add 2 more subjects to reach 30% more students.",
-    "Reply to 3 unanswered reviews to improve response rate.",
-    "Upload an avatar — profiles with photos get 5× more clicks.",
-  ];
+/* ---------------- Parent Feedback Queue ---------------- */
+
+function FeedbackTab() {
+  const [drafts, setDrafts] = useState<FeedbackDraft[]>(PLACEHOLDER_FEEDBACK_DRAFTS);
+  const [open, setOpen] = useState<string | null>(null);
+  const pending = drafts.filter((f) => f.status === "pending");
+  const done = drafts.filter((f) => f.status !== "pending");
+
+  const update = (id: string, patch: Partial<FeedbackDraft>) => setDrafts(drafts.map((d) => d.id === id ? { ...d, ...patch } : d));
+
   return (
-    <>
-      <header><h2 className="text-2xl font-bold text-ink">Growth insights</h2><p className="text-sm text-muted-foreground mt-1">Where to focus next.</p></header>
-      <div className="grid sm:grid-cols-3 gap-3">
-        {[{ l: "Profile views", v: "284", t: "+12% wk" }, { l: "Booking conv.", v: "18%", t: "+3% wk" }, { l: "Search rank", v: "#7", t: "↑ 2" }].map((s) => (
-          <div key={s.l} className="rounded-2xl bg-background border border-border p-5">
-            <Eye className="size-5 text-brand-deep mb-2" />
-            <div className="text-2xl font-bold text-ink tabular-nums">{s.v}</div>
-            <div className="text-xs text-muted-foreground">{s.l}</div>
-            <div className="text-xs text-brand-deep font-semibold mt-1">{s.t}</div>
+    <div className="space-y-6">
+      <div className="rounded-2xl bg-mint border border-brand-soft p-4 flex items-start gap-3">
+        <Sparkles className="size-4 text-brand-deep mt-0.5" />
+        <div className="text-sm">
+          <div className="font-semibold text-ink">AI drafts monthly reports for each enrolled student.</div>
+          <div className="text-muted-foreground">Review, edit and approve before they're sent to parents. Pending reports below.</div>
+        </div>
+      </div>
+
+      <section>
+        <h2 className="font-bold text-ink mb-3">Pending approval · {pending.length}</h2>
+        {pending.length === 0 ? (
+          <div className="rounded-2xl border-2 border-dashed border-border bg-card/50 p-10 text-center text-sm text-muted-foreground">All caught up — no reports waiting for review.</div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-3">
+            {pending.map((f) => <FeedbackCard key={f.id} f={f} onOpen={() => setOpen(f.id)} />)}
           </div>
+        )}
+      </section>
+
+      {done.length > 0 && (
+        <section>
+          <h2 className="font-bold text-ink mb-3">Recently approved</h2>
+          <div className="grid md:grid-cols-2 gap-3">
+            {done.map((f) => <FeedbackCard key={f.id} f={f} onOpen={() => setOpen(f.id)} />)}
+          </div>
+        </section>
+      )}
+
+      {open && (
+        <FeedbackEditor
+          draft={drafts.find((d) => d.id === open)!}
+          onClose={() => setOpen(null)}
+          onSave={(patch) => { update(open, patch); }}
+          onApprove={() => { update(open, { status: "approved" }); setOpen(null); }}
+          onSend={() => { update(open, { status: "sent" }); setOpen(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function FeedbackCard({ f, onOpen }: { f: FeedbackDraft; onOpen: () => void }) {
+  return (
+    <button onClick={onOpen} className="text-left rounded-2xl bg-card border border-border p-5 hover:border-brand transition w-full">
+      <div className="flex items-start gap-3">
+        <div className="size-10 rounded-full bg-gradient-to-br from-brand to-emerald-400 grid place-items-center text-xs font-bold text-white">{f.initials}</div>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-ink truncate">{f.studentName}</div>
+          <div className="text-[11px] text-muted-foreground truncate">{f.lessonName} · {f.month}</div>
+        </div>
+        <StatusChip status={f.status} />
+      </div>
+      <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+        {f.bullets.slice(0, 3).map((b, i) => (
+          <li key={i} className="flex items-start gap-1.5"><span className="text-brand mt-1">•</span> <span className="line-clamp-1">{b}</span></li>
         ))}
+      </ul>
+      <div className="mt-3 text-xs font-semibold text-brand-deep inline-flex items-center gap-1">
+        {f.status === "pending" ? <>Review & approve <ChevronRight className="size-3" /></> : <>View report <ChevronRight className="size-3" /></>}
       </div>
-      <div className="rounded-2xl bg-mint border border-brand-soft p-5">
-        <div className="flex items-center gap-2 mb-3"><Lightbulb className="size-5 text-brand-deep" /><div className="font-bold text-ink">Tips to grow</div></div>
-        <ul className="space-y-2">
-          {tips.map((t) => (
-            <li key={t} className="flex items-start gap-2 text-sm">
-              <div className="size-5 rounded-full bg-brand text-white text-xs grid place-items-center shrink-0 mt-0.5">→</div>
-              <div className="text-ink/80">{t}</div>
-            </li>
-          ))}
-        </ul>
+    </button>
+  );
+}
+
+function StatusChip({ status }: { status: FeedbackDraft["status"] }) {
+  const m = { pending: "bg-amber-100 text-amber-800", approved: "bg-sky-100 text-sky-700", sent: "bg-emerald-100 text-emerald-700" }[status];
+  return <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", m)}>{status === "pending" ? "Pending" : status === "approved" ? "Approved" : "Sent"}</span>;
+}
+
+function FeedbackEditor({ draft, onClose, onSave, onApprove, onSend }: { draft: FeedbackDraft; onClose: () => void; onSave: (p: Partial<FeedbackDraft>) => void; onApprove: () => void; onSend: () => void }) {
+  const [body, setBody] = useState(draft.draftBody);
+  return (
+    <div className="fixed inset-0 z-50 flex" onClick={onClose}>
+      <div className="flex-1 bg-ink/50 backdrop-blur-sm" />
+      <aside className="w-full max-w-xl bg-background h-full overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <header className="sticky top-0 z-10 bg-background border-b border-border px-6 py-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-ink">{draft.studentName} · {draft.month}</h2>
+            <p className="text-xs text-muted-foreground">{draft.lessonName}</p>
+          </div>
+          <button onClick={onClose} className="size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
+        </header>
+        <div className="p-6 space-y-5">
+          <div className="rounded-xl bg-mint border border-brand-soft p-4">
+            <div className="text-[10px] uppercase tracking-wider font-bold text-brand-deep inline-flex items-center gap-1"><Sparkles className="size-3" /> AI-drafted highlights</div>
+            <ul className="mt-2 space-y-1 text-sm text-ink">
+              {draft.bullets.map((b, i) => (<li key={i} className="flex items-start gap-2"><Check className="size-3.5 text-brand-deep mt-1 shrink-0" /> {b}</li>))}
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-sm font-semibold text-ink mb-2 flex items-center justify-between">
+              <span>Report body (sent to parent)</span>
+              <button onClick={() => onSave({ draftBody: body })} className="text-xs font-semibold text-brand-deep hover:underline">Save edits</button>
+            </div>
+            <textarea value={body} onChange={(e) => setBody(e.target.value)} className="w-full min-h-48 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+          </div>
+        </div>
+        <footer className="sticky bottom-0 bg-background border-t border-border px-6 py-4 flex justify-end gap-2">
+          {draft.status === "pending" && (
+            <button onClick={onApprove} className="px-4 py-2 rounded-lg border border-border text-sm font-semibold hover:bg-muted inline-flex items-center gap-1.5">
+              <Check className="size-4" /> Approve
+            </button>
+          )}
+          <button onClick={onSend} className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90 inline-flex items-center gap-1.5">
+            <Send className="size-4" /> Send to parent
+          </button>
+        </footer>
+      </aside>
+    </div>
+  );
+}
+
+/* ---------------- Atoms ---------------- */
+
+function KpiCard({ icon: Icon, label, value, delta, positive }: { icon: any; label: string; value: string; delta: string; positive: boolean }) {
+  return (
+    <div className="rounded-2xl bg-card border border-border p-4">
+      <div className="flex items-center gap-2 text-muted-foreground"><Icon className="size-4" /><span className="text-[11px] uppercase tracking-wider font-bold">{label}</span></div>
+      <div className="mt-2 text-2xl font-bold text-ink">{value}</div>
+      <div className={cn("text-[11px] font-semibold mt-0.5 inline-flex items-center gap-1", positive ? "text-emerald-600" : "text-rose-600")}>
+        {positive ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />} {delta}
       </div>
-    </>
+    </div>
   );
 }
