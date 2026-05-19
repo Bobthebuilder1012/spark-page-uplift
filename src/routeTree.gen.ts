@@ -17,6 +17,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TutorIndexRouteImport } from './routes/tutor.index'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
+import { Route as ParentIndexRouteImport } from './routes/parent.index'
 import { Route as TutorWalletRouteImport } from './routes/tutor.wallet'
 import { Route as TutorToolsRouteImport } from './routes/tutor.tools'
 import { Route as TutorStudentsRouteImport } from './routes/tutor.students'
@@ -39,6 +40,7 @@ import { Route as StudentNotificationsRouteImport } from './routes/student.notif
 import { Route as StudentMessagesRouteImport } from './routes/student.messages'
 import { Route as StudentCalendarRouteImport } from './routes/student.calendar'
 import { Route as StudentBookingsRouteImport } from './routes/student.bookings'
+import { Route as ParentBillingRouteImport } from './routes/parent.billing'
 import { Route as TutorLessonsIndexRouteImport } from './routes/tutor.lessons.index'
 import { Route as StudentTutorsIndexRouteImport } from './routes/student.tutors.index'
 import { Route as StudentLessonsIndexRouteImport } from './routes/student.lessons.index'
@@ -49,6 +51,7 @@ import { Route as TutorLessonsIdRouteImport } from './routes/tutor.lessons.$id'
 import { Route as StudentTutorsIdRouteImport } from './routes/student.tutors.$id'
 import { Route as StudentLessonsIdRouteImport } from './routes/student.lessons.$id'
 import { Route as StudentClassesIdRouteImport } from './routes/student.classes.$id'
+import { Route as ParentChildrenChildIdRouteImport } from './routes/parent.children.$childId'
 
 const TutorRoute = TutorRouteImport.update({
   id: '/tutor',
@@ -89,6 +92,11 @@ const StudentIndexRoute = StudentIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => StudentRoute,
+} as any)
+const ParentIndexRoute = ParentIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ParentRoute,
 } as any)
 const TutorWalletRoute = TutorWalletRouteImport.update({
   id: '/wallet',
@@ -200,6 +208,11 @@ const StudentBookingsRoute = StudentBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => StudentRoute,
 } as any)
+const ParentBillingRoute = ParentBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => ParentRoute,
+} as any)
 const TutorLessonsIndexRoute = TutorLessonsIndexRouteImport.update({
   id: '/lessons/',
   path: '/lessons/',
@@ -250,14 +263,20 @@ const StudentClassesIdRoute = StudentClassesIdRouteImport.update({
   path: '/classes/$id',
   getParentRoute: () => StudentRoute,
 } as any)
+const ParentChildrenChildIdRoute = ParentChildrenChildIdRouteImport.update({
+  id: '/children/$childId',
+  path: '/children/$childId',
+  getParentRoute: () => ParentRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/parent': typeof ParentRoute
+  '/parent': typeof ParentRouteWithChildren
   '/signup': typeof SignupRoute
   '/student': typeof StudentRouteWithChildren
   '/tutor': typeof TutorRouteWithChildren
+  '/parent/billing': typeof ParentBillingRoute
   '/student/bookings': typeof StudentBookingsRoute
   '/student/calendar': typeof StudentCalendarRoute
   '/student/messages': typeof StudentMessagesRoute
@@ -280,8 +299,10 @@ export interface FileRoutesByFullPath {
   '/tutor/students': typeof TutorStudentsRouteWithChildren
   '/tutor/tools': typeof TutorToolsRoute
   '/tutor/wallet': typeof TutorWalletRoute
+  '/parent/': typeof ParentIndexRoute
   '/student/': typeof StudentIndexRoute
   '/tutor/': typeof TutorIndexRoute
+  '/parent/children/$childId': typeof ParentChildrenChildIdRoute
   '/student/classes/$id': typeof StudentClassesIdRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
@@ -296,8 +317,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/parent': typeof ParentRoute
   '/signup': typeof SignupRoute
+  '/parent/billing': typeof ParentBillingRoute
   '/student/bookings': typeof StudentBookingsRoute
   '/student/calendar': typeof StudentCalendarRoute
   '/student/messages': typeof StudentMessagesRoute
@@ -320,8 +341,10 @@ export interface FileRoutesByTo {
   '/tutor/students': typeof TutorStudentsRouteWithChildren
   '/tutor/tools': typeof TutorToolsRoute
   '/tutor/wallet': typeof TutorWalletRoute
+  '/parent': typeof ParentIndexRoute
   '/student': typeof StudentIndexRoute
   '/tutor': typeof TutorIndexRoute
+  '/parent/children/$childId': typeof ParentChildrenChildIdRoute
   '/student/classes/$id': typeof StudentClassesIdRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
@@ -337,10 +360,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/parent': typeof ParentRoute
+  '/parent': typeof ParentRouteWithChildren
   '/signup': typeof SignupRoute
   '/student': typeof StudentRouteWithChildren
   '/tutor': typeof TutorRouteWithChildren
+  '/parent/billing': typeof ParentBillingRoute
   '/student/bookings': typeof StudentBookingsRoute
   '/student/calendar': typeof StudentCalendarRoute
   '/student/messages': typeof StudentMessagesRoute
@@ -363,8 +387,10 @@ export interface FileRoutesById {
   '/tutor/students': typeof TutorStudentsRouteWithChildren
   '/tutor/tools': typeof TutorToolsRoute
   '/tutor/wallet': typeof TutorWalletRoute
+  '/parent/': typeof ParentIndexRoute
   '/student/': typeof StudentIndexRoute
   '/tutor/': typeof TutorIndexRoute
+  '/parent/children/$childId': typeof ParentChildrenChildIdRoute
   '/student/classes/$id': typeof StudentClassesIdRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
@@ -385,6 +411,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/student'
     | '/tutor'
+    | '/parent/billing'
     | '/student/bookings'
     | '/student/calendar'
     | '/student/messages'
@@ -407,8 +434,10 @@ export interface FileRouteTypes {
     | '/tutor/students'
     | '/tutor/tools'
     | '/tutor/wallet'
+    | '/parent/'
     | '/student/'
     | '/tutor/'
+    | '/parent/children/$childId'
     | '/student/classes/$id'
     | '/student/lessons/$id'
     | '/student/tutors/$id'
@@ -423,8 +452,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
-    | '/parent'
     | '/signup'
+    | '/parent/billing'
     | '/student/bookings'
     | '/student/calendar'
     | '/student/messages'
@@ -447,8 +476,10 @@ export interface FileRouteTypes {
     | '/tutor/students'
     | '/tutor/tools'
     | '/tutor/wallet'
+    | '/parent'
     | '/student'
     | '/tutor'
+    | '/parent/children/$childId'
     | '/student/classes/$id'
     | '/student/lessons/$id'
     | '/student/tutors/$id'
@@ -467,6 +498,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/student'
     | '/tutor'
+    | '/parent/billing'
     | '/student/bookings'
     | '/student/calendar'
     | '/student/messages'
@@ -489,8 +521,10 @@ export interface FileRouteTypes {
     | '/tutor/students'
     | '/tutor/tools'
     | '/tutor/wallet'
+    | '/parent/'
     | '/student/'
     | '/tutor/'
+    | '/parent/children/$childId'
     | '/student/classes/$id'
     | '/student/lessons/$id'
     | '/student/tutors/$id'
@@ -506,7 +540,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
-  ParentRoute: typeof ParentRoute
+  ParentRoute: typeof ParentRouteWithChildren
   SignupRoute: typeof SignupRoute
   StudentRoute: typeof StudentRouteWithChildren
   TutorRoute: typeof TutorRouteWithChildren
@@ -569,6 +603,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/student/'
       preLoaderRoute: typeof StudentIndexRouteImport
       parentRoute: typeof StudentRoute
+    }
+    '/parent/': {
+      id: '/parent/'
+      path: '/'
+      fullPath: '/parent/'
+      preLoaderRoute: typeof ParentIndexRouteImport
+      parentRoute: typeof ParentRoute
     }
     '/tutor/wallet': {
       id: '/tutor/wallet'
@@ -724,6 +765,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentBookingsRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/parent/billing': {
+      id: '/parent/billing'
+      path: '/billing'
+      fullPath: '/parent/billing'
+      preLoaderRoute: typeof ParentBillingRouteImport
+      parentRoute: typeof ParentRoute
+    }
     '/tutor/lessons/': {
       id: '/tutor/lessons/'
       path: '/lessons'
@@ -794,8 +842,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentClassesIdRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/parent/children/$childId': {
+      id: '/parent/children/$childId'
+      path: '/children/$childId'
+      fullPath: '/parent/children/$childId'
+      preLoaderRoute: typeof ParentChildrenChildIdRouteImport
+      parentRoute: typeof ParentRoute
+    }
   }
 }
+
+interface ParentRouteChildren {
+  ParentBillingRoute: typeof ParentBillingRoute
+  ParentIndexRoute: typeof ParentIndexRoute
+  ParentChildrenChildIdRoute: typeof ParentChildrenChildIdRoute
+}
+
+const ParentRouteChildren: ParentRouteChildren = {
+  ParentBillingRoute: ParentBillingRoute,
+  ParentIndexRoute: ParentIndexRoute,
+  ParentChildrenChildIdRoute: ParentChildrenChildIdRoute,
+}
+
+const ParentRouteWithChildren =
+  ParentRoute._addFileChildren(ParentRouteChildren)
 
 interface StudentRouteChildren {
   StudentBookingsRoute: typeof StudentBookingsRoute
@@ -895,7 +965,7 @@ const TutorRouteWithChildren = TutorRoute._addFileChildren(TutorRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
-  ParentRoute: ParentRoute,
+  ParentRoute: ParentRouteWithChildren,
   SignupRoute: SignupRoute,
   StudentRoute: StudentRouteWithChildren,
   TutorRoute: TutorRouteWithChildren,
