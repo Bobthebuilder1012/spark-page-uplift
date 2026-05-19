@@ -13,7 +13,7 @@ type NavItem = { to: string; label: string; icon: ComponentType<{ className?: st
 
 const nav: NavItem[] = [
   { to: "/tutor", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/tutor/lessons", label: "Lessons", icon: BookOpen, gated: true },
+  { to: "/tutor/lessons", label: "My Classes", icon: BookOpen, gated: true },
   { to: "/tutor/sessions", label: "Sessions", icon: CalendarDays },
   { to: "/tutor/students", label: "My Students", icon: Users },
   { to: "/tutor/messages", label: "Messages", icon: MessageSquare },
@@ -160,7 +160,7 @@ function ShellInner() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <input value={query} onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search students, lessons, sessions…"
+                  placeholder="Search students, classes, sessions…"
                   className="w-full pl-9 pr-4 py-2 rounded-lg bg-muted border border-transparent focus:bg-background focus:border-brand focus:outline-none text-sm" />
               </div>
             </form>
