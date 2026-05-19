@@ -394,6 +394,9 @@ export const PLACEHOLDER_PAYOUTS: Payout[] = [
 ];
 
 export const PLACEHOLDER_NOTIFS: TutorNotif[] = [
+  { id: "nrq1", type: "booking", title: "Recurring 1:1 request · Trinity Hosein", body: "CSEC Add. Maths · Sat 10:00 AM AST · weekly. Tap to accept and start a Class.", time: "6h ago", unread: true },
+  { id: "nrq2", type: "booking", title: "Recurring 1:1 request · Marcus Ali", body: "CAPE Pure Maths Unit 1 · Wed 6:00 PM AST · weekly.", time: "1d ago", unread: true },
+  { id: "nrq3", type: "booking", title: "Recurring 1:1 request · Jada Pierre", body: "CSEC Physics · Sun afternoons.", time: "2d ago", unread: false },
   { id: "n1", type: "booking", title: "New booking from Trinity Hosein", body: "Requested CSEC Add. Maths · Sat 12:00 PM AST.", time: "10m ago", unread: true },
   { id: "n2", type: "payment", title: "Payment received · Aliyah M.", body: "TTD 120 for CSEC Maths Crash Course.", time: "1h ago", unread: true },
   { id: "n3", type: "review", title: "Aliyah Mohammed left a 5-star review", body: "“Patient and explains everything clearly.”", time: "Yesterday", unread: true },
