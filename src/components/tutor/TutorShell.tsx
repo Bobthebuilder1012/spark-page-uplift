@@ -21,7 +21,7 @@ const nav: NavItem[] = [
   { to: "/tutor/analytics", label: "Analytics", icon: BarChart3, gated: true },
   { to: "/tutor/resources", label: "Resources", icon: FolderOpen },
   { to: "/tutor/reviews", label: "Reviews", icon: Star },
-  { to: "/tutor/growth", label: "Growth", icon: Rocket, gated: true },
+  { to: "/tutor/growth", label: "My Business", icon: Rocket, gated: true },
   { to: "/tutor/tools", label: "iTutor AI", icon: Sparkles },
 ];
 
