@@ -22,10 +22,63 @@ export type TutorProfile = {
 export type LessonKind = "1on1-oneoff" | "1on1-recurring" | "group-oneoff" | "group-recurring";
 export type LessonStatus = "draft" | "published" | "full" | "completed" | "cancelled";
 
+export type MemberStatus = "invited" | "active" | "suspended" | "removed";
 export type EnrolledStudent = {
   studentId: string;
   name: string;
   paymentStatus: "paid" | "pending" | "overdue";
+  status?: MemberStatus;
+  outstandingTtd?: number;
+  joinedAt?: string;
+};
+
+export type BillingModel = "per-session" | "per-month" | "prepaid";
+export type PromotionKind = "early-bird" | "time-limited" | "open-ended";
+export type ClassPromotion = {
+  kind: PromotionKind;
+  originalPrice: number;
+  discountedPrice: number;
+  endsAt?: string;
+  label?: string;
+};
+export type ParentFeedbackMode = "off" | "included" | "paid";
+export type PrimaryChannel = "native" | "whatsapp" | "classroom";
+
+export type RecurringRequest = {
+  id: string;
+  studentId: string;
+  studentName: string;
+  initials: string;
+  subject: string;
+  level: string;
+  preferredTime: string;
+  message: string;
+  receivedAt: string;
+};
+
+export type FeedbackDraft = {
+  id: string;
+  studentId: string;
+  studentName: string;
+  initials: string;
+  lessonId: string;
+  lessonName: string;
+  month: string;
+  status: "pending" | "approved" | "sent";
+  bullets: string[];
+  draftBody: string;
+};
+
+export type StreamPost = {
+  id: string;
+  kind: "announcement" | "attachment" | "link" | "ai-recap";
+  title: string;
+  body: string;
+  at: string;
+  pinned?: boolean;
+  pendingApproval?: boolean;
+  attachmentName?: string;
+  linkUrl?: string;
 };
 
 export type TutorLesson = {
