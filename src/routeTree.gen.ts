@@ -42,6 +42,7 @@ import { Route as TutorLessonsIndexRouteImport } from './routes/tutor.lessons.in
 import { Route as StudentTutorsIndexRouteImport } from './routes/student.tutors.index'
 import { Route as StudentLessonsIndexRouteImport } from './routes/student.lessons.index'
 import { Route as TutorStudentsIdRouteImport } from './routes/tutor.students.$id'
+import { Route as TutorLessonsNewRouteImport } from './routes/tutor.lessons.new'
 import { Route as TutorLessonsIdRouteImport } from './routes/tutor.lessons.$id'
 import { Route as StudentTutorsIdRouteImport } from './routes/student.tutors.$id'
 import { Route as StudentLessonsIdRouteImport } from './routes/student.lessons.$id'
@@ -211,6 +212,11 @@ const TutorStudentsIdRoute = TutorStudentsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => TutorStudentsRoute,
 } as any)
+const TutorLessonsNewRoute = TutorLessonsNewRouteImport.update({
+  id: '/lessons/new',
+  path: '/lessons/new',
+  getParentRoute: () => TutorRoute,
+} as any)
 const TutorLessonsIdRoute = TutorLessonsIdRouteImport.update({
   id: '/lessons/$id',
   path: '/lessons/$id',
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
   '/tutor/lessons/$id': typeof TutorLessonsIdRoute
+  '/tutor/lessons/new': typeof TutorLessonsNewRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
   '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
@@ -296,6 +303,7 @@ export interface FileRoutesByTo {
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
   '/tutor/lessons/$id': typeof TutorLessonsIdRoute
+  '/tutor/lessons/new': typeof TutorLessonsNewRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
   '/student/lessons': typeof StudentLessonsIndexRoute
   '/student/tutors': typeof StudentTutorsIndexRoute
@@ -335,6 +343,7 @@ export interface FileRoutesById {
   '/student/lessons/$id': typeof StudentLessonsIdRoute
   '/student/tutors/$id': typeof StudentTutorsIdRoute
   '/tutor/lessons/$id': typeof TutorLessonsIdRoute
+  '/tutor/lessons/new': typeof TutorLessonsNewRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
   '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
@@ -375,6 +384,7 @@ export interface FileRouteTypes {
     | '/student/lessons/$id'
     | '/student/tutors/$id'
     | '/tutor/lessons/$id'
+    | '/tutor/lessons/new'
     | '/tutor/students/$id'
     | '/student/lessons/'
     | '/student/tutors/'
@@ -411,6 +421,7 @@ export interface FileRouteTypes {
     | '/student/lessons/$id'
     | '/student/tutors/$id'
     | '/tutor/lessons/$id'
+    | '/tutor/lessons/new'
     | '/tutor/students/$id'
     | '/student/lessons'
     | '/student/tutors'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/student/lessons/$id'
     | '/student/tutors/$id'
     | '/tutor/lessons/$id'
+    | '/tutor/lessons/new'
     | '/tutor/students/$id'
     | '/student/lessons/'
     | '/student/tutors/'
@@ -696,6 +708,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TutorStudentsIdRouteImport
       parentRoute: typeof TutorStudentsRoute
     }
+    '/tutor/lessons/new': {
+      id: '/tutor/lessons/new'
+      path: '/lessons/new'
+      fullPath: '/tutor/lessons/new'
+      preLoaderRoute: typeof TutorLessonsNewRouteImport
+      parentRoute: typeof TutorRoute
+    }
     '/tutor/lessons/$id': {
       id: '/tutor/lessons/$id'
       path: '/lessons/$id'
@@ -782,6 +801,7 @@ interface TutorRouteChildren {
   TutorWalletRoute: typeof TutorWalletRoute
   TutorIndexRoute: typeof TutorIndexRoute
   TutorLessonsIdRoute: typeof TutorLessonsIdRoute
+  TutorLessonsNewRoute: typeof TutorLessonsNewRoute
   TutorLessonsIndexRoute: typeof TutorLessonsIndexRoute
 }
 
@@ -804,6 +824,7 @@ const TutorRouteChildren: TutorRouteChildren = {
   TutorWalletRoute: TutorWalletRoute,
   TutorIndexRoute: TutorIndexRoute,
   TutorLessonsIdRoute: TutorLessonsIdRoute,
+  TutorLessonsNewRoute: TutorLessonsNewRoute,
   TutorLessonsIndexRoute: TutorLessonsIndexRoute,
 }
 

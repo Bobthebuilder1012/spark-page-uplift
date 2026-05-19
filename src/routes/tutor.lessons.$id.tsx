@@ -1,287 +1,278 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { PLACEHOLDER_LESSONS, PLACEHOLDER_SESSIONS, LESSON_KIND_META, useTutor, type TutorLesson } from "@/lib/tutor-store";
 import {
-  ArrowLeft, Settings, Calendar as CalendarIcon, Users, UserPlus, Pencil, Copy, Check, Star,
-  Bell, FileText, MessageCircle, X, Plus, ExternalLink, MessageSquare, BarChart3, Trash2, Archive, ArrowUpRight, Lock, Globe, Eye,
-  Image as ImageIcon, DollarSign, Video,
+  PLACEHOLDER_LESSONS, PLACEHOLDER_SESSIONS, PLACEHOLDER_STREAM_POSTS,
+  LESSON_KIND_META, MEMBER_STATUS_META, PAYMENT_STATUS_META, PAYMENT_PERIODS,
+  generatePaymentGrid,
+  useTutor,
+  type TutorLesson, type EnrolledStudent, type MemberStatus, type StreamPost, type PaymentCellStatus,
+} from "@/lib/tutor-store";
+import {
+  ArrowLeft, Settings, Calendar as CalendarIcon, Users, UserPlus, Copy, Check, Star,
+  Bell, FileText, MessageCircle, X, Plus, ExternalLink, Trash2, Archive, ArrowUpRight, Lock, Globe, Eye,
+  Image as ImageIcon, Video, MoreVertical, Pin, Sparkles, Link as LinkIcon, Paperclip, AlertTriangle, ShieldAlert,
+  Mail, MessageSquare, DollarSign, BarChart3, ArrowUp, ArrowDown, Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tutor/lessons/$id")({
-  head: () => ({ meta: [{ title: "Lesson — iTutor Tutor" }] }),
-  component: LessonDetailPage,
+  head: () => ({ meta: [{ title: "Class — iTutor Tutor" }] }),
+  component: ClassHubPage,
 });
 
-type Tab = "stream" | "sessions" | "feedback" | "whatsapp" | "analytics";
+type Tab = "stream" | "sessions" | "roster" | "payments" | "settings" | "analytics";
 
-function LessonDetailPage() {
+function ClassHubPage() {
   const { id } = Route.useParams();
   const initial = PLACEHOLDER_LESSONS.find((l) => l.id === id);
   if (!initial) throw notFound();
 
-  const [lesson, setLesson] = useState<TutorLesson>(initial);
+  const [lesson, setLesson] = useState<TutorLesson>(() => ({
+    billingModel: "per-session",
+    memberServiceFee: 5,
+    autoSuspend: false,
+    graceWindowDays: 7,
+    joinRequests: false,
+    primaryChannel: "native",
+    parentFeedbackMode: "off",
+    parentFeedbackPrice: 0,
+    promotion: null,
+    ...initial,
+  }));
   const [tab, setTab] = useState<Tab>("stream");
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
+  const isOneOnOne = lesson.capacity === 1;
+  const enrolledCount = lesson.enrollments.filter((e) => (e.status ?? "active") !== "removed").length;
+  const atCapacity = enrolledCount >= lesson.capacity;
 
-  const m = LESSON_KIND_META[lesson.kind];
-  const next = new Date(lesson.startDate);
-  const upcoming = useMemo(
-    () => PLACEHOLDER_SESSIONS.filter((s) => s.lessonId === lesson.id && s.status === "upcoming").slice(0, 4),
-    [lesson.id]
-  );
-  const inviteUrl = `https://itutor.app/lessons/${lesson.id}`;
-
-  const copyLink = () => {
-    navigator.clipboard?.writeText(inviteUrl);
-    setLinkCopied(true);
-    setTimeout(() => setLinkCopied(false), 1500);
-  };
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "stream", label: "Stream" },
+    { key: "sessions", label: "Sessions" },
+    { key: "roster", label: "Roster" },
+    { key: "payments", label: "Payments" },
+    { key: "settings", label: "Settings" },
+    ...(isOneOnOne ? [] : [{ key: "analytics" as Tab, label: "Analytics" }]),
+  ];
 
   return (
     <div className="-m-6 lg:-m-8">
-      {/* Hero */}
-      <div className={cn("relative h-48 lg:h-56 bg-gradient-to-br", lesson.thumbnailGradient ?? "from-brand to-emerald-400")}>
-        <Link to="/tutor/lessons" className="absolute top-4 left-4 inline-flex items-center gap-1 text-xs font-semibold text-white/90 bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-full backdrop-blur">
-          <ArrowLeft className="size-3.5" /> All lessons
-        </Link>
-        <div className="absolute left-1/2 -translate-x-1/2 -bottom-10 size-24 rounded-2xl bg-white/95 grid place-items-center shadow-lg">
-          <div className={cn("size-16 rounded-xl bg-gradient-to-br grid place-items-center", lesson.thumbnailGradient ?? "from-brand to-emerald-400")}>
-            <FileText className="size-8 text-white" />
+      <Header lesson={lesson} enrolledCount={enrolledCount} atCapacity={atCapacity} isOneOnOne={isOneOnOne} />
+
+      <div className="px-4 lg:px-8 pb-12 max-w-7xl mx-auto">
+        <div className="border-b border-border mt-6 flex items-center gap-6 overflow-x-auto">
+          {tabs.map((t) => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={cn("relative pb-3 text-sm font-semibold capitalize whitespace-nowrap transition", tab === t.key ? "text-brand-deep" : "text-muted-foreground hover:text-ink")}>
+              {t.label}
+              {tab === t.key && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-brand" />}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-6">
+          {tab === "stream"    && <StreamTab lesson={lesson} />}
+          {tab === "sessions"  && <SessionsTab lesson={lesson} />}
+          {tab === "roster"    && <RosterTab lesson={lesson} setLesson={setLesson} isOneOnOne={isOneOnOne} />}
+          {tab === "payments"  && <PaymentsTab lesson={lesson} />}
+          {tab === "settings"  && <SettingsTab lesson={lesson} setLesson={setLesson} isOneOnOne={isOneOnOne} />}
+          {tab === "analytics" && !isOneOnOne && <AnalyticsTab lesson={lesson} />}
+        </div>
+      </div>
+      {/* TODO(cursor): wire all Class Hub tabs to real backend (stream posts, sessions, roster ops, payments, settings, analytics). */}
+    </div>
+  );
+}
+
+/* ---------------- Header ---------------- */
+
+function Header({ lesson, enrolledCount, atCapacity, isOneOnOne }: { lesson: TutorLesson; enrolledCount: number; atCapacity: boolean; isOneOnOne: boolean }) {
+  const m = LESSON_KIND_META[lesson.kind];
+  const promo = lesson.promotion;
+  return (
+    <div className={cn("relative h-44 lg:h-52 bg-gradient-to-br", lesson.thumbnailGradient ?? "from-brand to-emerald-400")}>
+      <Link to="/tutor/lessons" className="absolute top-4 left-4 inline-flex items-center gap-1 text-xs font-semibold text-white/95 bg-black/30 hover:bg-black/40 px-3 py-1.5 rounded-full backdrop-blur">
+        <ArrowLeft className="size-3.5" /> All Classes
+      </Link>
+      <div className="absolute inset-x-0 bottom-0">
+        <div className="px-4 lg:px-8 max-w-7xl mx-auto pb-5 text-white flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/90 text-ink")}>{m.short}</span>
+              {lesson.visibility && (
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/30 inline-flex items-center gap-1">
+                  {lesson.visibility === "private" ? <Lock className="size-3" /> : <Globe className="size-3" />} {lesson.visibility}
+                </span>
+              )}
+              {atCapacity && !isOneOnOne && <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-500 text-white">At capacity</span>}
+            </div>
+            <h1 className="mt-2 text-2xl lg:text-3xl font-bold truncate">{lesson.title}</h1>
+            <div className="mt-1 text-sm text-white/85">{lesson.subject} · {lesson.level} · {lesson.recurrenceRule ?? "One-off"}</div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-white/95 text-ink px-4 py-2 text-right">
+              {promo ? (
+                <>
+                  <div className="text-[10px] uppercase tracking-wider text-coral font-bold">{promo.label ?? promo.kind}</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-bold">TTD {promo.discountedPrice}</span>
+                    <span className="text-xs line-through text-muted-foreground">TTD {promo.originalPrice}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{lesson.billingModel ?? "per-session"}</div>
+                  <div className="text-lg font-bold">TTD {lesson.rateTtd}</div>
+                </>
+              )}
+            </div>
+            {!isOneOnOne && (
+              <div className="rounded-xl bg-white/95 text-ink px-4 py-2 text-right">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Members</div>
+                <div className="text-lg font-bold tabular-nums">{enrolledCount}/{lesson.capacity}</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      <div className="px-6 lg:px-8 pt-16 pb-12 max-w-7xl mx-auto">
-        {/* Title card */}
-        <section className="rounded-2xl bg-card border border-border p-6 lg:p-8 -mt-6 relative shadow-sm">
-          <button onClick={() => setSettingsOpen(true)} className="absolute top-5 right-5 size-10 rounded-full bg-brand text-white grid place-items-center hover:bg-brand/90 shadow">
-            <Settings className="size-4" />
-          </button>
-
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl lg:text-3xl font-bold text-ink">{lesson.title}</h1>
-              <Link to="/tutor/profile" className="mt-2 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-ink">
-                <span className="size-7 rounded-full bg-brand-soft text-brand-deep grid place-items-center text-[11px] font-bold">LR</span>
-                Liam Rampersad
-              </Link>
-              <div className="mt-2 flex items-center gap-1 text-sm">
-                {lesson.rating ? (
-                  <>
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={cn("size-4", i < Math.round(lesson.rating!) ? "fill-amber-400 text-amber-400" : "text-muted")} />
-                    ))}
-                    <span className="ml-1 text-ink font-semibold">{lesson.rating?.toFixed(1)}</span>
-                    <span className="text-muted-foreground">· {lesson.reviewCount} reviews</span>
-                  </>
-                ) : (
-                  <>
-                    <Star className="size-4 text-muted" /><Star className="size-4 text-muted" /><Star className="size-4 text-muted" /><Star className="size-4 text-muted" /><Star className="size-4 text-muted" />
-                    <span className="ml-1 text-muted-foreground">No reviews yet</span>
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground self-center">Quick actions</div>
-              <div className="flex gap-2">
-                <QuickAction icon={Pencil} label="Edit Class Details" onClick={() => setSettingsOpen(true)} />
-                <QuickAction icon={CalendarIcon} label="Schedule Session" />
-                <QuickAction icon={UserPlus} label="Invite Members" />
-              </div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <BigStat label="Members" value={String(lesson.enrollments.length)} accent="text-ink" />
-            <BigStat label="Next session" value={next > new Date() ? next.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"} accent="text-purple-600" />
-            <BigStat label="Price" value={lesson.rateTtd === 0 ? "Free" : `TTD ${lesson.rateTtd}`} accent="text-brand-deep" />
-            <BigStat label="Student limit" value={String(lesson.capacity)} accent="text-ink" />
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <SmallStat color="brand" value={`${lesson.totalSessionsRun ?? 0}`} label="Total sessions" />
-            <SmallStat color="indigo" value={`${lesson.avgAttendance ?? 0}%`} label="Avg attendance" />
-            <SmallStat color="orange" value={`${lesson.retention ?? 0}%`} label="Retention" />
-            <SmallStat color="amber" value={`$${(lesson.earningsTtd ?? 0).toLocaleString()}`} label="Total earnings" />
-          </div>
-        </section>
-
-        {/* Body */}
-        <div className="grid lg:grid-cols-[1fr,320px] gap-6 mt-6">
-          <div className="min-w-0 space-y-4">
-            {/* Tabs */}
-            <div className="border-b border-border flex items-center gap-6 overflow-x-auto rounded-2xl bg-card px-4 pt-2">
-              {(["stream", "sessions", "feedback", "whatsapp", "analytics"] as Tab[]).map((t) => (
-                <button key={t} onClick={() => setTab(t)} className={cn("relative pb-3 text-sm font-semibold capitalize whitespace-nowrap transition", tab === t ? "text-brand-deep" : "text-muted-foreground hover:text-ink")}>
-                  {t}
-                  {tab === t && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-brand" />}
-                </button>
-              ))}
-            </div>
-
-            {tab === "stream" && <StreamTab lesson={lesson} />}
-            {tab === "sessions" && <SessionsTab lessonId={lesson.id} />}
-            {tab === "feedback" && <FeedbackTab lesson={lesson} />}
-            {tab === "whatsapp" && <WhatsappTab lesson={lesson} setLesson={setLesson} />}
-            {tab === "analytics" && <AnalyticsTab lesson={lesson} />}
-          </div>
-
-          {/* Sidebar */}
-          <aside className="space-y-4">
-            <div className="rounded-2xl bg-card border border-border p-5">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Members</h3>
-                <span className="size-7 grid place-items-center rounded-full bg-brand-soft text-brand-deep text-xs font-bold">{lesson.enrollments.length}</span>
-              </div>
-              <ul className="mt-4 space-y-2.5">
-                {lesson.enrollments.map((e) => (
-                  <li key={e.studentId} className="flex items-center gap-3">
-                    <div className={cn("size-9 rounded-full grid place-items-center text-xs font-bold text-white", "bg-gradient-to-br from-brand to-emerald-400")}>
-                      {e.name.split(" ").map((n) => n[0]).join("").slice(0,2)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <Link to="/tutor/students/$id" params={{ id: e.studentId }} className="text-sm font-semibold text-ink hover:underline truncate block">{e.name}</Link>
-                      <div className="text-[11px] text-muted-foreground">Member</div>
-                    </div>
-                  </li>
-                ))}
-                {lesson.enrollments.length === 0 && <li className="text-sm text-muted-foreground text-center py-4">No members found</li>}
-              </ul>
-              <input placeholder="Search members…" className="mt-4 w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-              <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2">
-                <span className="text-xs text-muted-foreground truncate font-mono">{inviteUrl}</span>
-                <button onClick={copyLink} className="text-xs font-semibold text-brand-deep hover:underline inline-flex items-center gap-1">
-                  {linkCopied ? <Check className="size-3" /> : <Copy className="size-3" />} {linkCopied ? "Copied" : "Copy link"}
-                </button>
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-card border border-border p-5">
-              <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Upcoming sessions</h3>
-              <ul className="mt-4 space-y-3">
-                {upcoming.map((s) => {
-                  const d = new Date(s.date);
-                  return (
-                    <li key={s.id} className="flex items-start gap-3">
-                      <div className="text-center bg-purple-50 text-purple-700 rounded-lg px-2.5 py-1.5 leading-tight">
-                        <div className="text-base font-bold">{d.getDate()}</div>
-                        <div className="text-[9px] uppercase font-bold tracking-wider">{d.toLocaleString(undefined, { month: "short" })}</div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-ink">
-                          {d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} – {new Date(d.getTime() + s.durationMin*60000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-                        </div>
-                        <div className="text-xs text-muted-foreground truncate">{lesson.title}</div>
-                      </div>
-                    </li>
-                  );
-                })}
-                {upcoming.length === 0 && <li className="text-sm text-muted-foreground text-center py-3">No upcoming sessions.</li>}
-              </ul>
-              <button className="mt-4 w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 border-dashed border-border text-sm font-semibold text-muted-foreground hover:border-brand hover:text-brand-deep">
-                <Plus className="size-4" /> Schedule a Session
-              </button>
-            </div>
-          </aside>
-        </div>
-      </div>
-
-      {settingsOpen && <SettingsSheet lesson={lesson} setLesson={setLesson} onClose={() => setSettingsOpen(false)} />}
-      {/* TODO(cursor): wire all settings + invite + analytics + ownership transfer to backend. */}
     </div>
   );
 }
 
-/* ---------- atoms ---------- */
-
-function QuickAction({ icon: Icon, label, onClick }: any) {
-  return (
-    <button onClick={onClick} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold text-ink hover:bg-muted">
-      <Icon className="size-3.5 text-muted-foreground" /> {label}
-    </button>
-  );
-}
-
-function BigStat({ label, value, accent }: { label: string; value: string; accent: string }) {
-  return (
-    <div className="text-center">
-      <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{label}</div>
-      <div className={cn("mt-1 text-2xl font-bold", accent)}>{value}</div>
-    </div>
-  );
-}
-
-function SmallStat({ color, value, label }: { color: "brand" | "indigo" | "orange" | "amber"; value: string; label: string }) {
-  const ring = {
-    brand: "border-t-brand text-brand-deep",
-    indigo: "border-t-indigo-500 text-indigo-600",
-    orange: "border-t-orange-500 text-orange-600",
-    amber: "border-t-amber-500 text-amber-600",
-  }[color];
-  return (
-    <div className={cn("rounded-xl border-t-2 border-x border-b border-border bg-card px-4 py-3", ring)}>
-      <div className={cn("text-2xl font-bold tabular-nums")}>{value}</div>
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mt-0.5">{label}</div>
-    </div>
-  );
-}
-
-/* ---------- tabs ---------- */
+/* ---------------- Stream ---------------- */
 
 function StreamTab({ lesson }: { lesson: TutorLesson }) {
-  const [composer, setComposer] = useState<"announce" | "assign" | "material" | null>(null);
-  const posts = [
-    { id: "p1", kind: "announcement" as const, who: "You", at: "2h ago", title: "Welcome to the cohort", body: "Looking forward to a great term. Bring your textbook on Saturday." },
-    { id: "p2", kind: "assignment" as const, who: "You", at: "Yesterday", title: "Past paper · 2023 Q1–5", body: "Due Friday 6pm. Submit through the materials tab." },
-  ];
+  const [posts, setPosts] = useState<StreamPost[]>(PLACEHOLDER_STREAM_POSTS);
+  const [composer, setComposer] = useState<null | StreamPost["kind"]>(null);
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+
+  const sorted = [...posts].sort((a, b) => (a.pinned ? -1 : 0) - (b.pinned ? -1 : 0));
+
+  const submit = () => {
+    if (!title.trim()) return;
+    setPosts([{ id: `sp${Date.now()}`, kind: composer!, title, body, at: "Just now" }, ...posts]);
+    setTitle(""); setBody(""); setComposer(null);
+  };
+
+  const approveAI = (id: string) => setPosts(posts.map((p) => p.id === id ? { ...p, pendingApproval: false } : p));
+  const togglePin = (id: string) => setPosts(posts.map((p) => p.id === id ? { ...p, pinned: !p.pinned } : p));
+  const remove = (id: string) => setPosts(posts.filter((p) => p.id !== id));
+
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
-        <div className="flex items-center gap-2">
-          <ComposerChip active={composer === "announce"} icon={Bell} color="amber" label="New announcement" onClick={() => setComposer("announce")} />
-          <ComposerChip active={composer === "assign"} icon={FileText} color="violet" label="New assignment" onClick={() => setComposer("assign")} />
-          <ComposerChip active={composer === "material"} icon={ImageIcon} color="sky" label="Upload material" onClick={() => setComposer("material")} />
-        </div>
-        {composer && (
-          <div className="space-y-2">
-            <input placeholder="Title" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-            <textarea placeholder="Write a message to your students…" className="w-full min-h-24 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setComposer(null)} className="px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:bg-muted">Cancel</button>
-              <button className="px-4 py-1.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">Post</button>
-            </div>
+    <div className="grid lg:grid-cols-[1fr,280px] gap-6">
+      <div className="space-y-4">
+        <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
+          <div className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Post to your class</div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <ComposerChip active={composer === "announcement"} icon={Bell} color="amber" label="Announcement" onClick={() => setComposer("announcement")} />
+            <ComposerChip active={composer === "attachment"} icon={Paperclip} color="violet" label="File attachment" onClick={() => setComposer("attachment")} />
+            <ComposerChip active={composer === "link"} icon={LinkIcon} color="sky" label="Link" onClick={() => setComposer("link")} />
+            <ComposerChip active={composer === "ai-recap"} icon={Sparkles} color="emerald" label="Generate AI recap" onClick={() => setComposer("ai-recap")} />
           </div>
+          {composer && (
+            <div className="space-y-2 pt-2">
+              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+              <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Write a message to your students…" className="w-full min-h-24 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+              <div className="flex justify-between items-center">
+                <div className="text-[11px] text-muted-foreground">Stream posts are one-way — students cannot reply here. Use Messages for replies.</div>
+                <div className="flex gap-2">
+                  <button onClick={() => { setComposer(null); setTitle(""); setBody(""); }} className="px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:bg-muted">Cancel</button>
+                  <button onClick={submit} className="px-4 py-1.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">Post</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {sorted.length === 0 && (
+          <EmptyState icon={MessageCircle} title="No posts yet" body="Start the conversation with an announcement or share a file." />
         )}
+
+        {sorted.map((p) => (
+          <StreamCard key={p.id} post={p} onApprove={() => approveAI(p.id)} onPin={() => togglePin(p.id)} onRemove={() => remove(p.id)} />
+        ))}
       </div>
 
-      {posts.map((p) => (
-        <div key={p.id} className="rounded-2xl bg-card border border-border p-5">
-          <div className="flex items-center gap-3">
-            <div className={cn("size-10 rounded-xl grid place-items-center", p.kind === "announcement" ? "bg-amber-100 text-amber-700" : "bg-violet-100 text-violet-700")}>
-              {p.kind === "announcement" ? <Bell className="size-4" /> : <FileText className="size-4" />}
-            </div>
-            <div className="flex-1">
-              <div className="font-semibold text-ink">{p.title}</div>
-              <div className="text-[11px] text-muted-foreground">{p.who} · {p.at}</div>
-            </div>
+      {/* Aside */}
+      <aside className="space-y-4">
+        <SideCard title="Class info">
+          <InfoRow label="Subject" value={`${lesson.subject} · ${lesson.level}`} />
+          <InfoRow label="Schedule" value={lesson.recurrenceRule ?? "One-off"} />
+          <InfoRow label="Video" value={lesson.videoProvider ?? "—"} />
+          <InfoRow label="Channel" value={lesson.primaryChannel ?? "native"} />
+        </SideCard>
+        <SideCard title="Pinned">
+          <ul className="space-y-2 text-sm">
+            {sorted.filter((p) => p.pinned).map((p) => (
+              <li key={p.id} className="flex items-start gap-2"><Pin className="size-3.5 text-coral mt-0.5" /> <span className="text-ink line-clamp-2">{p.title}</span></li>
+            ))}
+            {sorted.filter((p) => p.pinned).length === 0 && <li className="text-xs text-muted-foreground">Nothing pinned yet.</li>}
+          </ul>
+        </SideCard>
+      </aside>
+    </div>
+  );
+}
+
+function StreamCard({ post, onApprove, onPin, onRemove }: { post: StreamPost; onApprove: () => void; onPin: () => void; onRemove: () => void }) {
+  const meta: Record<StreamPost["kind"], { icon: any; cls: string; tag: string }> = {
+    announcement: { icon: Bell, cls: "bg-amber-100 text-amber-700", tag: "Announcement" },
+    attachment:   { icon: Paperclip, cls: "bg-violet-100 text-violet-700", tag: "Attachment" },
+    link:         { icon: LinkIcon, cls: "bg-sky-100 text-sky-700", tag: "Link" },
+    "ai-recap":   { icon: Sparkles, cls: "bg-emerald-100 text-emerald-700", tag: "AI Recap" },
+  };
+  const M = meta[post.kind];
+  const Icon = M.icon;
+  return (
+    <div className={cn("rounded-2xl bg-card border p-5", post.pinned ? "border-coral/40 ring-1 ring-coral/20" : "border-border")}>
+      <div className="flex items-start gap-3">
+        <div className={cn("size-10 rounded-xl grid place-items-center shrink-0", M.cls)}><Icon className="size-4" /></div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{M.tag}</span>
+            {post.pinned && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-coral-soft text-coral">Pinned</span>}
+            {post.pendingApproval && <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 inline-flex items-center gap-1"><AlertTriangle className="size-3" /> Pending approval</span>}
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">{p.body}</p>
-          <div className="mt-3 pt-3 border-t border-border flex items-center gap-4 text-xs text-muted-foreground">
-            <button className="hover:text-ink inline-flex items-center gap-1"><MessageCircle className="size-3.5" /> 0 replies</button>
-            <button className="hover:text-ink inline-flex items-center gap-1"><Eye className="size-3.5" /> {lesson.enrollments.length} seen</button>
+          <div className="mt-1 font-semibold text-ink">{post.title}</div>
+          <p className="text-sm text-muted-foreground mt-1">{post.body}</p>
+          {post.attachmentName && (
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/40 text-xs font-semibold">
+              <Paperclip className="size-3.5" /> {post.attachmentName}
+            </div>
+          )}
+          {post.linkUrl && (
+            <a href={post.linkUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/40 text-xs font-semibold text-brand-deep hover:bg-brand-soft">
+              <ExternalLink className="size-3.5" /> {post.linkUrl}
+            </a>
+          )}
+          <div className="mt-3 flex items-center justify-between">
+            <div className="text-[11px] text-muted-foreground">{post.at}</div>
+            <div className="flex items-center gap-1">
+              {post.pendingApproval && (
+                <button onClick={onApprove} className="text-xs font-semibold px-3 py-1 rounded-md bg-brand text-white hover:bg-brand/90 inline-flex items-center gap-1">
+                  <Check className="size-3" /> Approve & post
+                </button>
+              )}
+              <button onClick={onPin} className="size-7 grid place-items-center rounded-md hover:bg-muted text-muted-foreground" title={post.pinned ? "Unpin" : "Pin"}>
+                <Pin className={cn("size-3.5", post.pinned && "fill-coral text-coral")} />
+              </button>
+              <button onClick={onRemove} className="size-7 grid place-items-center rounded-md hover:bg-rose-50 text-rose-600" title="Delete">
+                <Trash2 className="size-3.5" />
+              </button>
+            </div>
           </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
 
 function ComposerChip({ icon: Icon, color, label, active, onClick }: any) {
-  const c = { amber: "bg-amber-50 text-amber-700 border-amber-200", violet: "bg-violet-50 text-violet-700 border-violet-200", sky: "bg-sky-50 text-sky-700 border-sky-200" }[color as "amber" | "violet" | "sky"];
+  const c = {
+    amber: "bg-amber-50 text-amber-700 border-amber-200",
+    violet: "bg-violet-50 text-violet-700 border-violet-200",
+    sky: "bg-sky-50 text-sky-700 border-sky-200",
+    emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  }[color as "amber" | "violet" | "sky" | "emerald"];
   return (
     <button onClick={onClick} className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border", c, active && "ring-2 ring-brand")}>
       <Icon className="size-3.5" /> {label}
@@ -289,337 +280,570 @@ function ComposerChip({ icon: Icon, color, label, active, onClick }: any) {
   );
 }
 
-function SessionsTab({ lessonId }: { lessonId: string }) {
-  const [tab, setTab] = useState<"all" | "upcoming" | "ended" | "deleted">("all");
-  const all = PLACEHOLDER_SESSIONS.filter((s) => s.lessonId === lessonId);
-  const filtered = all.filter((s) => tab === "all" ? true : tab === "upcoming" ? s.status === "upcoming" : tab === "ended" ? s.status === "past" : false);
-  const grouped = {
-    upcoming: filtered.filter((s) => s.status === "upcoming"),
-    ended: filtered.filter((s) => s.status === "past"),
-  };
-  return (
-    <div className="rounded-2xl bg-card border border-border p-5 space-y-5">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          {(["all", "upcoming", "ended", "deleted"] as const).map((t) => (
-            <button key={t} onClick={() => setTab(t)} className={cn("px-4 py-1.5 rounded-full text-xs font-semibold capitalize border", tab === t ? "bg-ink text-white border-ink" : "bg-background border-border text-muted-foreground hover:text-ink")}>{t}</button>
-          ))}
-        </div>
-        <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90">
-          <Plus className="size-4" /> Add Session
-        </button>
-      </div>
+/* ---------------- Sessions ---------------- */
 
-      <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-sm text-sky-900 flex items-center gap-2">
-        <span className="size-1.5 rounded-full bg-sky-500" /> Upcoming session rooms open 15 minutes before the scheduled start time.
-      </div>
-
-      {grouped.upcoming.length > 0 && (
-        <Section title="Upcoming">
-          {grouped.upcoming.map((s) => <SessionRow key={s.id} s={s} />)}
-        </Section>
-      )}
-      {grouped.ended.length > 0 && (
-        <Section title="Ended">
-          {grouped.ended.map((s) => <SessionRow key={s.id} s={s} />)}
-        </Section>
-      )}
-      {filtered.length === 0 && <div className="py-8 text-center text-sm text-muted-foreground">No sessions to show.</div>}
-    </div>
+function SessionsTab({ lesson }: { lesson: TutorLesson }) {
+  const sessions = useMemo(
+    () => PLACEHOLDER_SESSIONS.filter((s) => s.lessonId === lesson.id).slice(0, 6),
+    [lesson.id]
   );
-}
+  const upcoming = sessions.filter((s) => s.status === "upcoming");
 
-function Section({ title, children }: any) {
-  return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold mb-2">{title}</div>
-      <ul className="divide-y divide-border border border-border rounded-xl">{children}</ul>
-    </div>
-  );
-}
-
-function SessionRow({ s }: any) {
-  const d = new Date(s.date);
-  const future = d > new Date();
-  return (
-    <li className="px-4 py-3 flex items-center gap-4">
-      <span className={cn("size-2.5 rounded-full", s.status === "upcoming" ? "bg-emerald-500" : s.status === "past" ? "bg-rose-500" : "bg-muted")} />
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold text-ink text-sm">{d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</div>
-        <input defaultValue="" placeholder="Untitled session" className="mt-1 text-xs text-muted-foreground bg-transparent border-b border-transparent hover:border-border focus:outline-none focus:border-brand w-56" />
-        <div className="text-[11px] text-muted-foreground mt-1">{d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} – {new Date(d.getTime() + s.durationMin*60000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} · {Math.round(s.durationMin/60)} hr</div>
-      </div>
-      <button disabled={!future} className={cn("px-4 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1", future ? "bg-brand text-white hover:bg-brand/90" : "bg-muted text-muted-foreground cursor-not-allowed")}>
-        <Lock className="size-3" /> Join
-      </button>
-      <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">{future ? "soon" : "ended"}</span>
-      <button className="size-8 grid place-items-center rounded-lg text-muted-foreground hover:bg-rose-50 hover:text-rose-600"><Trash2 className="size-4" /></button>
-    </li>
-  );
-}
-
-function FeedbackTab({ lesson }: { lesson: TutorLesson }) {
-  const reviews = [
-    { id: "r1", who: "Aliyah Mohammed", initials: "AM", rating: 5, at: "2 weeks ago", text: "Patient and explains everything clearly. The past-paper drills made all the difference." },
-    { id: "r2", who: "Keshawn Boodoo", initials: "KB", rating: 5, at: "1 month ago", text: "Honestly the best tutor I've had. Highly recommend." },
-  ];
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl bg-card border border-border p-6 grid md:grid-cols-[180px,1fr] gap-6">
-        <div className="text-center">
-          <div className="text-5xl font-bold text-ink">{lesson.rating?.toFixed(1) ?? "—"}</div>
-          <div className="flex items-center justify-center gap-0.5 mt-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className={cn("size-4", lesson.rating && i < Math.round(lesson.rating) ? "fill-amber-400 text-amber-400" : "text-muted")} />
-            ))}
-          </div>
-          <div className="text-xs text-muted-foreground mt-1">{lesson.reviewCount ?? 0} reviews</div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-ink">Sessions</h2>
+          <p className="text-xs text-muted-foreground">Next {upcoming.length} upcoming · attach meeting links, manage attendance.</p>
         </div>
-        <div className="space-y-1.5">
-          {[5,4,3,2,1].map((n) => (
-            <div key={n} className="flex items-center gap-2 text-xs">
-              <span className="w-4 text-muted-foreground">{n}</span>
-              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full bg-amber-400" style={{ width: n === 5 ? "78%" : n === 4 ? "18%" : n === 3 ? "4%" : "0%" }} />
-              </div>
-              <span className="w-10 text-right text-muted-foreground tabular-nums">{n === 5 ? "78%" : n === 4 ? "18%" : n === 3 ? "4%" : "0%"}</span>
-            </div>
-          ))}
+        <div className="flex items-center gap-2">
+          <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-background text-xs font-semibold hover:bg-muted">
+            <Video className="size-3.5" /> Attach Meeting Link
+          </button>
+          <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90">
+            <Plus className="size-3.5" /> Add Session
+          </button>
         </div>
       </div>
+
+      {sessions.length === 0 && <EmptyState icon={CalendarIcon} title="No sessions scheduled" body="Add your first session to publish a calendar entry to enrolled students." />}
+
       <div className="space-y-3">
-        {reviews.map((r) => (
-          <div key={r.id} className="rounded-2xl bg-card border border-border p-5">
-            <div className="flex items-center gap-3">
-              <div className="size-9 rounded-full bg-brand-soft text-brand-deep grid place-items-center text-xs font-bold">{r.initials}</div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-ink">{r.who}</div>
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  {Array.from({length:5}).map((_,i) => <Star key={i} className={cn("size-3", i<r.rating?"fill-amber-400 text-amber-400":"text-muted")}/>)}
-                  <span className="ml-1">· {r.at}</span>
+        {sessions.map((s) => {
+          const d = new Date(s.date);
+          const future = d > new Date();
+          const att = s.attendance;
+          const pay = s.paymentStatus ?? "pending";
+          return (
+            <div key={s.id} className="rounded-2xl bg-card border border-border p-4 flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex items-center gap-3 md:w-64">
+                <div className="text-center bg-brand-soft text-brand-deep rounded-lg px-3 py-1.5 leading-tight">
+                  <div className="text-base font-bold">{d.getDate()}</div>
+                  <div className="text-[9px] uppercase font-bold tracking-wider">{d.toLocaleString(undefined, { month: "short" })}</div>
+                </div>
+                <div className="min-w-0">
+                  <div className="font-semibold text-ink text-sm truncate">{d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} · {Math.round(s.durationMin / 60 * 10) / 10}hr
+                  </div>
                 </div>
               </div>
-              <button className="text-xs font-semibold text-brand-deep hover:underline">Reply</button>
+              <div className="flex flex-1 items-center gap-2 flex-wrap">
+                <Pill tone={att === "attended" ? "emerald" : att === "no-show" ? "rose" : "slate"} label={`Attendance: ${att ?? (future ? "—" : "pending")}`} />
+                <Pill tone={pay === "paid" ? "emerald" : pay === "overdue" ? "rose" : "amber"} label={`Payment: ${pay}`} />
+                {!s.lessonId && <Pill tone="amber" label="No meeting link" />}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold hover:bg-muted">
+                  <Video className="size-3.5" /> Attach link
+                </button>
+                <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-rose-600 hover:bg-rose-50">
+                  <X className="size-3.5" /> Cancel
+                </button>
+              </div>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">{r.text}</p>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Roster ---------------- */
+
+function RosterTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; isOneOnOne: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState<null | "link" | "user">(null);
+  const inviteUrl = `https://itutor.app/c/${lesson.id}`;
+  const enrolledCount = lesson.enrollments.filter((e) => (e.status ?? "active") !== "removed").length;
+  const atCapacity = !isOneOnOne && enrolledCount >= lesson.capacity;
+
+  const updateMember = (sid: string, patch: Partial<EnrolledStudent>) => {
+    setLesson({ ...lesson, enrollments: lesson.enrollments.map((e) => e.studentId === sid ? { ...e, ...patch } : e) });
+  };
+
+  const copy = () => { navigator.clipboard?.writeText(inviteUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-ink">Roster</h2>
+          <p className="text-xs text-muted-foreground">
+            {isOneOnOne ? "1:1 — your recurring student." : `${enrolledCount} of ${lesson.capacity} seats filled.`}
+          </p>
+        </div>
+        {!isOneOnOne && (
+          <div className="flex items-center gap-2">
+            <button disabled={atCapacity} onClick={() => setInviteOpen("link")}
+              className={cn("inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold", atCapacity ? "border-border text-muted-foreground cursor-not-allowed" : "border-border bg-background hover:bg-muted")}>
+              <LinkIcon className="size-3.5" /> Invite by Link
+            </button>
+            <button disabled={atCapacity} onClick={() => setInviteOpen("user")}
+              className={cn("inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold", atCapacity ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-brand text-white hover:bg-brand/90")}>
+              <UserPlus className="size-3.5" /> Invite by User
+            </button>
           </div>
+        )}
+      </div>
+
+      {atCapacity && (
+        <Banner tone="rose" icon={ShieldAlert} title="Class is at capacity"
+          body="New invites are paused. Increase max class size in Settings or wait for a member to leave." />
+      )}
+
+      {!isOneOnOne && inviteOpen === "link" && (
+        <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
+          <div className="font-semibold text-ink">Invite link</div>
+          <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
+            <span className="text-xs text-muted-foreground truncate font-mono flex-1">{inviteUrl}</span>
+            <button onClick={copy} className="text-xs font-semibold text-brand-deep hover:underline inline-flex items-center gap-1">
+              {copied ? <Check className="size-3" /> : <Copy className="size-3" />} {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">Anyone with this link can request to join. They'll appear as <strong>Invited</strong> until you approve them.</p>
+        </div>
+      )}
+
+      {!isOneOnOne && inviteOpen === "user" && (
+        <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
+          <div className="font-semibold text-ink">Invite by username or email</div>
+          <div className="flex items-center gap-2">
+            <input placeholder="e.g. aliyah@example.tt" className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+            <button className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90 inline-flex items-center gap-1.5">
+              <Mail className="size-3.5" /> Send invite
+            </button>
+          </div>
+        </div>
+      )}
+
+      {lesson.enrollments.length === 0 ? (
+        <EmptyState icon={Users} title="No members yet" body="Invite by link or by user to start filling this class." />
+      ) : (
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="text-left font-bold px-4 py-2">Member</th>
+                <th className="text-left font-bold px-4 py-2">Status</th>
+                <th className="text-left font-bold px-4 py-2">Payment</th>
+                <th className="text-left font-bold px-4 py-2">Joined</th>
+                <th className="px-4 py-2"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {lesson.enrollments.map((e) => <RosterRow key={e.studentId} e={e} onUpdate={(p) => updateMember(e.studentId, p)} />)}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RosterRow({ e, onUpdate }: { e: EnrolledStudent; onUpdate: (p: Partial<EnrolledStudent>) => void }) {
+  const status = e.status ?? "active";
+  const sm = MEMBER_STATUS_META[status];
+  const [menu, setMenu] = useState(false);
+  const overdue = e.paymentStatus === "overdue";
+  return (
+    <tr className={cn(status === "suspended" && "bg-amber-50/40", status === "removed" && "opacity-60")}>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="size-9 rounded-full bg-gradient-to-br from-brand to-emerald-400 grid place-items-center text-xs font-bold text-white">
+            {e.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+          </div>
+          <div>
+            <Link to="/tutor/students/$id" params={{ id: e.studentId }} className="font-semibold text-ink hover:underline">{e.name}</Link>
+            {overdue && <div className="text-[11px] text-rose-600 font-semibold">Outstanding TTD {e.outstandingTtd ?? 0}</div>}
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-3"><span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border", sm.chip)}>{sm.label}</span></td>
+      <td className="px-4 py-3"><Pill tone={e.paymentStatus === "paid" ? "emerald" : e.paymentStatus === "overdue" ? "rose" : "amber"} label={e.paymentStatus} /></td>
+      <td className="px-4 py-3 text-xs text-muted-foreground">{e.joinedAt ? new Date(e.joinedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}</td>
+      <td className="px-4 py-3 text-right relative">
+        <button onClick={() => setMenu(!menu)} className="size-8 grid place-items-center rounded-md hover:bg-muted text-muted-foreground"><MoreVertical className="size-4" /></button>
+        {menu && (
+          <div className="absolute right-4 top-10 z-10 w-52 rounded-xl border border-border bg-background shadow-pop p-1 text-left">
+            {status !== "suspended"
+              ? <MenuItem icon={ShieldAlert} label="Suspend" onClick={() => { onUpdate({ status: "suspended" }); setMenu(false); }} />
+              : <MenuItem icon={Check} label="Reactivate" onClick={() => { onUpdate({ status: "active" }); setMenu(false); }} />}
+            <MenuItem icon={AlertTriangle} label="Send warning" onClick={() => setMenu(false)} />
+            <MenuItem icon={Trash2} destructive label="Remove from class" onClick={() => { onUpdate({ status: "removed" }); setMenu(false); }} />
+          </div>
+        )}
+      </td>
+    </tr>
+  );
+}
+
+function MenuItem({ icon: Icon, label, onClick, destructive }: any) {
+  return (
+    <button onClick={onClick} className={cn("w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-muted", destructive && "text-rose-600 hover:bg-rose-50")}>
+      <Icon className="size-4" /> {label}
+    </button>
+  );
+}
+
+/* ---------------- Payments ---------------- */
+
+function PaymentsTab({ lesson }: { lesson: TutorLesson }) {
+  const grid = useMemo(() => generatePaymentGrid(lesson.enrollments.filter((e) => (e.status ?? "active") !== "removed")), [lesson.enrollments]);
+  const collected = lesson.earningsTtd ?? 0;
+  const outstanding = lesson.enrollments.reduce((s, e) => s + (e.paymentStatus === "overdue" ? (e.outstandingTtd ?? 0) : 0), 0);
+  const members = lesson.enrollments.filter((e) => (e.status ?? "active") !== "removed");
+  const cols = PAYMENT_PERIODS;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-ink">Payments</h2>
+          <p className="text-xs text-muted-foreground">Track every member × period in one grid.</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card px-4 py-2 text-sm">
+          <span className="text-emerald-700 font-bold">Collected TTD {collected.toLocaleString()}</span>
+          <span className="text-muted-foreground mx-2">vs</span>
+          <span className={cn("font-bold", outstanding > 0 ? "text-rose-700" : "text-muted-foreground")}>Outstanding TTD {outstanding.toLocaleString()}</span>
+        </div>
+      </div>
+
+      {members.length === 0 ? (
+        <EmptyState icon={DollarSign} title="No members to bill" body="Once members join, you'll see a status chip per period here." />
+      ) : (
+        <div className="rounded-2xl border border-border bg-card overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="text-left font-bold px-4 py-2 sticky left-0 bg-muted/40">Member</th>
+                {cols.map((c) => <th key={c} className="text-center font-bold px-3 py-2">{c}</th>)}
+                <th className="text-right font-bold px-4 py-2">Outstanding</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {members.map((m) => (
+                <tr key={m.studentId}>
+                  <td className="px-4 py-3 sticky left-0 bg-card">
+                    <div className="flex items-center gap-2">
+                      <div className="size-7 rounded-full bg-gradient-to-br from-brand to-emerald-400 grid place-items-center text-[10px] font-bold text-white">
+                        {m.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                      </div>
+                      <span className="font-semibold text-ink">{m.name}</span>
+                    </div>
+                  </td>
+                  {cols.map((c) => <PaymentCell key={c} status={grid[m.studentId][c] as PaymentCellStatus} />)}
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums">
+                    {m.paymentStatus === "overdue" ? <span className="text-rose-600">TTD {(m.outstandingTtd ?? 0).toLocaleString()}</span> : <span className="text-muted-foreground">—</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="text-xs text-muted-foreground flex flex-wrap gap-4">
+        {(["paid", "due", "overdue", "waived"] as PaymentCellStatus[]).map((s) => (
+          <span key={s} className="inline-flex items-center gap-1.5">
+            <span className={cn("size-3 rounded border", PAYMENT_STATUS_META[s].chip)} /> {PAYMENT_STATUS_META[s].label}
+          </span>
         ))}
       </div>
     </div>
   );
 }
 
-function WhatsappTab({ lesson, setLesson }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void }) {
-  const [link, setLink] = useState(lesson.whatsappLink ?? "");
-  const [classroom, setClassroom] = useState(lesson.classroomLink ?? "");
-  const connected = !!lesson.whatsappLink;
+function PaymentCell({ status }: { status: PaymentCellStatus }) {
+  const m = PAYMENT_STATUS_META[status];
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl bg-card border border-border p-5">
-        <div className="flex items-start gap-4">
-          <div className="size-12 rounded-xl bg-emerald-100 text-emerald-700 grid place-items-center"><MessageSquare className="size-5" /></div>
-          <div className="flex-1">
-            <div className="font-bold text-ink">WhatsApp Group</div>
-            <div className="text-sm text-muted-foreground">Connect a WhatsApp group for your class</div>
-          </div>
-          <span className={cn("text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full", connected ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground")}>
-            {connected ? "Connected" : "Not connected"}
-          </span>
-        </div>
-        <div className="mt-5 pt-5 border-t border-border">
-          <label className="text-sm font-semibold text-ink">WhatsApp group invite link</label>
-          <p className="text-xs text-muted-foreground mt-0.5">Paste the invite link from your WhatsApp group. Only approved members will see the join button.</p>
-          <div className="mt-3 flex gap-2">
-            <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://chat.whatsapp.com/…" className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-            <button className="px-3 py-2 rounded-lg border border-border text-sm font-semibold inline-flex items-center gap-1 hover:bg-muted"><ExternalLink className="size-3.5" /> Test</button>
-            <button onClick={() => setLesson({ ...lesson, whatsappLink: link })} className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90 inline-flex items-center gap-1"><Check className="size-3.5" /> Save</button>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-card border border-border p-5">
-        <div className="flex items-start gap-4">
-          <div className="size-12 rounded-xl bg-sky-100 text-sky-700 grid place-items-center"><Globe className="size-5" /></div>
-          <div className="flex-1">
-            <div className="font-bold text-ink">Google Classroom</div>
-            <div className="text-sm text-muted-foreground">Link an existing Classroom so members can self-enroll</div>
-          </div>
-        </div>
-        <div className="mt-5 pt-5 border-t border-border flex gap-2">
-          <input value={classroom} onChange={(e) => setClassroom(e.target.value)} placeholder="https://classroom.google.com/c/…" className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-          <button onClick={() => setLesson({ ...lesson, classroomLink: classroom })} className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90 inline-flex items-center gap-1"><Check className="size-3.5" /> Save</button>
-        </div>
-      </div>
-    </div>
+    <td className="px-2 py-2 text-center">
+      <span className={cn("inline-block px-2 py-1 rounded-md border text-[10px] font-bold uppercase tracking-wider", m.chip)}>{m.label}</span>
+    </td>
   );
 }
 
-function AnalyticsTab({ lesson }: { lesson: TutorLesson }) {
-  const trend = [62, 68, 71, 78, 82, 85, 88];
-  const max = Math.max(...trend);
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KPICard icon={Users} label="Active members" value={String(lesson.enrollments.length)} delta="+2 this week" />
-        <KPICard icon={CalendarIcon} label="Sessions run" value={String(lesson.totalSessionsRun ?? 0)} delta="On track" />
-        <KPICard icon={BarChart3} label="Avg attendance" value={`${lesson.avgAttendance ?? 0}%`} delta="+4% vs last month" />
-        <KPICard icon={DollarSign} label="Earnings" value={`$${(lesson.earningsTtd ?? 0).toLocaleString()}`} delta="+TTD 240 this wk" />
-      </div>
-      <div className="rounded-2xl bg-card border border-border p-5">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-ink">Engagement trend</h3>
-          <span className="text-[11px] text-muted-foreground">Last 7 sessions</span>
-        </div>
-        <div className="mt-6 h-40 flex items-end gap-3">
-          {trend.map((v, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-2">
-              <div className="w-full rounded-t-md bg-gradient-to-t from-brand to-emerald-300" style={{ height: `${(v/max)*100}%` }} />
-              <div className="text-[10px] text-muted-foreground">S{i+1}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="rounded-2xl bg-card border border-border p-5">
-        <h3 className="font-semibold text-ink">Per-student performance</h3>
-        <ul className="mt-3 divide-y divide-border">
-          {lesson.enrollments.map((e) => (
-            <li key={e.studentId} className="py-3 flex items-center gap-3">
-              <div className="size-9 rounded-full bg-brand-soft text-brand-deep grid place-items-center text-xs font-bold">{e.name.split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-ink">{e.name}</div>
-                <div className="text-[11px] text-muted-foreground">Attendance · {Math.round(60 + Math.random()*40)}%</div>
-              </div>
-              <div className="w-32 h-2 rounded-full bg-muted overflow-hidden">
-                <div className="h-full bg-brand" style={{ width: `${60 + Math.random()*40}%` }} />
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
+/* ---------------- Settings ---------------- */
 
-function KPICard({ icon: Icon, label, value, delta }: any) {
-  return (
-    <div className="rounded-2xl bg-card border border-border p-4">
-      <div className="flex items-center gap-2 text-muted-foreground"><Icon className="size-4" /><span className="text-[11px] uppercase tracking-wider font-bold">{label}</span></div>
-      <div className="mt-2 text-2xl font-bold text-ink">{value}</div>
-      <div className="text-[11px] text-emerald-600 font-semibold mt-0.5">{delta}</div>
-    </div>
-  );
-}
-
-/* ---------- settings sheet ---------- */
-
-function SettingsSheet({ lesson, setLesson, onClose }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; onClose: () => void }) {
-  const [draft, setDraft] = useState<TutorLesson>(lesson);
-  const update = <K extends keyof TutorLesson>(k: K, v: TutorLesson[K]) => setDraft({ ...draft, [k]: v });
+function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; isOneOnOne: boolean }) {
+  const u = <K extends keyof TutorLesson>(k: K, v: TutorLesson[K]) => setLesson({ ...lesson, [k]: v });
   const gradients = [
     "from-orange-500 to-amber-400","from-fuchsia-500 to-purple-500","from-sky-500 to-cyan-400","from-emerald-500 to-teal-400",
     "from-rose-500 to-pink-400","from-indigo-500 to-blue-500","from-yellow-500 to-orange-500","from-slate-600 to-slate-400",
   ];
+
   return (
-    <div className="fixed inset-0 z-50 flex" onClick={onClose}>
-      <div className="flex-1 bg-ink/50 backdrop-blur-sm" />
-      <aside className="w-full max-w-xl bg-background h-full overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <header className="sticky top-0 z-10 bg-background border-b border-border px-6 py-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-ink">Class settings</h2>
-            <p className="text-xs text-muted-foreground">Customize how this class appears and behaves.</p>
-          </div>
-          <button onClick={onClose} className="size-9 grid place-items-center rounded-lg hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
-        </header>
-
-        <div className="p-6 space-y-8">
-          {/* Thumbnail */}
-          <Field label="Thumbnail">
-            <div className={cn("h-24 rounded-xl bg-gradient-to-br grid place-items-center", draft.thumbnailGradient ?? "from-brand to-emerald-400")}>
-              <ImageIcon className="size-8 text-white/80" />
-            </div>
-            <div className="mt-3 grid grid-cols-8 gap-2">
-              {gradients.map((g) => (
-                <button key={g} onClick={() => update("thumbnailGradient", g)} className={cn("h-8 rounded-md bg-gradient-to-br", g, draft.thumbnailGradient === g && "ring-2 ring-brand ring-offset-2")} />
-              ))}
-            </div>
-            <button className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-brand-deep hover:underline"><ImageIcon className="size-3.5" /> Upload custom image</button>
-          </Field>
-
-          {/* Basics */}
-          <Field label="Class title">
-            <input value={draft.title} onChange={(e) => update("title", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Subject"><input value={draft.subject} onChange={(e) => update("subject", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
-            <Field label="Level"><input value={draft.level} onChange={(e) => update("level", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
-          </div>
-          <Field label="Class bio" hint="Long-form description shown on your public listing.">
-            <textarea value={draft.bio ?? ""} onChange={(e) => update("bio", e.target.value)} className="w-full min-h-28 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-          </Field>
-
-          {/* Pricing */}
-          <Field label="Pricing">
-            <div className="grid grid-cols-2 gap-3">
-              <select value={draft.pricingMode} onChange={(e) => update("pricingMode", e.target.value as any)} className="px-3 py-2 rounded-lg border border-border bg-background text-sm">
-                <option value="per-session">Per session</option>
-                <option value="per-block">Per block</option>
-                <option value="per-student">Per student</option>
-              </select>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">TTD</span>
-                <input type="number" value={draft.rateTtd} onChange={(e) => update("rateTtd", Number(e.target.value))} className="w-full pl-12 pr-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-              </div>
-            </div>
-          </Field>
-
-          {/* Capacity & rules */}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Max class size"><input type="number" value={draft.capacity} onChange={(e) => update("capacity", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
-            <Field label="Session length (min)"><input type="number" value={draft.durationMin} onChange={(e) => update("durationMin", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
-          </div>
-
-          <Toggle label="Require approval to join" hint="Students must be approved before they can enroll." value={!!draft.approvalRequired} onChange={(v) => update("approvalRequired", v)} />
-          <Toggle label="Enable waitlist" hint="When the class fills up, allow students to join the waitlist." value={!!draft.waitlistEnabled} onChange={(v) => update("waitlistEnabled", v)} />
-
-          {/* Visibility */}
-          <Field label="Visibility" hint="Public classes appear in the marketplace.">
-            <div className="grid grid-cols-3 gap-2">
-              {(["public","unlisted","private"] as const).map((v) => (
-                <button key={v} onClick={() => update("visibility", v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", draft.visibility === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                  {v === "public" ? <Globe className="size-3.5" /> : v === "private" ? <Lock className="size-3.5" /> : <Eye className="size-3.5" />} {v}
-                </button>
-              ))}
-            </div>
-          </Field>
-
-          <Field label="Video provider" hint="Where live sessions take place.">
-            <div className="grid grid-cols-3 gap-2">
-              {(["zoom","google-meet","itutor"] as const).map((v) => (
-                <button key={v} onClick={() => update("videoProvider", v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold inline-flex items-center justify-center gap-1.5", draft.videoProvider === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                  <Video className="size-3.5" /> {v === "google-meet" ? "Google Meet" : v === "itutor" ? "iTutor" : "Zoom"}
-                </button>
-              ))}
-            </div>
-          </Field>
-
-          {/* Danger zone */}
-          <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-5 space-y-3">
-            <h3 className="text-sm font-bold text-rose-700">Danger zone</h3>
-            <DangerRow icon={Archive} label={draft.archived ? "Unarchive class" : "Archive class"} hint="Hide from the marketplace and stop new enrollments." onClick={() => update("archived", !draft.archived)} />
-            <DangerRow icon={ArrowUpRight} label="Transfer ownership" hint="Move this class to another tutor on iTutor." />
-            <DangerRow icon={Trash2} label="Delete class" hint="Permanently remove this class and its data." destructive />
-          </div>
+    <div className="space-y-6 max-w-3xl">
+      {/* Basics */}
+      <Card title="Basics">
+        <Field label="Class title">
+          <input value={lesson.title} onChange={(e) => u("title", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Subject"><input value={lesson.subject} onChange={(e) => u("subject", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
+          <Field label="Level"><input value={lesson.level} onChange={(e) => u("level", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
         </div>
+        <Field label="Class bio" hint="Long-form description shown on your public listing.">
+          <textarea value={lesson.bio ?? ""} onChange={(e) => u("bio", e.target.value)} className="w-full min-h-24 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+        </Field>
+        <Field label="Description (short)" hint="One-liner shown in the marketplace card.">
+          <input value={lesson.description} onChange={(e) => u("description", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+        </Field>
+      </Card>
 
-        <footer className="sticky bottom-0 bg-background border-t border-border px-6 py-4 flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg border border-border text-sm font-semibold hover:bg-muted">Cancel</button>
-          <button onClick={() => { setLesson(draft); onClose(); }} className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">Save changes</button>
-        </footer>
-      </aside>
+      {/* Thumbnail */}
+      <Card title="Thumbnail">
+        <div className={cn("h-24 rounded-xl bg-gradient-to-br grid place-items-center", lesson.thumbnailGradient ?? "from-brand to-emerald-400")}>
+          <ImageIcon className="size-8 text-white/80" />
+        </div>
+        <div className="mt-3 grid grid-cols-8 gap-2">
+          {gradients.map((g) => (
+            <button key={g} onClick={() => u("thumbnailGradient", g)} className={cn("h-8 rounded-md bg-gradient-to-br", g, lesson.thumbnailGradient === g && "ring-2 ring-brand ring-offset-2")} />
+          ))}
+        </div>
+        <button className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-brand-deep hover:underline"><ImageIcon className="size-3.5" /> Upload custom image</button>
+      </Card>
+
+      {/* Capacity & billing */}
+      <Card title="Capacity & billing">
+        {!isOneOnOne && (
+          <Field label="Student limit" hint="Set to 1 to convert this into a recurring 1:1.">
+            <div className="inline-flex items-center gap-2">
+              <button onClick={() => u("capacity", Math.max(1, lesson.capacity - 1))} className="size-9 grid place-items-center rounded-lg border border-border">−</button>
+              <input type="number" value={lesson.capacity} onChange={(e) => u("capacity", Math.max(1, Number(e.target.value)))} className="w-20 text-center px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+              <button onClick={() => u("capacity", lesson.capacity + 1)} className="size-9 grid place-items-center rounded-lg border border-border">+</button>
+            </div>
+          </Field>
+        )}
+        <Field label="Billing model">
+          <div className="grid grid-cols-3 gap-2">
+            {(["per-session", "per-month", "prepaid"] as const).map((b) => (
+              <button key={b} onClick={() => u("billingModel", b)}
+                className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", lesson.billingModel === b ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                {b.replace("-", " ")}
+              </button>
+            ))}
+          </div>
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Price (TTD)">
+            <input type="number" value={lesson.rateTtd} onChange={(e) => u("rateTtd", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+          </Field>
+          <Field label="Per-member service fee (TTD)">
+            <input type="number" value={lesson.memberServiceFee ?? 0} onChange={(e) => u("memberServiceFee", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+          </Field>
+        </div>
+      </Card>
+
+      {/* Access & policies */}
+      <Card title="Access & policies">
+        <Field label="Visibility" hint="Public classes appear in the marketplace.">
+          <div className="grid grid-cols-3 gap-2">
+            {(["public","unlisted","private"] as const).map((v) => (
+              <button key={v} onClick={() => u("visibility", v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.visibility === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                {v === "public" ? <Globe className="size-3.5" /> : v === "private" ? <Lock className="size-3.5" /> : <Eye className="size-3.5" />} {v}
+              </button>
+            ))}
+          </div>
+        </Field>
+        <Toggle label="Enable join requests" hint="Members must request approval before joining." value={!!lesson.joinRequests} onChange={(v) => u("joinRequests", v)} />
+        <Toggle label="Auto-suspend on overdue payment" hint="When a payment goes overdue, suspend the member until they pay." value={!!lesson.autoSuspend} onChange={(v) => u("autoSuspend", v)} />
+        {lesson.autoSuspend && (
+          <Field label="Grace window (days)">
+            <input type="number" value={lesson.graceWindowDays ?? 7} onChange={(e) => u("graceWindowDays", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+          </Field>
+        )}
+      </Card>
+
+      {/* Channels */}
+      <Card title="Communication channels">
+        <Field label="WhatsApp group link">
+          <input value={lesson.whatsappLink ?? ""} onChange={(e) => u("whatsappLink", e.target.value)} placeholder="https://chat.whatsapp.com/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+        </Field>
+        <Field label="Google Classroom link">
+          <input value={lesson.classroomLink ?? ""} onChange={(e) => u("classroomLink", e.target.value)} placeholder="https://classroom.google.com/c/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+        </Field>
+        <Field label="Primary channel" hint="Where members are pointed for class chatter.">
+          <div className="grid grid-cols-3 gap-2">
+            {(["native", "whatsapp", "classroom"] as const).map((c) => (
+              <button key={c} onClick={() => u("primaryChannel", c)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.primaryChannel === c ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                {c === "whatsapp" ? <MessageSquare className="size-3.5" /> : c === "classroom" ? <Globe className="size-3.5" /> : <Sparkles className="size-3.5" />} {c === "native" ? "iTutor native" : c}
+              </button>
+            ))}
+          </div>
+        </Field>
+        <Field label="Video provider">
+          <div className="grid grid-cols-2 gap-2">
+            {(["zoom","google-meet"] as const).map((v) => (
+              <button key={v} onClick={() => u("videoProvider", v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold inline-flex items-center justify-center gap-1.5", lesson.videoProvider === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                <Video className="size-3.5" /> {v === "google-meet" ? "Google Meet" : "Zoom"}
+              </button>
+            ))}
+          </div>
+        </Field>
+      </Card>
+
+      {/* Parent feedback */}
+      <Card title="Parent feedback">
+        <Field label="Mode" hint="Send AI-drafted monthly reports to parents. You review and approve before send.">
+          <div className="grid grid-cols-3 gap-2">
+            {(["off", "included", "paid"] as const).map((m) => (
+              <button key={m} onClick={() => u("parentFeedbackMode", m)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", lesson.parentFeedbackMode === m ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                {m === "included" ? "Included free" : m === "paid" ? "Paid add-on" : "Off"}
+              </button>
+            ))}
+          </div>
+        </Field>
+        {lesson.parentFeedbackMode === "paid" && (
+          <Field label="Price per report (TTD)">
+            <input type="number" value={lesson.parentFeedbackPrice ?? 0} onChange={(e) => u("parentFeedbackPrice", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+          </Field>
+        )}
+      </Card>
+
+      {/* Danger zone */}
+      <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-5 space-y-3">
+        <h3 className="text-sm font-bold text-rose-700">Danger zone</h3>
+        <DangerRow icon={Archive} label={lesson.archived ? "Unarchive class" : "Archive class"} hint="Hide from the marketplace and stop new enrollments." onClick={() => u("archived", !lesson.archived)} />
+        <DangerRow icon={ArrowUpRight} label="Transfer ownership" hint="Move this class to another tutor on iTutor." />
+        <DangerRow icon={Trash2} label="Delete class" hint="Permanently remove this class and its data." destructive />
+      </div>
     </div>
   );
 }
 
+/* ---------------- Analytics ---------------- */
+
+function AnalyticsTab({ lesson }: { lesson: TutorLesson }) {
+  const months = ["Dec", "Jan", "Feb", "Mar", "Apr", "May"];
+  const enroll = [2, 4, 5, 7, 8, lesson.enrollments.length || 9];
+  const revenue = [180, 420, 600, 940, 1180, lesson.earningsTtd ?? 1440];
+  const maxE = Math.max(...enroll);
+  const maxR = Math.max(...revenue);
+  const outstanding = lesson.enrollments.reduce((s, e) => s + (e.paymentStatus === "overdue" ? (e.outstandingTtd ?? 0) : 0), 0);
+
+  const mom = (a: number[]) => {
+    const prev = a[a.length - 2] || 1;
+    const cur = a[a.length - 1] || 0;
+    return Math.round(((cur - prev) / prev) * 100);
+  };
+  const momE = mom(enroll);
+  const momR = mom(revenue);
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <MomCard label="Enrollment MoM" value={`${momE > 0 ? "+" : ""}${momE}%`} positive={momE >= 0} />
+        <MomCard label="Revenue MoM" value={`${momR > 0 ? "+" : ""}${momR}%`} positive={momR >= 0} />
+        <MomCard label="Active members" value={String(lesson.enrollments.filter((e) => (e.status ?? "active") === "active").length)} positive />
+        <MomCard label="Outstanding (TTD)" value={outstanding.toLocaleString()} positive={outstanding === 0} />
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        <ChartCard title="Enrollment by month" caption={`Peak: ${maxE} members`}>
+          {enroll.map((v, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-2">
+              <div className="w-full rounded-t-md bg-gradient-to-t from-brand to-emerald-300" style={{ height: `${(v / maxE) * 100}%` }} />
+              <div className="text-[10px] text-muted-foreground">{months[i]}</div>
+            </div>
+          ))}
+        </ChartCard>
+        <ChartCard title="Revenue by month (TTD)" caption={`Peak: TTD ${maxR.toLocaleString()}`}>
+          {revenue.map((v, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-2">
+              <div className="w-full rounded-t-md bg-gradient-to-t from-amber-500 to-amber-300" style={{ height: `${(v / maxR) * 100}%` }} />
+              <div className="text-[10px] text-muted-foreground">{months[i]}</div>
+            </div>
+          ))}
+        </ChartCard>
+      </div>
+    </div>
+  );
+}
+
+function MomCard({ label, value, positive }: { label: string; value: string; positive: boolean }) {
+  return (
+    <div className="rounded-2xl bg-card border border-border p-4">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-bold">{label}</div>
+      <div className={cn("mt-2 text-2xl font-bold flex items-center gap-1", positive ? "text-emerald-700" : "text-rose-700")}>
+        {value}
+        {positive ? <ArrowUp className="size-4" /> : <ArrowDown className="size-4" />}
+      </div>
+    </div>
+  );
+}
+
+function ChartCard({ title, caption, children }: any) {
+  return (
+    <div className="rounded-2xl bg-card border border-border p-5">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-ink">{title}</h3>
+        <span className="text-[11px] text-muted-foreground">{caption}</span>
+      </div>
+      <div className="mt-6 h-40 flex items-end gap-3">{children}</div>
+    </div>
+  );
+}
+
+/* ---------------- Atoms ---------------- */
+
+function Pill({ tone, label }: { tone: "emerald" | "rose" | "amber" | "slate"; label: string }) {
+  const cls = {
+    emerald: "bg-emerald-100 text-emerald-700",
+    rose: "bg-rose-100 text-rose-700",
+    amber: "bg-amber-100 text-amber-800",
+    slate: "bg-slate-100 text-slate-600",
+  }[tone];
+  return <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", cls)}>{label}</span>;
+}
+
+function Banner({ tone, icon: Icon, title, body }: { tone: "rose" | "amber" | "sky"; icon: any; title: string; body: string }) {
+  const cls = {
+    rose: "border-rose-200 bg-rose-50 text-rose-900",
+    amber: "border-amber-200 bg-amber-50 text-amber-900",
+    sky: "border-sky-200 bg-sky-50 text-sky-900",
+  }[tone];
+  return (
+    <div className={cn("rounded-xl border px-4 py-3 flex items-start gap-3", cls)}>
+      <Icon className="size-4 mt-0.5" />
+      <div>
+        <div className="font-semibold text-sm">{title}</div>
+        <div className="text-xs opacity-90">{body}</div>
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, title, body }: { icon: any; title: string; body: string }) {
+  return (
+    <div className="rounded-2xl border-2 border-dashed border-border bg-card/50 p-10 text-center">
+      <div className="mx-auto size-12 rounded-full bg-muted grid place-items-center text-muted-foreground"><Icon className="size-5" /></div>
+      <div className="mt-3 font-semibold text-ink">{title}</div>
+      <div className="text-sm text-muted-foreground">{body}</div>
+    </div>
+  );
+}
+
+function SideCard({ title, children }: any) {
+  return (
+    <div className="rounded-2xl bg-card border border-border p-5">
+      <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{title}</div>
+      <div className="mt-3">{children}</div>
+    </div>
+  );
+}
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return <div className="flex justify-between text-sm py-1.5 border-b border-border last:border-b-0"><span className="text-muted-foreground">{label}</span><span className="text-ink font-semibold capitalize">{value}</span></div>;
+}
+
+function Card({ title, children }: any) {
+  return (
+    <div className="rounded-2xl bg-card border border-border p-5 space-y-4">
+      <h3 className="font-bold text-ink">{title}</h3>
+      {children}
+    </div>
+  );
+}
 function Field({ label, hint, children }: any) {
   return (
     <div>
@@ -629,7 +853,6 @@ function Field({ label, hint, children }: any) {
     </div>
   );
 }
-
 function Toggle({ label, hint, value, onChange }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="flex items-start justify-between gap-4 rounded-xl border border-border p-4">
@@ -637,13 +860,12 @@ function Toggle({ label, hint, value, onChange }: { label: string; hint?: string
         <div className="text-sm font-semibold text-ink">{label}</div>
         {hint && <div className="text-xs text-muted-foreground mt-0.5">{hint}</div>}
       </div>
-      <button onClick={() => onChange(!value)} className={cn("w-11 h-6 rounded-full p-0.5 transition", value ? "bg-brand" : "bg-muted")}>
+      <button onClick={() => onChange(!value)} className={cn("w-11 h-6 rounded-full p-0.5 transition shrink-0", value ? "bg-brand" : "bg-muted")}>
         <span className={cn("block size-5 rounded-full bg-white shadow transition", value && "translate-x-5")} />
       </button>
     </div>
   );
 }
-
 function DangerRow({ icon: Icon, label, hint, destructive, onClick }: any) {
   return (
     <button onClick={onClick} className={cn("w-full flex items-start justify-between gap-3 rounded-xl border bg-background px-4 py-3 text-left hover:bg-muted/40", destructive ? "border-rose-200" : "border-border")}>
