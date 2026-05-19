@@ -61,7 +61,7 @@ function MyLessonsSection({ collapsed }: { collapsed: boolean }) {
     <div className="px-3 mt-5">
       <div className="h-px bg-border mx-2 mb-3" />
       <div className="flex items-center justify-between px-2 mb-2">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">My Lessons</div>
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">My Classes</div>
         <button
           onClick={() => setShowAdd((s) => !s)}
           className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-deep hover:bg-brand-soft px-2 py-1 rounded-md"
