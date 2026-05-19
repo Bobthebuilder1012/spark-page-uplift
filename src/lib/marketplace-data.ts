@@ -16,6 +16,7 @@ export type MarketClass = {
   title: string;
   subject: string;       // Maths / Physics / English / SEA / etc.
   level: string;         // CSEC / CAPE / SEA
+  formLevel: string;     // "Form 4–5 (14–16)" — display label with ages
   tutorId: string;
   tutorName: string;
   tutorHue: number;
@@ -41,6 +42,20 @@ export type MarketClass = {
   whatsIncluded: string[];
   startDate: string;             // "Starts 1 June 2026" or "Ongoing"
 };
+
+// Canonical form-level labels with student ages. Reuse everywhere a form level is shown.
+export const FORM_LEVELS = {
+  primary: "Std 4–5 (9–11)",
+  form1: "Form 1 (11–12)",
+  form2: "Form 2 (12–13)",
+  form3: "Form 3 (13–14)",
+  form4: "Form 4 (14–15)",
+  form5: "Form 5 (15–16)",
+  csec: "Form 4–5 (14–16)",
+  lower6: "Lower 6 (16–17)",
+  upper6: "Upper 6 (17–18)",
+  cape: "Lower & Upper 6 (16–18)",
+} as const;
 
 // Scarcity threshold: show "Only X left" when remaining <= 4 and > 0.
 export const LOW_STOCK_THRESHOLD = 4;
