@@ -168,8 +168,8 @@ function CreateClassPage() {
               <Field label="Student limit">
                 <div className="inline-flex items-center gap-2">
                   <button onClick={() => setStudentLimit(Math.max(2, studentLimit - 1))} className="size-9 grid place-items-center rounded-lg border border-border">−</button>
-                  <input type="number" value={studentLimit} onChange={(e) => setStudentLimit(Math.max(1, Number(e.target.value)))} className="w-20 text-center px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-                  <button onClick={() => setStudentLimit(studentLimit + 1)} className="size-9 grid place-items-center rounded-lg border border-border">+</button>
+                  <input type="number" value={studentLimit} onChange={(e) => setStudentLimit(Math.max(2, Math.min(500, Number(e.target.value))))} className="w-20 text-center px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                  <button onClick={() => setStudentLimit(Math.min(500, studentLimit + 1))} className="size-9 grid place-items-center rounded-lg border border-border">+</button>
                 </div>
               </Field>
             )}
