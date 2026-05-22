@@ -1,10 +1,11 @@
 import { toast } from "sonner";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { User, Bell, Lock, Wallet, GraduationCap, ChevronRight, Camera } from "lucide-react";
+import { User, Bell, Lock, Wallet, GraduationCap, ChevronRight, Camera, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { useTutor } from "@/lib/tutor-store";
+import { useTutoringPreference, type TutoringPreference } from "@/lib/ratings-store";
 
 export const Route = createFileRoute("/tutor/settings")({
   head: () => ({ meta: [{ title: "Settings — iTutor Tutor" }] }),
