@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { StudentStoreProvider, useStudentStore, ALL_LESSONS } from "@/lib/student-store";
 import { CalendarPopup } from "./CalendarPanel";
+import { RatingCenterPill } from "@/components/ratings/RatingCenterPill";
 
 type NavItem = { to: string; label: string; icon: ComponentType<{ className?: string }>; exact?: boolean; tint: string };
 
