@@ -263,39 +263,8 @@ function TutorDetail() {
             </ul>
           </section>
 
-          {/* Reviews */}
-          <section className="rounded-3xl bg-background border border-border p-6">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="font-semibold text-ink">Reviews · {reviews.length}</h2>
-              <span className="text-sm font-semibold inline-flex items-center gap-1"><Star className="size-4 fill-coral text-coral" /> 4.9</span>
-            </div>
-            <p className="text-xs text-muted-foreground mb-4">Only students who've completed a class with this tutor can post or vote.</p>
-            <div className="space-y-4">
-              {reviews.map((r) => (
-                <div key={r.id} className="border-t border-border pt-4 first:border-0 first:pt-0">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Avatar name={r.name} hue={r.hue} size={28} />
-                    <span className="text-sm font-semibold">{r.name}</span>
-                    {r.verifiedStudent && (
-                      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold uppercase text-brand-deep bg-brand-soft px-1.5 py-0.5 rounded-full">
-                        <Check className="size-2.5" /> Took class
-                      </span>
-                    )}
-                    <div className="flex ml-1">{Array.from({ length: r.rating }).map((_, i) => <Star key={i} className="size-3 fill-coral text-coral" />)}</div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{r.quote}</p>
-                  <div className="flex items-center gap-2 mt-2.5">
-                    <button onClick={() => vote(r.id, "up")} className={cn("inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition", voted[r.id] === "up" ? "border-brand bg-brand-soft text-brand-deep" : "border-border text-muted-foreground hover:border-brand/50")}>
-                      <ThumbsUp className="size-3" /> {r.up}
-                    </button>
-                    <button onClick={() => vote(r.id, "down")} className={cn("inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition", voted[r.id] === "down" ? "border-coral bg-coral-soft text-coral" : "border-border text-muted-foreground hover:border-coral/50")}>
-                      <ThumbsDown className="size-3" /> {r.down}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          {/* Ratings & Reviews — shared system */}
+          <RatingsAndComments tutorId={id} tutorName={profile.name} />
         </div>
 
         {/* Desktop booking sidebar */}
