@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import {
@@ -7,6 +8,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MARKET_CLASSES, classState, type MarketClass } from "@/lib/marketplace-data";
+import { RatingBreakdown } from "@/components/ratings/RatingBreakdown";
+import { CommentSection } from "@/components/ratings/CommentSection";
+import { getSummary } from "@/lib/ratings-store";
 
 type FlowStep = "detail" | "join" | "confirm-terms" | "joined" | "awaiting-approval" | "awaiting-consent" | "parent-consent";
 
