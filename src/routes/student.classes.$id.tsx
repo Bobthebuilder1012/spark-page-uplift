@@ -169,6 +169,16 @@ function Detail({ c }: { c: MarketClass }) {
         </Link>
       </div>
 
+      {/* Ratings + comments */}
+      <RatingBreakdown summary={summary} activeFilter={ratingFilter} onFilterChange={setRatingFilter} />
+      <CommentSection
+        targetKind="class"
+        targetId={c.id}
+        targetName={c.title}
+        activeRatingFilter={ratingFilter}
+        onClearFilter={() => setRatingFilter(null)}
+      />
+
       {/* Demo: jump to other states */}
       <DemoStateSwitcher c={c} />
     </div>
