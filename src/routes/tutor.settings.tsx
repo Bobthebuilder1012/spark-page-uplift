@@ -76,6 +76,7 @@ function Settings() {
 
           {section === "teaching" && (
             <>
+              <TutoringPreferenceCard />
               <Field label="Hourly rate (TTD)" type="number" defaultValue={String(profile.hourlyRateTtd ?? "")} />
               <Select label="Default session length" options={["30 min", "45 min", "60 min", "90 min", "120 min"]} value="60 min" />
               <Select label="Booking window" options={["12 hours notice", "24 hours notice", "48 hours notice", "72 hours notice"]} value="24 hours notice" />
