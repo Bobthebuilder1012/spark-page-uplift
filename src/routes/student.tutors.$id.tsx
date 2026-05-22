@@ -2,6 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Star, Heart, MapPin, Award, Clock, MessageSquare, Video, BadgeCheck, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, ShieldCheck, FileText, X, Check } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { RatingBreakdown } from "@/components/ratings/RatingBreakdown";
+import { CommentSection } from "@/components/ratings/CommentSection";
+import { getSummary } from "@/lib/ratings-store";
 
 export const Route = createFileRoute("/student/tutors/$id")({
   head: () => ({ meta: [{ title: "Tutor profile — iTutor Student" }] }),
