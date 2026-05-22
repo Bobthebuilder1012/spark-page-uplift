@@ -267,7 +267,6 @@ function ShellInner() {
               <button onClick={() => setCalOpen(true)} className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Calendar">
                 <CalendarDays className="size-4" />
               </button>
-              </button>
               <Link to="/student/notifications" className="relative size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Notifications">
                 <Bell className="size-4" />
                 <span className="absolute top-2 right-2 size-2 rounded-full bg-coral" />
