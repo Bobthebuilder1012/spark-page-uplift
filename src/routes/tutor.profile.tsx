@@ -1,97 +1,116 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useTutor } from "@/lib/tutor-store";
-import { Star, MapPin, ExternalLink } from "lucide-react";
+import { MapPin, ExternalLink, Video, CalendarDays } from "lucide-react";
+import { RatingBreakdown } from "@/components/ratings/RatingBreakdown";
+import { CommentSection } from "@/components/ratings/CommentSection";
+import { getSummary, useTutoringPreference } from "@/lib/ratings-store";
 
 export const Route = createFileRoute("/tutor/profile")({
   component: ProfilePage,
 });
 
+const MY_CLASSES = [
+  { id: "csec-maths-crash", name: "CSEC Maths Crash Course", level: "Form 4–5", price: 350, schedule: "Mon & Wed · 5–6:30 PM", rating: 4.8, ratings: 20 },
+  { id: "cape-physics-u1", name: "CAPE Physics Unit 1", level: "Form 6", price: 480, schedule: "Tue & Thu · 6–7:30 PM", rating: 4.6, ratings: 18 },
+];
+
 function ProfilePage() {
   const { profile, completion } = useTutor();
+  const [pref] = useTutoringPreference();
+  const [filter, setFilter] = useState<number | null>(null);
+  const summary = getSummary("tutor", "ramdeen");
+
+  const showClasses = pref !== "one-on-one-only";
+  const show1on1 = pref !== "classes-only";
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-ink">Profile</h1>
-          <p className="text-sm text-muted-foreground mt-1">Edit your public profile and preview how students see it.</p>
+          <p className="text-sm text-muted-foreground mt-1">This is the public profile students see.</p>
         </div>
         <Link to="/tutor/get-listed" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-brand-deep hover:underline">
           Get listed checklist <ExternalLink className="size-3.5" />
         </Link>
       </header>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Editor */}
-        <section className="rounded-2xl border border-border bg-card p-5 space-y-4">
-          <h2 className="font-semibold text-ink">Editor</h2>
-          <p className="text-xs text-muted-foreground">
-            Profile fields are managed on the <Link to="/tutor/get-listed" className="text-brand-deep font-semibold hover:underline">Get listed</Link> page so completion stays in sync.
-          </p>
-
-          <div className="space-y-3 text-sm">
-            <Field label="Display name" value={profile.name} />
-            <Field label="Email" value={profile.email} />
-            <Field label="Hourly rate" value={profile.hourlyRateTtd ? `TTD ${profile.hourlyRateTtd} / hr` : "Not set"} />
-            <Field label="Subjects" value={profile.subjects.length ? profile.subjects.map((s) => `${s.name} (${s.level})`).join(", ") : "None added"} />
-            <Field label="Availability" value={`${profile.availability.length} weekly slot${profile.availability.length === 1 ? "" : "s"}`} />
+      {/* Hero card */}
+      <section className="rounded-2xl border border-border bg-background overflow-hidden">
+        <div className="p-5 sm:p-6 flex items-start gap-4">
+          <div className="size-20 rounded-full bg-gradient-to-br from-brand to-brand-deep grid place-items-center text-2xl font-bold text-white shrink-0">
+            {profile.initials}
           </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl font-bold text-ink">{profile.name}</h2>
+              {completion.listed && <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand/15 text-brand-deep">Listed</span>}
+            </div>
+            <div className="mt-1 text-xs text-muted-foreground inline-flex items-center gap-2">
+              <MapPin className="size-3" /> Trinidad & Tobago
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {profile.subjects.map((s) => (
+                <span key={s.id} className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-brand-soft text-forest">
+                  {s.name} · {s.level}
+                </span>
+              ))}
+            </div>
+            <p className="text-sm text-muted-foreground italic mt-3">
+              {profile.bio || "Add a bio on the Get-listed page so students can learn about your style."}
+            </p>
+          </div>
+        </div>
+      </section>
 
-          <div className="rounded-xl bg-muted/50 border border-border p-3 text-xs text-muted-foreground">
-            {/* TODO(cursor): turn each Field into an inline-editable input with autosave to backend. */}
-            Inline editing coming next — the current source of truth lives in the Get-listed checklist.
+      {/* Shared rating breakdown */}
+      <RatingBreakdown summary={summary} activeFilter={filter} onFilterChange={setFilter} />
+
+      {/* Classes by this tutor */}
+      {showClasses && (
+        <section className="rounded-2xl border border-border bg-background p-5 sm:p-6">
+          <h3 className="font-bold text-ink mb-3">Classes by this tutor</h3>
+          <div className="space-y-3">
+            {MY_CLASSES.map((c) => (
+              <div key={c.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/40">
+                <div className="size-10 rounded-xl bg-brand-soft grid place-items-center text-brand-deep"><CalendarDays className="size-5" /></div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-ink truncate">{c.name}</div>
+                  <div className="text-xs text-muted-foreground truncate">{c.level} · {c.schedule}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">⭐ {c.rating} · {c.ratings} ratings</div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-sm font-bold text-ink">TT${c.price}/mo</div>
+                  <button className="text-xs font-semibold text-brand-deep hover:underline">View class</button>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
+      )}
 
-        {/* Live preview */}
-        <section>
-          <div className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-2">Student-facing preview</div>
-          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-card">
-            <div className="p-5 flex items-start gap-4">
-              <div className="size-16 rounded-full bg-muted overflow-hidden grid place-items-center text-xl font-bold text-muted-foreground">
-                {profile.avatarUrl ? <img src={profile.avatarUrl} className="size-full object-cover" alt="" /> : profile.initials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-ink truncate">{profile.name}</h3>
-                  {completion.listed && <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand/15 text-brand-deep">Listed</span>}
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground flex items-center gap-2">
-                  <MapPin className="size-3" /> Trinidad & Tobago
-                  <span>·</span>
-                  <Star className="size-3 fill-current text-amber-500" /> 4.9 (32)
-                </div>
-                <div className="mt-1 text-sm font-semibold text-ink">
-                  {profile.hourlyRateTtd ? `TTD ${profile.hourlyRateTtd} / hr` : "—"}
-                </div>
-              </div>
-            </div>
-            <div className="px-5 pb-5">
-              <p className="text-sm text-muted-foreground italic">
-                {profile.bio || "Add a bio on the Get-listed page so students can learn about your style."}
-              </p>
-              {profile.subjects.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {profile.subjects.map((s) => (
-                    <span key={s.id} className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-muted text-ink">
-                      {s.name} · {s.level}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
+      {/* 1-on-1 */}
+      {show1on1 && (
+        <section className="rounded-2xl border border-border bg-background p-5 sm:p-6 flex items-center gap-4">
+          <div className="size-12 rounded-xl bg-brand-soft text-brand-deep grid place-items-center"><Video className="size-5" /></div>
+          <div className="flex-1">
+            <div className="font-bold text-ink">1-on-1 sessions</div>
+            <div className="text-sm text-muted-foreground">{profile.hourlyRateTtd ? `TT$${profile.hourlyRateTtd} / hr` : "Hourly rate not set"}</div>
           </div>
+          <button className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">Book a 1-on-1</button>
         </section>
-      </div>
-    </div>
-  );
-}
+      )}
 
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 py-2 border-b border-border last:border-0">
-      <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">{label}</span>
-      <span className="text-ink text-right truncate max-w-[60%]">{value}</span>
+      {/* Comments — tutor is owner */}
+      <CommentSection
+        targetKind="tutor"
+        targetId="ramdeen"
+        targetName={profile.name}
+        viewerIsOwnerTutor
+        activeRatingFilter={filter}
+        onClearFilter={() => setFilter(null)}
+      />
     </div>
   );
 }
