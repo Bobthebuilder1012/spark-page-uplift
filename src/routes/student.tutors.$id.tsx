@@ -521,3 +521,20 @@ function BookingCard({
     </div>
   );
 }
+
+function RatingsAndComments({ tutorId, tutorName }: { tutorId: string; tutorName: string }) {
+  const [filter, setFilter] = useState<number | null>(null);
+  const summary = getSummary("tutor", tutorId);
+  return (
+    <>
+      <RatingBreakdown summary={summary} activeFilter={filter} onFilterChange={setFilter} />
+      <CommentSection
+        targetKind="tutor"
+        targetId={tutorId}
+        targetName={tutorName}
+        activeRatingFilter={filter}
+        onClearFilter={() => setFilter(null)}
+      />
+    </>
+  );
+}
