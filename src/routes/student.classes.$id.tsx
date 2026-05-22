@@ -54,6 +54,8 @@ function Detail({ c }: { c: MarketClass }) {
   const state = classState(c);
   const remaining = c.seatsTotal - c.seatsTaken;
   const isFull = state === "full";
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null);
+  const summary = getSummary("class", c.id);
 
   const cta = (() => {
     if (state === "full") return { label: "Join waitlist", to: "join" as const, tone: "ink" as const };
