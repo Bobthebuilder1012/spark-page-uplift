@@ -16,6 +16,8 @@ import {
   Settings,
 } from "lucide-react";
 import { ALL_TOOLS, useStudentStore, type ToolKey } from "@/lib/student-store";
+import { RatingPromptBanner } from "@/components/ratings/RatingPromptBanner";
+import { RatingLockoutModal } from "@/components/ratings/RatingLockoutModal";
 
 export const Route = createFileRoute("/student/")({
   head: () => ({
