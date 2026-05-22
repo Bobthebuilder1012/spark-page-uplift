@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import {
@@ -7,6 +8,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MARKET_CLASSES, classState, type MarketClass } from "@/lib/marketplace-data";
+import { RatingBreakdown } from "@/components/ratings/RatingBreakdown";
+import { CommentSection } from "@/components/ratings/CommentSection";
+import { getSummary } from "@/lib/ratings-store";
 
 type FlowStep = "detail" | "join" | "confirm-terms" | "joined" | "awaiting-approval" | "awaiting-consent" | "parent-consent";
 
@@ -50,6 +54,8 @@ function Detail({ c }: { c: MarketClass }) {
   const state = classState(c);
   const remaining = c.seatsTotal - c.seatsTaken;
   const isFull = state === "full";
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null);
+  const summary = getSummary("class", c.id);
 
   const cta = (() => {
     if (state === "full") return { label: "Join waitlist", to: "join" as const, tone: "ink" as const };
@@ -162,6 +168,16 @@ function Detail({ c }: { c: MarketClass }) {
           {cta.label}
         </Link>
       </div>
+
+      {/* Ratings + comments */}
+      <RatingBreakdown summary={summary} activeFilter={ratingFilter} onFilterChange={setRatingFilter} />
+      <CommentSection
+        targetKind="class"
+        targetId={c.id}
+        targetName={c.title}
+        activeRatingFilter={ratingFilter}
+        onClearFilter={() => setRatingFilter(null)}
+      />
 
       {/* Demo: jump to other states */}
       <DemoStateSwitcher c={c} />

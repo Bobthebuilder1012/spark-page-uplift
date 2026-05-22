@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { StudentStoreProvider, useStudentStore, ALL_LESSONS } from "@/lib/student-store";
 import { CalendarPopup } from "./CalendarPanel";
+import { RatingCenterPill } from "@/components/ratings/RatingCenterPill";
 
 type NavItem = { to: string; label: string; icon: ComponentType<{ className?: string }>; exact?: boolean; tint: string };
 
@@ -262,6 +263,7 @@ function ShellInner() {
             </form>
 
             <div className="flex items-center gap-1">
+              <RatingCenterPill />
               <button onClick={() => setCalOpen(true)} className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Calendar">
                 <CalendarDays className="size-4" />
               </button>

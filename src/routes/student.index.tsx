@@ -16,6 +16,8 @@ import {
   Settings,
 } from "lucide-react";
 import { ALL_TOOLS, useStudentStore, type ToolKey } from "@/lib/student-store";
+import { RatingPromptBanner } from "@/components/ratings/RatingPromptBanner";
+import { RatingLockoutModal } from "@/components/ratings/RatingLockoutModal";
 
 export const Route = createFileRoute("/student/")({
   head: () => ({
@@ -120,10 +122,32 @@ function QuickLinksMobile() {
 }
 
 function Dashboard() {
+  const [lockoutOpen, setLockoutOpen] = useState(false);
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Mobile profile */}
       <MobileProfileCard />
+
+      {/* Pending class rating prompt */}
+      <RatingPromptBanner />
+
+      {/* Demo trigger for 1-on-1 lockout flow */}
+      <button
+        onClick={() => setLockoutOpen(true)}
+        className="text-[11px] font-semibold text-muted-foreground hover:text-brand-deep underline underline-offset-2"
+      >
+        Demo: trigger 1-on-1 rating lockout
+      </button>
+
+      {lockoutOpen && (
+        <RatingLockoutModal
+          tutorName="Mr. Ramdeen"
+          tutorHue={145}
+          subject="CSEC Mathematics — Functions"
+          sessionDate="Today · 4:00 PM"
+          onSubmit={() => setLockoutOpen(false)}
+        />
+      )}
 
       {/* Greeting */}
       <div className="flex items-end justify-between gap-4 flex-wrap">

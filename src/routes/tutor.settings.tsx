@@ -1,10 +1,11 @@
 import { toast } from "sonner";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { User, Bell, Lock, Wallet, GraduationCap, ChevronRight, Camera } from "lucide-react";
+import { User, Bell, Lock, Wallet, GraduationCap, ChevronRight, Camera, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { useTutor } from "@/lib/tutor-store";
+import { useTutoringPreference, type TutoringPreference } from "@/lib/ratings-store";
 
 export const Route = createFileRoute("/tutor/settings")({
   head: () => ({ meta: [{ title: "Settings — iTutor Tutor" }] }),
@@ -75,6 +76,7 @@ function Settings() {
 
           {section === "teaching" && (
             <>
+              <TutoringPreferenceCard />
               <Field label="Hourly rate (TTD)" type="number" defaultValue={String(profile.hourlyRateTtd ?? "")} />
               <Select label="Default session length" options={["30 min", "45 min", "60 min", "90 min", "120 min"]} value="60 min" />
               <Select label="Booking window" options={["12 hours notice", "24 hours notice", "48 hours notice", "72 hours notice"]} value="24 hours notice" />
@@ -197,6 +199,59 @@ function SaveBar({ label = "Save changes" }: { label?: string }) {
     <div className="flex justify-end gap-2 pt-4 border-t border-border">
       <button type="button" className="px-4 py-2 rounded-xl text-sm font-semibold text-muted-foreground hover:bg-muted">Cancel</button>
       <button type="button" onClick={onSave} className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">{label}</button>
+    </div>
+  );
+}
+
+const PREF_OPTIONS: { value: TutoringPreference; title: string; desc: string }[] = [
+  { value: "both", title: "Both classes and 1-on-1 sessions", desc: "You'll appear in 1-on-1 search and can create classes." },
+  { value: "classes-only", title: "Classes only", desc: "You won't appear in 1-on-1 search. Only your classes will be listed." },
+  { value: "one-on-one-only", title: "1-on-1 sessions only", desc: "You can't create new classes. You'll appear in 1-on-1 search only." },
+];
+
+function TutoringPreferenceCard() {
+  const [pref, setPref] = useTutoringPreference();
+  const [draft, setDraft] = useState<TutoringPreference>(pref);
+  const dirty = draft !== pref;
+  return (
+    <div className="pb-6 border-b border-border">
+      <div className="mb-3">
+        <div className="text-sm font-semibold text-ink">Tutoring Preferences</div>
+        <div className="text-xs text-muted-foreground">Control how you appear to students.</div>
+      </div>
+      <div className="space-y-2">
+        {PREF_OPTIONS.map((o) => {
+          const active = draft === o.value;
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => setDraft(o.value)}
+              className={cn(
+                "w-full text-left flex items-start gap-3 p-4 rounded-xl border transition",
+                active ? "border-brand bg-brand-soft/30" : "border-border hover:border-ink/30",
+              )}
+            >
+              <div className="flex-1">
+                <div className="text-sm font-semibold text-ink">{o.title}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{o.desc}</div>
+              </div>
+              {active && <Check className="size-5 text-brand-deep shrink-0" />}
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-xs text-muted-foreground mt-3">You can change this at any time. Existing bookings and active classes are honoured.</p>
+      <div className="flex justify-end mt-3">
+        <button
+          type="button"
+          disabled={!dirty}
+          onClick={() => { setPref(draft); toast.success("Preferences saved"); }}
+          className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep disabled:opacity-50"
+        >
+          Save Preferences
+        </button>
+      </div>
     </div>
   );
 }
