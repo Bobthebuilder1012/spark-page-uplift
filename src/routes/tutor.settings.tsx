@@ -109,7 +109,7 @@ function Settings() {
             const Icon = s.icon;
             const active = section === s.id;
             return (
-              <button key={s.id} onClick={() => setSection(s.id)}
+              <button key={s.id} onClick={() => tryChangeSection(s.id)}
                 className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition group",
                   active ? "bg-background border border-border text-ink" : "text-muted-foreground hover:bg-background")}>
                 <Icon className="size-4" />
