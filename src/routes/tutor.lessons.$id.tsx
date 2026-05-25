@@ -981,6 +981,8 @@ function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson
         <DangerRow icon={ArrowUpRight} label="Transfer ownership" hint="Move this class to another tutor on iTutor." />
         <DangerRow icon={Trash2} label="Delete class" hint="Permanently remove this class and its data." destructive />
       </div>
+
+      <UnsavedBar dirty={dirty} onSave={save} onDiscard={discard} saveLabel="Save class settings" />
     </div>
   );
 }
