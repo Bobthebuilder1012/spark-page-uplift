@@ -284,11 +284,43 @@ function ComposerChip({ icon: Icon, color, label, active, onClick }: any) {
 /* ---------------- Sessions ---------------- */
 
 function SessionsTab({ lesson }: { lesson: TutorLesson }) {
-  const sessions = useMemo(
+  const initial = useMemo(
     () => PLACEHOLDER_SESSIONS.filter((s) => s.lessonId === lesson.id).slice(0, 6),
     [lesson.id]
   );
+  const [sessions, setSessions] = useState(initial);
+  const [addOpen, setAddOpen] = useState(false);
   const upcoming = sessions.filter((s) => s.status === "upcoming");
+
+  const defaultDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(16, 0, 0, 0);
+    return d.toISOString().slice(0, 16);
+  };
+  const [form, setForm] = useState({ date: defaultDate(), duration: 60, notes: "" });
+
+  const createSession = () => {
+    if (!form.date) { toast.error("Pick a date and time"); return; }
+    const iso = new Date(form.date).toISOString();
+    setSessions([
+      ...sessions,
+      {
+        id: `s${Date.now()}`,
+        lessonId: lesson.id,
+        student: lesson.title,
+        subject: lesson.subject,
+        date: iso,
+        durationMin: Number(form.duration) || 60,
+        type: lesson.capacity === 1 ? "1-on-1" : "Group",
+        status: "upcoming",
+        paymentStatus: "pending",
+      } as any,
+    ].sort((a, b) => +new Date(a.date) - +new Date(b.date)));
+    toast.success("Session added · students will see it on their calendar");
+    setAddOpen(false);
+    setForm({ date: defaultDate(), duration: 60, notes: "" });
+  };
 
   return (
     <div className="space-y-4">
@@ -298,7 +330,7 @@ function SessionsTab({ lesson }: { lesson: TutorLesson }) {
           <p className="text-xs text-muted-foreground">Next {upcoming.length} upcoming · manage attendance and join links.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90">
+          <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90">
             <Plus className="size-3.5" /> Add Session
           </button>
         </div>
@@ -341,7 +373,7 @@ function SessionsTab({ lesson }: { lesson: TutorLesson }) {
                     <Video className="size-3.5" /> Join
                   </button>
                 )}
-                <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-rose-600 hover:bg-rose-50">
+                <button onClick={() => { setSessions(sessions.filter((x) => x.id !== s.id)); toast.success("Session cancelled"); }} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-rose-600 hover:bg-rose-50">
                   <X className="size-3.5" /> Cancel
                 </button>
               </div>
@@ -349,6 +381,42 @@ function SessionsTab({ lesson }: { lesson: TutorLesson }) {
           );
         })}
       </div>
+
+      {addOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-ink/40 backdrop-blur-sm p-4" onClick={() => setAddOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-2xl bg-background shadow-pop border border-border">
+            <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+              <div>
+                <div className="font-bold text-ink">Add session</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{lesson.title}</div>
+              </div>
+              <button onClick={() => setAddOpen(false)} className="size-8 grid place-items-center rounded-lg hover:bg-muted"><X className="size-4" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date & time</label>
+                <input type="datetime-local" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Duration (minutes)</label>
+                <input type="number" min={15} step={15} value={form.duration} onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })} className="mt-1 w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Notes (optional)</label>
+                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Topic, prep, anything students should know…" className="mt-1 w-full min-h-20 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+              </div>
+              <div className="rounded-lg bg-muted/40 border border-dashed border-border px-3 py-2 text-[11px] text-muted-foreground flex items-start gap-2">
+                <Video className="size-3.5 mt-0.5 shrink-0 text-brand-deep" />
+                <span>Meeting link is auto-generated from your connected {lesson.videoProvider ?? "Zoom/Meet"} account when the session goes live.</span>
+              </div>
+            </div>
+            <div className="px-5 py-3 border-t border-border flex justify-end gap-2">
+              <button onClick={() => setAddOpen(false)} className="px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:bg-muted">Cancel</button>
+              <button onClick={createSession} className="px-4 py-1.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">Add session</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
