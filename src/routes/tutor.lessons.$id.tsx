@@ -12,9 +12,18 @@ import {
   ArrowLeft, Settings, Calendar as CalendarIcon, Users, UserPlus, Copy, Check, Star,
   Bell, FileText, MessageCircle, X, Plus, ExternalLink, Trash2, Archive, ArrowUpRight, Lock, Globe, Eye,
   Image as ImageIcon, Video, MoreVertical, Pin, Sparkles, Link as LinkIcon, Paperclip, AlertTriangle, ShieldAlert,
-  Mail, MessageSquare, DollarSign, BarChart3, ArrowUp, ArrowDown, Pencil, Info,
+  Mail, MessageSquare, DollarSign, BarChart3, ArrowUp, ArrowDown, Pencil, Info, Ban, Repeat, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { useUnsavedGuard } from "@/hooks/use-unsaved-guard";
+import { UnsavedBar } from "@/components/UnsavedBar";
 
 export const Route = createFileRoute("/tutor/lessons/$id")({
   head: () => ({ meta: [{ title: "Class — iTutor Tutor" }] }),
