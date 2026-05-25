@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { useTutor } from "@/lib/tutor-store";
 import { useTutoringPreference, type TutoringPreference } from "@/lib/ratings-store";
+import { useUnsavedGuard } from "@/hooks/use-unsaved-guard";
+import { UnsavedBar } from "@/components/UnsavedBar";
 
 export const Route = createFileRoute("/tutor/settings")({
   head: () => ({ meta: [{ title: "Settings — iTutor Tutor" }] }),
@@ -80,6 +82,19 @@ function Settings() {
     bookings: true, sessionReminders: true, payments: true,
     messages: true, reviews: true, platform: false, sms: true, push: true,
   });
+  // Track unsaved form edits across all sections (uncontrolled inputs OK —
+  // we listen to onChange at the form level).
+  const [dirty, setDirty] = useState(false);
+  const [formKey, setFormKey] = useState(0);
+  useUnsavedGuard(dirty);
+  const onSaveAll = () => { setDirty(false); toast.success("Account settings saved"); };
+  const onDiscardAll = () => { setDirty(false); setFormKey((k) => k + 1); toast("Changes discarded"); };
+  // Guard section switches when dirty
+  const tryChangeSection = (id: string) => {
+    if (dirty && !confirm("You have unsaved changes in this section. Discard them and switch?")) return;
+    if (dirty) { setDirty(false); setFormKey((k) => k + 1); }
+    setSection(id);
+  };
 
   return (
     <div className="max-w-5xl mx-auto">
