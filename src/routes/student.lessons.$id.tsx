@@ -4,6 +4,7 @@ import { ALL_LESSONS, UPCOMING_EVENTS } from "@/lib/student-store";
 import {
   ArrowLeft, FileText, Video, MessageCircle, Paperclip, Bell, Sparkles, Link as LinkIcon,
   Calendar as CalendarIcon, Users, Pin, ExternalLink, Star, Download, Clock, Check, X,
+  ShieldAlert, Ban, CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +17,7 @@ type Tab = "stream" | "sessions" | "members";
 
 type StreamPost = {
   id: string;
-  kind: "announcement" | "ai-recap" | "attachment" | "link";
+  kind: "announcement" | "attachment" | "link";
   title: string;
   body: string;
   at: string;
@@ -27,7 +28,6 @@ type StreamPost = {
 
 const STREAM: StreamPost[] = [
   { id: "sp1", kind: "announcement", title: "📌 Bring past-paper booklets to Saturday's session", body: "Make sure you have the 2019–2023 booklet printed and on hand. We'll work Paper 2 Q1–5 together.", at: "Pinned · 2 days ago", pinned: true },
-  { id: "sp2", kind: "ai-recap", title: "AI Recap · Saturday's session", body: "Covered: simultaneous equations, word-problem translation, exam strategy for Paper 1 Section A. Next session: trig identities deep-dive.", at: "Yesterday" },
   { id: "sp3", kind: "attachment", title: "Worksheet · Trig Identities Drill", body: "20 questions, answer key included. Due before next session.", at: "Yesterday", attachmentName: "trig-drill-w8.pdf" },
   { id: "sp4", kind: "link", title: "Useful video · Khan Academy Trig Identities", body: "10-minute primer before Saturday's class.", at: "3 days ago", linkUrl: "https://khanacademy.org/math/trigonometry" },
   { id: "sp5", kind: "announcement", title: "Welcome to the cohort!", body: "Looking forward to a great term. Bring your textbook and a positive attitude.", at: "1 week ago" },
@@ -109,7 +109,6 @@ function Stream({ lesson }: { lesson: (typeof ALL_LESSONS)[number] }) {
   const sorted = [...STREAM].sort((a, b) => (a.pinned ? -1 : 0) - (b.pinned ? -1 : 0));
   const meta: Record<StreamPost["kind"], { icon: any; cls: string; tag: string }> = {
     announcement: { icon: Bell, cls: "bg-amber-100 text-amber-700", tag: "Announcement" },
-    "ai-recap":   { icon: Sparkles, cls: "bg-emerald-100 text-emerald-700", tag: "AI Recap" },
     attachment:   { icon: Paperclip, cls: "bg-violet-100 text-violet-700", tag: "Attachment" },
     link:         { icon: LinkIcon, cls: "bg-sky-100 text-sky-700", tag: "Link" },
   };
