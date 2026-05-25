@@ -176,7 +176,6 @@ function StreamTab({ lesson }: { lesson: TutorLesson }) {
             <ComposerChip active={composer === "announcement"} icon={Bell} color="amber" label="Announcement" onClick={() => setComposer("announcement")} />
             <ComposerChip active={composer === "attachment"} icon={Paperclip} color="violet" label="File attachment" onClick={() => setComposer("attachment")} />
             <ComposerChip active={composer === "link"} icon={LinkIcon} color="sky" label="Link" onClick={() => setComposer("link")} />
-            <ComposerChip active={composer === "ai-recap"} icon={Sparkles} color="emerald" label="Generate AI recap" onClick={() => setComposer("ai-recap")} />
           </div>
           {composer && (
             <div className="space-y-2 pt-2">
@@ -228,7 +227,6 @@ function StreamCard({ post, onApprove, onPin, onRemove }: { post: StreamPost; on
     announcement: { icon: Bell, cls: "bg-amber-100 text-amber-700", tag: "Announcement" },
     attachment:   { icon: Paperclip, cls: "bg-violet-100 text-violet-700", tag: "Attachment" },
     link:         { icon: LinkIcon, cls: "bg-sky-100 text-sky-700", tag: "Link" },
-    "ai-recap":   { icon: Sparkles, cls: "bg-emerald-100 text-emerald-700", tag: "AI Recap" },
   };
   const M = meta[post.kind];
   const Icon = M.icon;
