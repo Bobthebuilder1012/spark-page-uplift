@@ -12,7 +12,7 @@ import {
   ArrowLeft, Settings, Calendar as CalendarIcon, Users, UserPlus, Copy, Check, Star,
   Bell, FileText, MessageCircle, X, Plus, ExternalLink, Trash2, Archive, ArrowUpRight, Lock, Globe, Eye,
   Image as ImageIcon, Video, MoreVertical, Pin, Sparkles, Link as LinkIcon, Paperclip, AlertTriangle, ShieldAlert,
-  Mail, MessageSquare, DollarSign, BarChart3, ArrowUp, ArrowDown, Pencil, Info, Ban, Repeat, Clock,
+  Mail, MessageSquare, DollarSign, BarChart3, ArrowUp, ArrowDown, Pencil, Info, Ban, Repeat, Clock, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
