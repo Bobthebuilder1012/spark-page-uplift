@@ -4,6 +4,7 @@ import { ALL_LESSONS, UPCOMING_EVENTS } from "@/lib/student-store";
 import {
   ArrowLeft, FileText, Video, MessageCircle, Paperclip, Bell, Sparkles, Link as LinkIcon,
   Calendar as CalendarIcon, Users, Pin, ExternalLink, Star, Download, Clock, Check, X,
+  ShieldAlert, Ban, CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +17,7 @@ type Tab = "stream" | "sessions" | "members";
 
 type StreamPost = {
   id: string;
-  kind: "announcement" | "ai-recap" | "attachment" | "link";
+  kind: "announcement" | "attachment" | "link";
   title: string;
   body: string;
   at: string;
@@ -27,7 +28,6 @@ type StreamPost = {
 
 const STREAM: StreamPost[] = [
   { id: "sp1", kind: "announcement", title: "📌 Bring past-paper booklets to Saturday's session", body: "Make sure you have the 2019–2023 booklet printed and on hand. We'll work Paper 2 Q1–5 together.", at: "Pinned · 2 days ago", pinned: true },
-  { id: "sp2", kind: "ai-recap", title: "AI Recap · Saturday's session", body: "Covered: simultaneous equations, word-problem translation, exam strategy for Paper 1 Section A. Next session: trig identities deep-dive.", at: "Yesterday" },
   { id: "sp3", kind: "attachment", title: "Worksheet · Trig Identities Drill", body: "20 questions, answer key included. Due before next session.", at: "Yesterday", attachmentName: "trig-drill-w8.pdf" },
   { id: "sp4", kind: "link", title: "Useful video · Khan Academy Trig Identities", body: "10-minute primer before Saturday's class.", at: "3 days ago", linkUrl: "https://khanacademy.org/math/trigonometry" },
   { id: "sp5", kind: "announcement", title: "Welcome to the cohort!", body: "Looking forward to a great term. Bring your textbook and a positive attitude.", at: "1 week ago" },
@@ -42,18 +42,36 @@ const MEMBERS = [
   { id: "m6", name: "You", initials: "YOU", joined: "May 2026", self: true },
 ];
 
+type MembershipState = "active" | "suspended" | "banned";
+
 function ClassDetail() {
   const { id } = Route.useParams();
   const lesson = ALL_LESSONS.find((l) => l.id === id);
   if (!lesson) throw notFound();
 
   const [tab, setTab] = useState<Tab>("stream");
+  // Demo: cycle through states with the chip in the corner so reviewers can
+  // see the suspended / banned UI without a backend round-trip.
+  const [state, setState] = useState<MembershipState>("active");
+
+  const blocked = state !== "active";
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <Link to="/student/lessons" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-ink">
-        <ArrowLeft className="size-4" /> All classes
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link to="/student/lessons" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-ink">
+          <ArrowLeft className="size-4" /> All classes
+        </Link>
+        {/* Demo state toggle — remove when wired to backend */}
+        <div className="inline-flex items-center gap-1 rounded-full border border-dashed border-border bg-muted/30 p-0.5 text-[10px] font-bold uppercase tracking-wider">
+          {(["active", "suspended", "banned"] as MembershipState[]).map((s) => (
+            <button key={s} onClick={() => setState(s)}
+              className={cn("px-2.5 py-1 rounded-full", state === s ? (s === "banned" ? "bg-rose-600 text-white" : s === "suspended" ? "bg-amber-500 text-white" : "bg-brand text-white") : "text-muted-foreground hover:text-ink")}>
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Banner */}
       <div
@@ -71,37 +89,79 @@ function ClassDetail() {
               <span className="font-semibold">4.9</span>
             </div>
           </div>
-          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-ink text-white font-semibold text-sm hover:bg-forest shrink-0">
-            <Video className="size-4" /> Join next session
-          </button>
+          {!blocked && (
+            <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-ink text-white font-semibold text-sm hover:bg-forest shrink-0">
+              <Video className="size-4" /> Join next session
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-border flex items-center gap-6 overflow-x-auto">
-        {([
-          { key: "stream", label: "Stream", icon: MessageCircle },
-          { key: "sessions", label: "Sessions", icon: CalendarIcon },
-          { key: "members", label: "Members", icon: Users },
-        ] as const).map((t) => {
-          const Icon = t.icon;
-          return (
-            <button key={t.key} onClick={() => setTab(t.key)}
-              className={cn("relative pb-3 text-sm font-semibold inline-flex items-center gap-2 whitespace-nowrap",
-                tab === t.key ? "text-brand-deep" : "text-muted-foreground hover:text-ink")}>
-              <Icon className="size-4" /> {t.label}
-              {tab === t.key && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-brand" />}
-            </button>
-          );
-        })}
-      </div>
+      {state === "suspended" && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="size-12 rounded-xl bg-amber-100 grid place-items-center shrink-0">
+            <ShieldAlert className="size-5 text-amber-700" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-amber-900">You're suspended from this class</div>
+            <p className="text-sm text-amber-800 mt-0.5">
+              <strong>{lesson.tutor}</strong> has paused your access — usually because of an outstanding payment. You can still see the class info, but you can't join sessions, see new posts, or contact other members until you're reactivated.
+            </p>
+          </div>
+          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 shrink-0">
+            <CreditCard className="size-4" /> Settle balance
+          </button>
+        </div>
+      )}
 
-      {tab === "stream" && <Stream lesson={lesson} />}
-      {tab === "sessions" && <Sessions lesson={lesson} />}
-      {tab === "members" && <Members />}
+      {state === "banned" && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 flex flex-col sm:flex-row sm:items-start gap-4">
+          <div className="size-12 rounded-xl bg-rose-100 grid place-items-center shrink-0">
+            <Ban className="size-5 text-rose-700" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-rose-900">You've been removed from this class</div>
+            <p className="text-sm text-rose-800 mt-0.5">
+              <strong>{lesson.tutor}</strong> has banned you from <strong>{lesson.title}</strong>. You can't rejoin or request access. If you think this was a mistake, you can report it to iTutor support.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700">Contact support</button>
+              <Link to="/student/tutors" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-rose-300 text-rose-700 text-xs font-semibold hover:bg-rose-100">Find another tutor</Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!blocked && (
+        <>
+          {/* Tabs */}
+          <div className="border-b border-border flex items-center gap-6 overflow-x-auto">
+            {([
+              { key: "stream", label: "Stream", icon: MessageCircle },
+              { key: "sessions", label: "Sessions", icon: CalendarIcon },
+              { key: "members", label: "Members", icon: Users },
+            ] as const).map((t) => {
+              const Icon = t.icon;
+              return (
+                <button key={t.key} onClick={() => setTab(t.key)}
+                  className={cn("relative pb-3 text-sm font-semibold inline-flex items-center gap-2 whitespace-nowrap",
+                    tab === t.key ? "text-brand-deep" : "text-muted-foreground hover:text-ink")}>
+                  <Icon className="size-4" /> {t.label}
+                  {tab === t.key && <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-brand" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {tab === "stream" && <Stream lesson={lesson} />}
+          {tab === "sessions" && <Sessions lesson={lesson} />}
+          {tab === "members" && <Members />}
+        </>
+      )}
     </div>
   );
 }
+
 
 /* ---------------- Stream ---------------- */
 
@@ -109,7 +169,6 @@ function Stream({ lesson }: { lesson: (typeof ALL_LESSONS)[number] }) {
   const sorted = [...STREAM].sort((a, b) => (a.pinned ? -1 : 0) - (b.pinned ? -1 : 0));
   const meta: Record<StreamPost["kind"], { icon: any; cls: string; tag: string }> = {
     announcement: { icon: Bell, cls: "bg-amber-100 text-amber-700", tag: "Announcement" },
-    "ai-recap":   { icon: Sparkles, cls: "bg-emerald-100 text-emerald-700", tag: "AI Recap" },
     attachment:   { icon: Paperclip, cls: "bg-violet-100 text-violet-700", tag: "Attachment" },
     link:         { icon: LinkIcon, cls: "bg-sky-100 text-sky-700", tag: "Link" },
   };

@@ -22,7 +22,7 @@ export type TutorProfile = {
 export type LessonKind = "1on1-oneoff" | "1on1-recurring" | "group-oneoff" | "group-recurring";
 export type LessonStatus = "draft" | "published" | "full" | "completed" | "cancelled";
 
-export type MemberStatus = "invited" | "active" | "suspended" | "removed";
+export type MemberStatus = "invited" | "active" | "suspended" | "banned" | "removed";
 export type EnrolledStudent = {
   studentId: string;
   name: string;
@@ -76,7 +76,7 @@ export type FeedbackDraft = {
 
 export type StreamPost = {
   id: string;
-  kind: "announcement" | "attachment" | "link" | "ai-recap";
+  kind: "announcement" | "attachment" | "link";
   title: string;
   body: string;
   at: string;
@@ -546,7 +546,7 @@ export const PROMO_INFO: Record<PromotionKind, { title: string; blurb: string }>
 
 export const PLACEHOLDER_STREAM_POSTS: StreamPost[] = [
   { id: "sp1", kind: "announcement", title: "📌 Bring past-paper booklets to Saturday's session", body: "Make sure you have the 2019–2023 CSEC Maths booklet printed and on hand. We'll work through Paper 2 Q1–5 together.", at: "Pinned · 2 days ago", pinned: true },
-  { id: "sp2", kind: "ai-recap", title: "AI Recap · Saturday's session", body: "Covered: simultaneous equations (substitution + elimination), word-problem translation, exam strategy for Paper 1 Section A. 92% attendance. Next session: trig identities deep-dive.", at: "Yesterday", pendingApproval: true },
+  { id: "sp2", kind: "announcement", title: "Saturday session recap", body: "We covered simultaneous equations and word-problem translation. Next session: trig identities deep-dive — please review chapter 8 beforehand.", at: "Yesterday" },
   { id: "sp3", kind: "attachment", title: "Worksheet · Trig Identities Drill", body: "20 questions, answer key included. Due before next session.", at: "Yesterday", attachmentName: "trig-drill-w8.pdf" },
   { id: "sp4", kind: "link", title: "Useful video · Khan Academy Trig Identities", body: "10-minute primer before Saturday's class.", at: "3 days ago", linkUrl: "https://khanacademy.org/math/trigonometry" },
   { id: "sp5", kind: "announcement", title: "Welcome to the cohort!", body: "Looking forward to a great term. Bring your textbook and a positive attitude.", at: "1 week ago" },
@@ -588,6 +588,7 @@ export const MEMBER_STATUS_META: Record<MemberStatus, { label: string; chip: str
   invited:   { label: "Invited",   chip: "bg-sky-100 text-sky-700 border-sky-200" },
   active:    { label: "Active",    chip: "bg-emerald-100 text-emerald-700 border-emerald-200" },
   suspended: { label: "Suspended", chip: "bg-amber-100 text-amber-800 border-amber-200" },
-  removed:   { label: "Removed",   chip: "bg-rose-100 text-rose-700 border-rose-200" },
+  banned:    { label: "Banned",    chip: "bg-rose-100 text-rose-700 border-rose-200" },
+  removed:   { label: "Removed",   chip: "bg-slate-100 text-slate-600 border-slate-200" },
 };
 
