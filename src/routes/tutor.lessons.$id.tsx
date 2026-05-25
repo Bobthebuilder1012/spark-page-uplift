@@ -838,15 +838,14 @@ function PaymentCell({ status }: { status: PaymentCellStatus }) {
 
 /* ---------------- Settings ---------------- */
 
-function SettingsTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; isOneOnOne: boolean }) {
-  const [draft, setDraft] = useState<TutorLesson>(lesson);
-  const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(lesson), [draft, lesson]);
+function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; isOneOnOne: boolean }) {
+  const [draft, setDraft] = useState<TutorLesson>(originalLesson);
+  const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(originalLesson), [draft, originalLesson]);
   useUnsavedGuard(dirty);
+  const lesson = draft;
   const u = <K extends keyof TutorLesson>(k: K, v: TutorLesson[K]) => setDraft({ ...draft, [k]: v });
   const save = () => { setLesson(draft); toast.success("Class settings saved"); };
-  const discard = () => { setDraft(lesson); toast("Changes discarded"); };
-  // Use `lesson` below replaced by `draft` for read paths.
-  const _lesson = draft;
+  const discard = () => { setDraft(originalLesson); toast("Changes discarded"); };
   const gradients = [
     "from-orange-500 to-amber-400","from-fuchsia-500 to-purple-500","from-sky-500 to-cyan-400","from-emerald-500 to-teal-400",
     "from-rose-500 to-pink-400","from-indigo-500 to-blue-500","from-yellow-500 to-orange-500","from-slate-600 to-slate-400",
