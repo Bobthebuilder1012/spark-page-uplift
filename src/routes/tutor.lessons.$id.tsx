@@ -661,9 +661,38 @@ function RosterRow({ e, onUpdate }: { e: EnrolledStudent; onUpdate: (p: Partial<
   const status = e.status ?? "active";
   const sm = MEMBER_STATUS_META[status];
   const [menu, setMenu] = useState(false);
+  const [confirm, setConfirm] = useState<null | "suspend" | "ban" | "remove">(null);
   const overdue = e.paymentStatus === "overdue";
+
+  const confirmCopy = {
+    suspend: {
+      title: `Suspend ${e.name}?`,
+      body: overdue
+        ? `${e.name} has TTD ${e.outstandingTtd ?? 0} outstanding. Suspending pauses their access to the stream, sessions, and meeting links until you reactivate them or they settle the balance.`
+        : `${e.name} will lose access to the stream, sessions, and meeting links until you reactivate them.`,
+      action: "Suspend",
+      tone: "amber" as const,
+      run: () => { onUpdate({ status: "suspended" }); toast.success(`${e.name} suspended`); },
+    },
+    ban: {
+      title: `Ban ${e.name} from this class?`,
+      body: `${e.name} will be permanently removed and blocked from rejoining or requesting access to this class. They'll be notified. This cannot be undone from here.`,
+      action: "Ban from class",
+      tone: "rose" as const,
+      run: () => { onUpdate({ status: "banned" }); toast.success(`${e.name} banned from class`); },
+    },
+    remove: {
+      title: `Remove ${e.name} from this class?`,
+      body: `${e.name} will lose access immediately. They can be re-invited later.`,
+      action: "Remove",
+      tone: "rose" as const,
+      run: () => { onUpdate({ status: "removed" }); toast.success(`${e.name} removed`); },
+    },
+  };
+  const c = confirm ? confirmCopy[confirm] : null;
+
   return (
-    <tr className={cn(status === "suspended" && "bg-amber-50/40", status === "removed" && "opacity-60")}>
+    <tr className={cn(status === "suspended" && "bg-amber-50/40", status === "banned" && "bg-rose-50/40", status === "removed" && "opacity-60")}>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="size-9 rounded-full bg-gradient-to-br from-brand to-emerald-400 grid place-items-center text-xs font-bold text-white">
@@ -681,15 +710,43 @@ function RosterRow({ e, onUpdate }: { e: EnrolledStudent; onUpdate: (p: Partial<
       <td className="px-4 py-3 text-right relative">
         <button onClick={() => setMenu(!menu)} className="size-8 grid place-items-center rounded-md hover:bg-muted text-muted-foreground"><MoreVertical className="size-4" /></button>
         {menu && (
-          <div className="absolute right-4 top-10 z-10 w-52 rounded-xl border border-border bg-background shadow-pop p-1 text-left">
-            {status !== "suspended"
-              ? <MenuItem icon={ShieldAlert} label="Suspend" onClick={() => { onUpdate({ status: "suspended" }); setMenu(false); }} />
-              : <MenuItem icon={Check} label="Reactivate" onClick={() => { onUpdate({ status: "active" }); setMenu(false); }} />}
-            <MenuItem icon={AlertTriangle} label="Send warning" onClick={() => setMenu(false)} />
-            <MenuItem icon={Trash2} destructive label="Remove from class" onClick={() => { onUpdate({ status: "removed" }); setMenu(false); }} />
+          <div className="absolute right-4 top-10 z-10 w-56 rounded-xl border border-border bg-background shadow-pop p-1 text-left">
+            {status !== "suspended" && status !== "banned"
+              ? <MenuItem icon={ShieldAlert} label="Suspend" onClick={() => { setMenu(false); setConfirm("suspend"); }} />
+              : status === "suspended"
+              ? <MenuItem icon={Check} label="Reactivate" onClick={() => { onUpdate({ status: "active" }); toast.success(`${e.name} reactivated`); setMenu(false); }} />
+              : null}
+            <MenuItem icon={AlertTriangle} label="Send warning" onClick={() => { toast.success("Warning sent"); setMenu(false); }} />
+            {status !== "banned" && <MenuItem icon={Ban} destructive label="Ban from class" onClick={() => { setMenu(false); setConfirm("ban"); }} />}
+            <MenuItem icon={Trash2} destructive label="Remove from class" onClick={() => { setMenu(false); setConfirm("remove"); }} />
           </div>
         )}
       </td>
+
+      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
+        <AlertDialogContent>
+          {c && (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{c.title}</AlertDialogTitle>
+                <AlertDialogDescription>{c.body}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => { c.run(); setConfirm(null); }}
+                  className={cn(
+                    c.tone === "rose" ? "bg-rose-600 hover:bg-rose-700" : "bg-amber-600 hover:bg-amber-700",
+                    "text-white",
+                  )}
+                >
+                  {c.action}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </>
+          )}
+        </AlertDialogContent>
+      </AlertDialog>
     </tr>
   );
 }
