@@ -838,6 +838,18 @@ function PaymentCell({ status }: { status: PaymentCellStatus }) {
 
 /* ---------------- Settings ---------------- */
 
+const SETTINGS_SECTIONS = [
+  { id: "basics",   label: "Basics",             icon: Info },
+  { id: "thumb",    label: "Thumbnail",          icon: ImageIcon },
+  { id: "billing",  label: "Capacity & billing", icon: DollarSign },
+  { id: "access",   label: "Access & policies",  icon: Lock },
+  { id: "channels", label: "Communication",      icon: MessageSquare },
+  { id: "feedback", label: "Parent feedback",    icon: Mail },
+  { id: "danger",   label: "Danger zone",        icon: AlertTriangle },
+] as const;
+
+type SettingsSectionId = (typeof SETTINGS_SECTIONS)[number]["id"];
+
 function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; isOneOnOne: boolean }) {
   const [draft, setDraft] = useState<TutorLesson>(originalLesson);
   const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(originalLesson), [draft, originalLesson]);
@@ -846,143 +858,200 @@ function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson
   const u = <K extends keyof TutorLesson>(k: K, v: TutorLesson[K]) => setDraft({ ...draft, [k]: v });
   const save = () => { setLesson(draft); toast.success("Class settings saved"); };
   const discard = () => { setDraft(originalLesson); toast("Changes discarded"); };
+  const [section, setSection] = useState<SettingsSectionId>("basics");
+  const tryChangeSection = (id: SettingsSectionId) => {
+    if (dirty && !confirm("You have unsaved changes in this section. Discard them and switch?")) return;
+    if (dirty) setDraft(originalLesson);
+    setSection(id);
+  };
   const gradients = [
     "from-orange-500 to-amber-400","from-fuchsia-500 to-purple-500","from-sky-500 to-cyan-400","from-emerald-500 to-teal-400",
     "from-rose-500 to-pink-400","from-indigo-500 to-blue-500","from-yellow-500 to-orange-500","from-slate-600 to-slate-400",
   ];
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      {/* Basics */}
-      <Card title="Basics">
-        <Field label="Class title">
-          <input value={lesson.title} onChange={(e) => u("title", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-        </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Subject"><input value={lesson.subject} onChange={(e) => u("subject", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
-          <Field label="Level"><input value={lesson.level} onChange={(e) => u("level", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
-        </div>
-        <Field label="Class bio" hint="Long-form description shown on your public listing.">
-          <textarea value={lesson.bio ?? ""} onChange={(e) => u("bio", e.target.value)} className="w-full min-h-24 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-        </Field>
-        <Field label="Description (short)" hint="One-liner shown in the marketplace card.">
-          <input value={lesson.description} onChange={(e) => u("description", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
-        </Field>
-      </Card>
-
-      {/* Thumbnail */}
-      <Card title="Thumbnail">
-        <div className={cn("h-24 rounded-xl bg-gradient-to-br grid place-items-center", lesson.thumbnailGradient ?? "from-brand to-emerald-400")}>
-          <ImageIcon className="size-8 text-white/80" />
-        </div>
-        <div className="mt-3 grid grid-cols-8 gap-2">
-          {gradients.map((g) => (
-            <button key={g} onClick={() => u("thumbnailGradient", g)} className={cn("h-8 rounded-md bg-gradient-to-br", g, lesson.thumbnailGradient === g && "ring-2 ring-brand ring-offset-2")} />
-          ))}
-        </div>
-        <button className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-brand-deep hover:underline"><ImageIcon className="size-3.5" /> Upload custom image</button>
-      </Card>
-
-      {/* Capacity & billing */}
-      <Card title="Capacity & billing">
-        {!isOneOnOne && (
-          <Field label="Student limit" hint="Set to 1 to convert this into a recurring 1:1.">
-            <div className="inline-flex items-center gap-2">
-              <button onClick={() => u("capacity", Math.max(1, lesson.capacity - 1))} className="size-9 grid place-items-center rounded-lg border border-border">−</button>
-              <input type="number" value={lesson.capacity} onChange={(e) => u("capacity", Math.max(1, Number(e.target.value)))} className="w-20 text-center px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-              <button onClick={() => u("capacity", lesson.capacity + 1)} className="size-9 grid place-items-center rounded-lg border border-border">+</button>
-            </div>
-          </Field>
-        )}
-        <Field label="Billing model" infoTitle="Billing model" infoBlurb="Per-session: charged after each class. Per-month: a flat monthly fee. Prepaid: students pay upfront for a block of sessions.">
-          <div className="grid grid-cols-3 gap-2">
-            {(["per-session", "per-month", "prepaid"] as const).map((b) => (
-              <button key={b} onClick={() => u("billingModel", b)}
-                className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", lesson.billingModel === b ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                {b.replace("-", " ")}
+    <div className="max-w-5xl">
+      <div className="grid lg:grid-cols-[220px_1fr] gap-6">
+        <nav className="space-y-1">
+          {SETTINGS_SECTIONS.map((s) => {
+            const Icon = s.icon;
+            const active = section === s.id;
+            const danger = s.id === "danger";
+            return (
+              <button key={s.id} onClick={() => tryChangeSection(s.id)}
+                className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition group",
+                  active
+                    ? danger
+                      ? "bg-rose-50 border border-rose-200 text-rose-700"
+                      : "bg-background border border-border text-ink"
+                    : danger
+                      ? "text-rose-600 hover:bg-rose-50/60"
+                      : "text-muted-foreground hover:bg-background")}>
+                <Icon className="size-4" />
+                <span className="flex-1 text-left">{s.label}</span>
+                <ChevronRight className={cn("size-3.5 transition", active && !danger && "text-brand-deep", active && danger && "text-rose-600")} />
               </button>
-            ))}
-          </div>
-        </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Price (TTD)">
-            <input type="number" value={lesson.rateTtd} onChange={(e) => u("rateTtd", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-          </Field>
-          <Field label="Per-member service fee (TTD)" infoTitle="Service fee" infoBlurb="A small flat fee added to each member's bill — useful to cover materials, platform costs, or admin overhead.">
-            <input type="number" value={lesson.memberServiceFee ?? 0} onChange={(e) => u("memberServiceFee", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-          </Field>
+            );
+          })}
+        </nav>
+
+        <div className="rounded-2xl bg-background border border-border p-6 space-y-6">
+          {section === "basics" && (
+            <>
+              <SettingsHead title="Basics" desc="Core details students see in your class listing." />
+              <Field label="Class title">
+                <input value={lesson.title} onChange={(e) => u("title", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Subject"><input value={lesson.subject} onChange={(e) => u("subject", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
+                <Field label="Level"><input value={lesson.level} onChange={(e) => u("level", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" /></Field>
+              </div>
+              <Field label="Class bio" hint="Long-form description shown on your public listing.">
+                <textarea value={lesson.bio ?? ""} onChange={(e) => u("bio", e.target.value)} className="w-full min-h-24 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+              </Field>
+              <Field label="Description (short)" hint="One-liner shown in the marketplace card.">
+                <input value={lesson.description} onChange={(e) => u("description", e.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+              </Field>
+            </>
+          )}
+
+          {section === "thumb" && (
+            <>
+              <SettingsHead title="Thumbnail" desc="Pick the gradient or upload artwork students will see on the card." />
+              <div className={cn("h-24 rounded-xl bg-gradient-to-br grid place-items-center", lesson.thumbnailGradient ?? "from-brand to-emerald-400")}>
+                <ImageIcon className="size-8 text-white/80" />
+              </div>
+              <div className="grid grid-cols-8 gap-2">
+                {gradients.map((g) => (
+                  <button key={g} onClick={() => u("thumbnailGradient", g)} className={cn("h-8 rounded-md bg-gradient-to-br", g, lesson.thumbnailGradient === g && "ring-2 ring-brand ring-offset-2")} />
+                ))}
+              </div>
+              <button className="inline-flex items-center gap-2 text-xs font-semibold text-brand-deep hover:underline"><ImageIcon className="size-3.5" /> Upload custom image</button>
+            </>
+          )}
+
+          {section === "billing" && (
+            <>
+              <SettingsHead title="Capacity & billing" desc="How members are charged and how many seats you offer." />
+              {!isOneOnOne && (
+                <Field label="Student limit" hint="Set to 1 to convert this into a recurring 1:1.">
+                  <div className="inline-flex items-center gap-2">
+                    <button onClick={() => u("capacity", Math.max(1, lesson.capacity - 1))} className="size-9 grid place-items-center rounded-lg border border-border">−</button>
+                    <input type="number" value={lesson.capacity} onChange={(e) => u("capacity", Math.max(1, Number(e.target.value)))} className="w-20 text-center px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                    <button onClick={() => u("capacity", lesson.capacity + 1)} className="size-9 grid place-items-center rounded-lg border border-border">+</button>
+                  </div>
+                </Field>
+              )}
+              <Field label="Billing model" infoTitle="Billing model" infoBlurb="Per-session: charged after each class. Per-month: a flat monthly fee. Prepaid: students pay upfront for a block of sessions.">
+                <div className="grid grid-cols-3 gap-2">
+                  {(["per-session", "per-month", "prepaid"] as const).map((b) => (
+                    <button key={b} onClick={() => u("billingModel", b)}
+                      className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", lesson.billingModel === b ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                      {b.replace("-", " ")}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Price (TTD)">
+                  <input type="number" value={lesson.rateTtd} onChange={(e) => u("rateTtd", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                </Field>
+                <Field label="Per-member service fee (TTD)" infoTitle="Service fee" infoBlurb="A small flat fee added to each member's bill — useful to cover materials, platform costs, or admin overhead.">
+                  <input type="number" value={lesson.memberServiceFee ?? 0} onChange={(e) => u("memberServiceFee", Number(e.target.value))} className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                </Field>
+              </div>
+            </>
+          )}
+
+          {section === "access" && (
+            <>
+              <SettingsHead title="Access & policies" desc="Who can join and what happens when payments fall behind." />
+              <Field label="Visibility" hint="Public classes appear in the marketplace.">
+                <div className="grid grid-cols-3 gap-2">
+                  {(["public","unlisted","private"] as const).map((v) => (
+                    <button key={v} onClick={() => u("visibility", v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.visibility === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                      {v === "public" ? <Globe className="size-3.5" /> : v === "private" ? <Lock className="size-3.5" /> : <Eye className="size-3.5" />} {v}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Toggle label="Enable join requests" hint="Members must request approval before joining." value={!!lesson.joinRequests} onChange={(v) => u("joinRequests", v)} />
+              <Toggle label="Auto-suspend on overdue payment" hint="When a payment goes overdue past the grace window, the member is suspended until they pay." value={!!lesson.autoSuspend} onChange={(v) => u("autoSuspend", v)} />
+              {lesson.autoSuspend && (
+                <Field label="Grace window (days)" infoTitle="Grace window" infoBlurb="How many days after a missed payment before the member is auto-suspended. Set to 0 to suspend immediately.">
+                  <input type="number" value={lesson.graceWindowDays ?? 7} onChange={(e) => u("graceWindowDays", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                </Field>
+              )}
+            </>
+          )}
+
+          {section === "channels" && (
+            <>
+              <SettingsHead title="Communication channels" desc="Where members go for class chatter outside of sessions." />
+              <Field label="WhatsApp group link">
+                <input value={lesson.whatsappLink ?? ""} onChange={(e) => u("whatsappLink", e.target.value)} placeholder="https://chat.whatsapp.com/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+              </Field>
+              <Field label="Google Classroom link">
+                <input value={lesson.classroomLink ?? ""} onChange={(e) => u("classroomLink", e.target.value)} placeholder="https://classroom.google.com/c/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+              </Field>
+              <Field label="Primary channel" infoTitle="Primary channel" infoBlurb="Where members are pointed for class chatter. iTutor native keeps everything in-app; WhatsApp/Classroom hands chat off to your existing group.">
+                <div className="grid grid-cols-3 gap-2">
+                  {(["native", "whatsapp", "classroom"] as const).map((c) => (
+                    <button key={c} onClick={() => u("primaryChannel", c)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.primaryChannel === c ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                      {c === "whatsapp" ? <MessageSquare className="size-3.5" /> : c === "classroom" ? <Globe className="size-3.5" /> : <Sparkles className="size-3.5" />} {c === "native" ? "iTutor native" : c}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground inline-flex items-start gap-2">
+                <Video className="size-3.5 mt-0.5 shrink-0" />
+                <span>Sessions use the video provider on your tutor account — meeting links are attached per-session in the <strong className="text-ink">Sessions</strong> tab.</span>
+              </div>
+            </>
+          )}
+
+          {section === "feedback" && (
+            <>
+              <SettingsHead title="Parent feedback" desc="Optional monthly reports you send to each student's parent." />
+              <Field label="Mode" infoTitle="Parent feedback" infoBlurb="A short monthly report you write for each student's parent. AI can optionally polish your wording. Charge for it as a paid add-on or include it free.">
+                <div className="grid grid-cols-3 gap-2">
+                  {(["off", "included", "paid"] as const).map((m) => (
+                    <button key={m} onClick={() => u("parentFeedbackMode", m)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", lesson.parentFeedbackMode === m ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                      {m === "included" ? "Included free" : m === "paid" ? "Paid add-on" : "Off"}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              {lesson.parentFeedbackMode === "paid" && (
+                <Field label="Price per report (TTD)">
+                  <input type="number" value={lesson.parentFeedbackPrice ?? 0} onChange={(e) => u("parentFeedbackPrice", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                </Field>
+              )}
+            </>
+          )}
+
+          {section === "danger" && (
+            <>
+              <SettingsHead title="Danger zone" desc="Irreversible actions. Double-check before confirming." tone="danger" />
+              <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-5 space-y-3">
+                <DangerRow icon={ArrowUpRight} label="Transfer ownership" hint="Move this class to another tutor on iTutor." />
+                <DangerRow icon={Trash2} label="Delete class" hint="Permanently remove this class and its data." destructive />
+              </div>
+            </>
+          )}
         </div>
-      </Card>
-
-      {/* Access & policies */}
-      <Card title="Access & policies">
-        <Field label="Visibility" hint="Public classes appear in the marketplace.">
-          <div className="grid grid-cols-3 gap-2">
-            {(["public","unlisted","private"] as const).map((v) => (
-              <button key={v} onClick={() => u("visibility", v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.visibility === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                {v === "public" ? <Globe className="size-3.5" /> : v === "private" ? <Lock className="size-3.5" /> : <Eye className="size-3.5" />} {v}
-              </button>
-            ))}
-          </div>
-        </Field>
-        <Toggle label="Enable join requests" hint="Members must request approval before joining." value={!!lesson.joinRequests} onChange={(v) => u("joinRequests", v)} />
-        <Toggle label="Auto-suspend on overdue payment" hint="When a payment goes overdue past the grace window, the member is suspended until they pay." value={!!lesson.autoSuspend} onChange={(v) => u("autoSuspend", v)} />
-        {lesson.autoSuspend && (
-          <Field label="Grace window (days)" infoTitle="Grace window" infoBlurb="How many days after a missed payment before the member is auto-suspended. Set to 0 to suspend immediately.">
-            <input type="number" value={lesson.graceWindowDays ?? 7} onChange={(e) => u("graceWindowDays", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-          </Field>
-        )}
-      </Card>
-
-      {/* Channels */}
-      <Card title="Communication channels">
-        <Field label="WhatsApp group link">
-          <input value={lesson.whatsappLink ?? ""} onChange={(e) => u("whatsappLink", e.target.value)} placeholder="https://chat.whatsapp.com/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-        </Field>
-        <Field label="Google Classroom link">
-          <input value={lesson.classroomLink ?? ""} onChange={(e) => u("classroomLink", e.target.value)} placeholder="https://classroom.google.com/c/…" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-        </Field>
-        <Field label="Primary channel" infoTitle="Primary channel" infoBlurb="Where members are pointed for class chatter. iTutor native keeps everything in-app; WhatsApp/Classroom hands chat off to your existing group.">
-          <div className="grid grid-cols-3 gap-2">
-            {(["native", "whatsapp", "classroom"] as const).map((c) => (
-              <button key={c} onClick={() => u("primaryChannel", c)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.primaryChannel === c ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                {c === "whatsapp" ? <MessageSquare className="size-3.5" /> : c === "classroom" ? <Globe className="size-3.5" /> : <Sparkles className="size-3.5" />} {c === "native" ? "iTutor native" : c}
-              </button>
-            ))}
-          </div>
-        </Field>
-        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground inline-flex items-start gap-2">
-          <Video className="size-3.5 mt-0.5 shrink-0" />
-          <span>Sessions use the video provider on your tutor account — meeting links are attached per-session in the <strong className="text-ink">Sessions</strong> tab.</span>
-        </div>
-      </Card>
-
-      {/* Parent feedback */}
-      <Card title="Parent feedback">
-        <Field label="Mode" infoTitle="Parent feedback" infoBlurb="A short monthly report you write for each student's parent. AI can optionally polish your wording. Charge for it as a paid add-on or include it free.">
-          <div className="grid grid-cols-3 gap-2">
-            {(["off", "included", "paid"] as const).map((m) => (
-              <button key={m} onClick={() => u("parentFeedbackMode", m)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", lesson.parentFeedbackMode === m ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                {m === "included" ? "Included free" : m === "paid" ? "Paid add-on" : "Off"}
-              </button>
-            ))}
-          </div>
-        </Field>
-        {lesson.parentFeedbackMode === "paid" && (
-          <Field label="Price per report (TTD)">
-            <input type="number" value={lesson.parentFeedbackPrice ?? 0} onChange={(e) => u("parentFeedbackPrice", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
-          </Field>
-        )}
-      </Card>
-
-      {/* Danger zone */}
-      <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-5 space-y-3">
-        <h3 className="text-sm font-bold text-rose-700">Danger zone</h3>
-        <DangerRow icon={ArrowUpRight} label="Transfer ownership" hint="Move this class to another tutor on iTutor." />
-        <DangerRow icon={Trash2} label="Delete class" hint="Permanently remove this class and its data." destructive />
       </div>
 
       <UnsavedBar dirty={dirty} onSave={save} onDiscard={discard} saveLabel="Save class settings" />
+    </div>
+  );
+}
+
+function SettingsHead({ title, desc, tone }: { title: string; desc?: string; tone?: "danger" }) {
+  return (
+    <div className="pb-4 border-b border-border">
+      <div className={cn("text-base font-bold", tone === "danger" ? "text-rose-700" : "text-ink")}>{title}</div>
+      {desc && <div className="text-xs text-muted-foreground mt-0.5">{desc}</div>}
     </div>
   );
 }
