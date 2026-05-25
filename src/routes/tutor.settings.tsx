@@ -226,6 +226,7 @@ function Settings() {
           <button type="submit" className="hidden" />
         </form>
       </div>
+      <UnsavedBar dirty={dirty} onSave={onSaveAll} onDiscard={onDiscardAll} saveLabel="Save account settings" />
     </div>
   );
 }
