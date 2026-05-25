@@ -290,6 +290,14 @@ function ComposerChip({ icon: Icon, color, label, active, onClick }: any) {
 
 /* ---------------- Sessions ---------------- */
 
+type Recurrence = "none" | "daily" | "weekly";
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = i % 2 === 0 ? "00" : "30";
+  return `${String(h).padStart(2, "0")}:${m}`;
+});
+
 function SessionsTab({ lesson }: { lesson: TutorLesson }) {
   const initial = useMemo(
     () => PLACEHOLDER_SESSIONS.filter((s) => s.lessonId === lesson.id).slice(0, 6),
@@ -299,35 +307,74 @@ function SessionsTab({ lesson }: { lesson: TutorLesson }) {
   const [addOpen, setAddOpen] = useState(false);
   const upcoming = sessions.filter((s) => s.status === "upcoming");
 
-  const defaultDate = () => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    d.setHours(16, 0, 0, 0);
-    return d.toISOString().slice(0, 16);
+  const tomorrow = () => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(16, 0, 0, 0); return d; };
+  const blankForm = () => {
+    const d = tomorrow();
+    return {
+      date: d as Date | undefined,
+      time: "16:00",
+      duration: 60,
+      recurrence: "none" as Recurrence,
+      weekdays: [d.getDay()] as number[],
+      endDate: undefined as Date | undefined,
+      notes: "",
+    };
   };
-  const [form, setForm] = useState({ date: defaultDate(), duration: 60, notes: "" });
+  const [form, setForm] = useState(blankForm);
+
+  const buildOccurrences = (): Date[] => {
+    if (!form.date) return [];
+    const [hh, mm] = form.time.split(":").map(Number);
+    const start = new Date(form.date);
+    start.setHours(hh, mm, 0, 0);
+    if (form.recurrence === "none") return [start];
+
+    const horizon = form.endDate ? new Date(form.endDate) : (() => { const d = new Date(start); d.setMonth(d.getMonth() + 3); return d; })();
+    horizon.setHours(23, 59, 59, 999);
+    const out: Date[] = [];
+    const cursor = new Date(start);
+    const cap = 60;
+    while (cursor <= horizon && out.length < cap) {
+      if (form.recurrence === "daily") {
+        out.push(new Date(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+      } else {
+        if (form.weekdays.includes(cursor.getDay())) out.push(new Date(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    }
+    return out;
+  };
+
+  const occurrences = buildOccurrences();
 
   const createSession = () => {
-    if (!form.date) { toast.error("Pick a date and time"); return; }
-    const iso = new Date(form.date).toISOString();
-    setSessions([
-      ...sessions,
-      {
-        id: `s${Date.now()}`,
-        lessonId: lesson.id,
-        student: lesson.title,
-        subject: lesson.subject,
-        date: iso,
-        durationMin: Number(form.duration) || 60,
-        type: lesson.capacity === 1 ? "1-on-1" : "Group",
-        status: "upcoming",
-        paymentStatus: "pending",
-      } as any,
-    ].sort((a, b) => +new Date(a.date) - +new Date(b.date)));
-    toast.success("Session added · students will see it on their calendar");
+    if (!form.date) { toast.error("Pick a date"); return; }
+    if (form.recurrence === "weekly" && form.weekdays.length === 0) { toast.error("Pick at least one weekday"); return; }
+    if (occurrences.length === 0) { toast.error("No occurrences in selected range"); return; }
+    const created = occurrences.map((d, i) => ({
+      id: `s${Date.now()}-${i}`,
+      lessonId: lesson.id,
+      student: lesson.title,
+      subject: lesson.subject,
+      date: d.toISOString(),
+      durationMin: Number(form.duration) || 60,
+      type: lesson.capacity === 1 ? "1-on-1" : "Group",
+      status: "upcoming",
+      paymentStatus: "pending",
+    } as any));
+    setSessions([...sessions, ...created].sort((a, b) => +new Date(a.date) - +new Date(b.date)));
+    toast.success(
+      created.length === 1
+        ? "Session added · students will see it on their calendar"
+        : `${created.length} sessions added · students notified`,
+    );
     setAddOpen(false);
-    setForm({ date: defaultDate(), duration: 60, notes: "" });
+    setForm(blankForm());
   };
+
+  const toggleWeekday = (i: number) =>
+    setForm((f) => ({ ...f, weekdays: f.weekdays.includes(i) ? f.weekdays.filter((x) => x !== i) : [...f.weekdays, i].sort() }));
 
   return (
     <div className="space-y-4">
@@ -391,35 +438,125 @@ function SessionsTab({ lesson }: { lesson: TutorLesson }) {
 
       {addOpen && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-ink/40 backdrop-blur-sm p-4" onClick={() => setAddOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-2xl bg-background shadow-pop border border-border">
-            <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg rounded-2xl bg-background shadow-pop border border-border max-h-[90vh] flex flex-col">
+            <div className="px-5 py-4 border-b border-border flex items-center justify-between shrink-0">
               <div>
                 <div className="font-bold text-ink">Add session</div>
                 <div className="text-xs text-muted-foreground mt-0.5">{lesson.title}</div>
               </div>
               <button onClick={() => setAddOpen(false)} className="size-8 grid place-items-center rounded-lg hover:bg-muted"><X className="size-4" /></button>
             </div>
-            <div className="p-5 space-y-4">
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date & time</label>
-                <input type="datetime-local" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+            <div className="p-5 space-y-4 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="mt-1 w-full inline-flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-border bg-background text-sm hover:border-ink/30">
+                        <span className={cn(!form.date && "text-muted-foreground")}>{form.date ? format(form.date, "EEE, MMM d, yyyy") : "Pick a date"}</span>
+                        <CalendarIcon className="size-4 text-muted-foreground" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={form.date} onSelect={(d) => setForm({ ...form, date: d, weekdays: d ? [d.getDay()] : form.weekdays })} disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))} initialFocus className={cn("p-3 pointer-events-auto")} />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Start time</label>
+                  <div className="mt-1 relative">
+                    <Clock className="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <select value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand appearance-none">
+                      {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                </div>
               </div>
+
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Duration (minutes)</label>
-                <input type="number" min={15} step={15} value={form.duration} onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })} className="mt-1 w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+                <div className="mt-1 flex gap-2 flex-wrap">
+                  {[30, 45, 60, 90, 120].map((d) => (
+                    <button key={d} onClick={() => setForm({ ...form, duration: d })}
+                      className={cn("px-3 py-1.5 rounded-lg border text-xs font-semibold", form.duration === d ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                      {d} min
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1.5">
+                  <Repeat className="size-3.5" /> Recurrence
+                </label>
+                <div className="mt-1 grid grid-cols-3 gap-2">
+                  {(["none", "daily", "weekly"] as Recurrence[]).map((r) => (
+                    <button key={r} onClick={() => setForm({ ...form, recurrence: r })}
+                      className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize", form.recurrence === r ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                      {r === "none" ? "One-off" : r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {form.recurrence === "weekly" && (
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Repeat on</label>
+                  <div className="mt-1 flex gap-1.5 flex-wrap">
+                    {WEEKDAYS.map((w, i) => (
+                      <button key={w} onClick={() => toggleWeekday(i)}
+                        className={cn("size-10 rounded-lg border text-xs font-semibold", form.weekdays.includes(i) ? "bg-brand text-white border-brand" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                        {w[0]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {form.recurrence !== "none" && (
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">End date <span className="font-normal lowercase text-muted-foreground/70">(optional · default: 3 months)</span></label>
+                  <div className="mt-1 flex items-center gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="flex-1 inline-flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-border bg-background text-sm hover:border-ink/30">
+                          <span className={cn(!form.endDate && "text-muted-foreground")}>{form.endDate ? format(form.endDate, "EEE, MMM d, yyyy") : "No end date"}</span>
+                          <CalendarIcon className="size-4 text-muted-foreground" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar mode="single" selected={form.endDate} onSelect={(d) => setForm({ ...form, endDate: d })} disabled={(d) => !form.date || d < form.date} initialFocus className={cn("p-3 pointer-events-auto")} />
+                      </PopoverContent>
+                    </Popover>
+                    {form.endDate && (
+                      <button onClick={() => setForm({ ...form, endDate: undefined })} className="size-9 grid place-items-center rounded-lg border border-border hover:bg-muted text-muted-foreground"><X className="size-4" /></button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Notes (optional)</label>
                 <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Topic, prep, anything students should know…" className="mt-1 w-full min-h-20 px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
               </div>
+
+              {form.recurrence !== "none" && occurrences.length > 0 && (
+                <div className="rounded-lg bg-brand-soft/40 border border-brand/30 px-3 py-2 text-xs text-brand-deep">
+                  Will create <strong>{occurrences.length}</strong> session{occurrences.length === 1 ? "" : "s"} between{" "}
+                  <strong>{format(occurrences[0], "MMM d")}</strong> and <strong>{format(occurrences[occurrences.length - 1], "MMM d, yyyy")}</strong>.
+                </div>
+              )}
+
               <div className="rounded-lg bg-muted/40 border border-dashed border-border px-3 py-2 text-[11px] text-muted-foreground flex items-start gap-2">
                 <Video className="size-3.5 mt-0.5 shrink-0 text-brand-deep" />
-                <span>Meeting link is auto-generated from your connected {lesson.videoProvider ?? "Zoom/Meet"} account when the session goes live.</span>
+                <span>Meeting link is auto-generated from your connected {lesson.videoProvider ?? "Zoom/Meet"} account when each session goes live.</span>
               </div>
             </div>
-            <div className="px-5 py-3 border-t border-border flex justify-end gap-2">
+            <div className="px-5 py-3 border-t border-border flex justify-end gap-2 shrink-0">
               <button onClick={() => setAddOpen(false)} className="px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:bg-muted">Cancel</button>
-              <button onClick={createSession} className="px-4 py-1.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">Add session</button>
+              <button onClick={createSession} className="px-4 py-1.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand/90">
+                {form.recurrence === "none" ? "Add session" : `Add ${occurrences.length} session${occurrences.length === 1 ? "" : "s"}`}
+              </button>
             </div>
           </div>
         </div>
