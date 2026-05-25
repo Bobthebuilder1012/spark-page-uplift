@@ -120,13 +120,18 @@ function Settings() {
           })}
         </nav>
 
-        <div className="rounded-2xl bg-background border border-border p-6 space-y-6">
+        <form
+          key={formKey}
+          className="rounded-2xl bg-background border border-border p-6 space-y-6"
+          onChange={() => setDirty(true)}
+          onSubmit={(e) => { e.preventDefault(); onSaveAll(); }}
+        >
           {section === "profile" && (
             <>
               <div className="flex items-center gap-4 pb-6 border-b border-border">
                 <div className="relative">
                   <div className="size-20 rounded-full bg-gradient-to-br from-brand to-brand-deep grid place-items-center text-white text-2xl font-semibold">{profile.initials}</div>
-                  <button className="absolute -bottom-1 -right-1 size-7 rounded-full bg-background border border-border grid place-items-center hover:bg-muted">
+                  <button type="button" className="absolute -bottom-1 -right-1 size-7 rounded-full bg-background border border-border grid place-items-center hover:bg-muted">
                     <Camera className="size-3.5" />
                   </button>
                 </div>
@@ -138,7 +143,6 @@ function Settings() {
               <Field label="Display name" defaultValue={profile.name} />
               <Field label="Email" defaultValue={profile.email} type="email" />
               <Field label="Phone" defaultValue={profile.phone} />
-              <SaveBar />
             </>
           )}
 
@@ -153,13 +157,12 @@ function Settings() {
                 <p className="text-xs text-muted-foreground mb-2">The subjects you currently offer to students.</p>
                 <div className="flex flex-wrap gap-2">
                   {["CSEC Mathematics", "CSEC Physics", "CSEC Chemistry", "CAPE Pure Maths", "CAPE Physics Unit 1", "Add. Maths"].map((s, i) => (
-                    <button key={s} className={cn("px-3 py-1.5 rounded-full text-sm font-medium border",
+                    <button type="button" key={s} onClick={() => setDirty(true)} className={cn("px-3 py-1.5 rounded-full text-sm font-medium border",
                       i < 3 ? "bg-brand-soft text-forest border-brand" : "bg-background text-muted-foreground border-border hover:border-ink/30")}>{s}</button>
                   ))}
-                  <button className="px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-border text-muted-foreground hover:border-brand hover:text-brand-deep">+ Add subject</button>
+                  <button type="button" className="px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-border text-muted-foreground hover:border-brand hover:text-brand-deep">+ Add subject</button>
                 </div>
               </div>
-              <SaveBar />
             </>
           )}
 
@@ -174,13 +177,13 @@ function Settings() {
                 { key: "reviews", label: "New reviews", desc: "When students leave reviews" },
                 { key: "platform", label: "Platform updates", desc: "Product news and tips" },
               ].map((n) => (
-                <ToggleRow key={n.key} label={n.label} desc={n.desc} checked={notif[n.key as keyof typeof notif]} onChange={(v) => setNotif({ ...notif, [n.key]: v })} />
+                <ToggleRow key={n.key} label={n.label} desc={n.desc} checked={notif[n.key as keyof typeof notif]} onChange={(v) => { setNotif({ ...notif, [n.key]: v }); setDirty(true); }} />
               ))}
               <div className="pt-4 border-t border-border">
                 <SectionHead title="Channels" desc="How you want to receive notifications" />
-                <ToggleRow label="Email" desc="Sent to your registered email" checked={true} onChange={() => {}} />
-                <ToggleRow label="SMS" desc="Critical alerts via text" checked={notif.sms} onChange={(v) => setNotif({ ...notif, sms: v })} />
-                <ToggleRow label="Push notifications" desc="Mobile/desktop browser push" checked={notif.push} onChange={(v) => setNotif({ ...notif, push: v })} />
+                <ToggleRow label="Email" desc="Sent to your registered email" checked={true} onChange={() => setDirty(true)} />
+                <ToggleRow label="SMS" desc="Critical alerts via text" checked={notif.sms} onChange={(v) => { setNotif({ ...notif, sms: v }); setDirty(true); }} />
+                <ToggleRow label="Push notifications" desc="Mobile/desktop browser push" checked={notif.push} onChange={(v) => { setNotif({ ...notif, push: v }); setDirty(true); }} />
               </div>
             </>
           )}
@@ -199,7 +202,6 @@ function Settings() {
                   <span className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-peach text-ink">Coming soon</span>
                 </div>
               </div>
-              <SaveBar label="Update password" />
             </>
           )}
 
@@ -211,18 +213,18 @@ function Settings() {
                   <div className="font-semibold text-ink mt-1">Republic Bank · ending ••42</div>
                   <div className="text-xs text-muted-foreground mt-0.5">Payouts deposit directly into this account.</div>
                 </div>
-                <button className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">Manage</button>
+                <button type="button" className="px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">Manage</button>
               </div>
               <Select label="Payout frequency" options={["Weekly (Friday)", "Bi-weekly", "Monthly"]} value="Bi-weekly" />
               <Field label="Minimum payout (TTD)" type="number" defaultValue="200" />
               <div>
                 <div className="text-sm font-medium text-ink mb-3">Tax information</div>
-                <button className="w-full p-3 rounded-xl border border-dashed border-border text-sm text-muted-foreground hover:border-brand hover:text-brand-deep">+ Upload BIR documents</button>
+                <button type="button" className="w-full p-3 rounded-xl border border-dashed border-border text-sm text-muted-foreground hover:border-brand hover:text-brand-deep">+ Upload BIR documents</button>
               </div>
-              <SaveBar />
             </>
           )}
-        </div>
+          <button type="submit" className="hidden" />
+        </form>
       </div>
     </div>
   );
