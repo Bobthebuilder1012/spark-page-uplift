@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, SlidersHorizontal, Star, Flame, Heart, FileText, Lock, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, Star, Flame, Heart, FileText, Lock, Loader2, Sparkles } from "lucide-react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { cn } from "@/lib/utils";
@@ -176,8 +176,8 @@ function ClassCard({ c, saved, onSave }: { c: MarketClass; saved: boolean; onSav
         {/* Badges row */}
         <div className="flex flex-wrap gap-1.5">
           {c.includesParentFeedback && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-brand-soft text-brand-deep">
-              <FileText className="size-3" /> Parent feedback
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-brand text-white">
+              <Sparkles className="size-3" /> Free parent feedback
             </span>
           )}
           {c.approvalRequired && c.kind === "group" && (

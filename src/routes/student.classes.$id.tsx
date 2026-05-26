@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import {
   ArrowLeft, Star, Calendar, Clock, Users, FileText, BadgeCheck,
-  Check, Lock, ShieldCheck, CreditCard, X, Loader2,
+  Check, Lock, ShieldCheck, CreditCard, X, Loader2, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MARKET_CLASSES, classState, type MarketClass } from "@/lib/marketplace-data";
@@ -83,8 +83,8 @@ function Detail({ c }: { c: MarketClass }) {
 
         <div className="mt-5 flex flex-wrap gap-2">
           {c.includesParentFeedback && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-white/95 text-ink">
-              <FileText className="size-3" /> Monthly parent feedback
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-brand text-white shadow-sm">
+              <Sparkles className="size-3.5" /> Free parent feedback included
             </span>
           )}
           {c.kind === "recurring-1on1" && (

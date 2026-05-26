@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
-import { Search, Star, Users, FileText, GraduationCap } from "lucide-react";
+import { Search, Star, Users, FileText, GraduationCap, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MARKET_CLASSES, SUBJECTS, matchSubject, classState, LOW_STOCK_THRESHOLD, type MarketClass } from "@/lib/marketplace-data";
 
@@ -131,7 +131,7 @@ function ClassCard({ c }: { c: MarketClass }) {
         </div>
 
         <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-[11px]">
-          {c.includesParentFeedback && <span className="inline-flex items-center gap-1 text-brand-deep font-semibold"><FileText className="size-3" /> Parent feedback</span>}
+          {c.includesParentFeedback && <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-brand text-white"><Sparkles className="size-3" /> Free parent feedback</span>}
           <span className={cn("ml-auto font-bold uppercase tracking-wider px-2 py-0.5 rounded-full",
             st === "open" ? "bg-brand-soft text-brand-deep"
             : st === "approval-required" ? "bg-sky-100 text-sky-800"

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  ArrowLeft, Star, Users, Calendar, Check, FileText, ShieldCheck, X, CreditCard, ChevronRight, Lock,
+  ArrowLeft, Star, Users, Calendar, Check, FileText, ShieldCheck, X, CreditCard, ChevronRight, Lock, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MARKET_CLASSES, classState, LOW_STOCK_THRESHOLD, type MarketClass } from "@/lib/marketplace-data";
@@ -42,6 +42,11 @@ function ParentClassDetail() {
         </div>
         <h1 className="text-3xl font-bold">{c.title}</h1>
         <p className="text-sm opacity-90 mt-2 max-w-xl">{c.shortBlurb}</p>
+        {c.includesParentFeedback && (
+          <div className="mt-4 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white text-brand-deep shadow-sm">
+            <Sparkles className="size-3.5" /> Free parent feedback included
+          </div>
+        )}
 
         <div className="absolute top-4 right-4 flex flex-col gap-1 items-end">
           {c.discountLabel && <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-white text-coral">{c.discountLabel}</span>}

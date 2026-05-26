@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   PLACEHOLDER_LESSONS, PLACEHOLDER_SESSIONS, PLACEHOLDER_STREAM_POSTS,
   LESSON_KIND_META, MEMBER_STATUS_META, PAYMENT_STATUS_META, PAYMENT_PERIODS,
@@ -852,6 +852,7 @@ type SettingsSectionId = (typeof SETTINGS_SECTIONS)[number]["id"];
 
 function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; isOneOnOne: boolean }) {
   const [draft, setDraft] = useState<TutorLesson>(originalLesson);
+  const lastPublicJoinReq = useRef<boolean>(originalLesson.visibility === "public" ? !!originalLesson.joinRequests : false);
   const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(originalLesson), [draft, originalLesson]);
   useUnsavedGuard(dirty);
   const lesson = draft;
@@ -966,16 +967,32 @@ function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson
           {section === "access" && (
             <>
               <SettingsHead title="Access & policies" desc="Who can join and what happens when payments fall behind." />
-              <Field label="Visibility" hint="Public classes appear in the marketplace.">
-                <div className="grid grid-cols-3 gap-2">
-                  {(["public","unlisted","private"] as const).map((v) => (
-                    <button key={v} onClick={() => u("visibility", v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.visibility === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                      {v === "public" ? <Globe className="size-3.5" /> : v === "private" ? <Lock className="size-3.5" /> : <Eye className="size-3.5" />} {v}
+              <Field label="Visibility" hint="Public classes appear in the marketplace. Private classes don't, and require approval to join.">
+                <div className="grid grid-cols-2 gap-2">
+                  {(["public","private"] as const).map((v) => (
+                    <button key={v} onClick={() => {
+                      if (v === lesson.visibility) return;
+                      if (v === "private") {
+                        // Remember the last public joinRequests value, then force ON.
+                        lastPublicJoinReq.current = !!lesson.joinRequests;
+                        setDraft({ ...draft, visibility: "private", joinRequests: true });
+                      } else {
+                        // Restore last value from when class was public.
+                        setDraft({ ...draft, visibility: "public", joinRequests: lastPublicJoinReq.current });
+                      }
+                    }} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.visibility === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                      {v === "public" ? <Globe className="size-3.5" /> : <Lock className="size-3.5" />} {v}
                     </button>
                   ))}
                 </div>
               </Field>
-              <Toggle label="Enable join requests" hint="Members must request approval before joining." value={!!lesson.joinRequests} onChange={(v) => u("joinRequests", v)} />
+              <Toggle
+                label="Enable join requests"
+                hint={lesson.visibility === "private" ? "Private classes always require approval to join." : "Members must request approval before joining."}
+                value={!!lesson.joinRequests}
+                onChange={(v) => u("joinRequests", v)}
+                disabled={lesson.visibility === "private"}
+              />
               <Toggle label="Auto-suspend on overdue payment" hint="When a payment goes overdue past the grace window, the member is suspended until they pay." value={!!lesson.autoSuspend} onChange={(v) => u("autoSuspend", v)} />
               {lesson.autoSuspend && (
                 <Field label="Grace window (days)" infoTitle="Grace window" infoBlurb="How many days after a missed payment before the member is auto-suspended. Set to 0 to suspend immediately.">
@@ -996,12 +1013,18 @@ function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson
               </Field>
               <Field label="Primary channel" infoTitle="Primary channel" infoBlurb="Where members are pointed for class chatter. iTutor native keeps everything in-app; WhatsApp/Classroom hands chat off to your existing group.">
                 <div className="grid grid-cols-3 gap-2">
-                  {(["native", "whatsapp", "classroom"] as const).map((c) => (
-                    <button key={c} onClick={() => u("primaryChannel", c)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.primaryChannel === c ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                      {c === "whatsapp" ? <MessageSquare className="size-3.5" /> : c === "classroom" ? <Globe className="size-3.5" /> : <Sparkles className="size-3.5" />} {c === "native" ? "iTutor native" : c}
-                    </button>
-                  ))}
+                  {(["native", "whatsapp", "classroom"] as const).map((c) => {
+                    const disabled = (c === "whatsapp" && !lesson.whatsappLink?.trim()) || (c === "classroom" && !lesson.classroomLink?.trim());
+                    return (
+                      <button key={c} disabled={disabled} title={disabled ? "Add a link above to use this channel." : undefined} onClick={() => !disabled && u("primaryChannel", c)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.primaryChannel === c ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink", disabled && "opacity-50 cursor-not-allowed hover:text-muted-foreground")}>
+                        {c === "whatsapp" ? <MessageSquare className="size-3.5" /> : c === "classroom" ? <Globe className="size-3.5" /> : <Sparkles className="size-3.5" />} {c === "native" ? "iTutor native" : c}
+                      </button>
+                    );
+                  })}
                 </div>
+                {((lesson.primaryChannel === "whatsapp" && !lesson.whatsappLink?.trim()) || (lesson.primaryChannel === "classroom" && !lesson.classroomLink?.trim())) || (!lesson.whatsappLink?.trim() || !lesson.classroomLink?.trim()) ? (
+                  <div className="text-[11px] text-muted-foreground mt-1.5">Add a link above to use that channel.</div>
+                ) : null}
               </Field>
               <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground inline-flex items-start gap-2">
                 <Video className="size-3.5 mt-0.5 shrink-0" />
@@ -1023,8 +1046,8 @@ function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson
                 </div>
               </Field>
               {lesson.parentFeedbackMode === "paid" && (
-                <Field label="Price per report (TTD)">
-                  <input type="number" value={lesson.parentFeedbackPrice ?? 0} onChange={(e) => u("parentFeedbackPrice", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <Field label="Price per period (TTD)" hint="Required before save.">
+                  <input type="number" min={0} required value={lesson.parentFeedbackPrice ?? 0} onChange={(e) => u("parentFeedbackPrice", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
                 </Field>
               )}
             </>
@@ -1218,14 +1241,20 @@ function InfoPop({ title, blurb }: { title: string; blurb: string }) {
     </span>
   );
 }
-function Toggle({ label, hint, value, onChange }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ label, hint, value, onChange, disabled }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-xl border border-border p-4">
+    <div className={cn("flex items-start justify-between gap-4 rounded-xl border border-border p-4", disabled && "opacity-70")}>
       <div className="flex-1">
         <div className="text-sm font-semibold text-ink">{label}</div>
         {hint && <div className="text-xs text-muted-foreground mt-0.5">{hint}</div>}
       </div>
-      <button onClick={() => onChange(!value)} className={cn("w-11 h-6 rounded-full p-0.5 transition shrink-0", value ? "bg-brand" : "bg-muted")}>
+      <button
+        type="button"
+        disabled={disabled}
+        title={disabled ? hint : undefined}
+        onClick={() => !disabled && onChange(!value)}
+        className={cn("w-11 h-6 rounded-full p-0.5 transition shrink-0", value ? "bg-brand" : "bg-muted", disabled && "cursor-not-allowed")}
+      >
         <span className={cn("block size-5 rounded-full bg-white shadow transition", value && "translate-x-5")} />
       </button>
     </div>
