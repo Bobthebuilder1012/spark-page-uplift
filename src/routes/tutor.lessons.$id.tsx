@@ -1013,12 +1013,18 @@ function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson
               </Field>
               <Field label="Primary channel" infoTitle="Primary channel" infoBlurb="Where members are pointed for class chatter. iTutor native keeps everything in-app; WhatsApp/Classroom hands chat off to your existing group.">
                 <div className="grid grid-cols-3 gap-2">
-                  {(["native", "whatsapp", "classroom"] as const).map((c) => (
-                    <button key={c} onClick={() => u("primaryChannel", c)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.primaryChannel === c ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                      {c === "whatsapp" ? <MessageSquare className="size-3.5" /> : c === "classroom" ? <Globe className="size-3.5" /> : <Sparkles className="size-3.5" />} {c === "native" ? "iTutor native" : c}
-                    </button>
-                  ))}
+                  {(["native", "whatsapp", "classroom"] as const).map((c) => {
+                    const disabled = (c === "whatsapp" && !lesson.whatsappLink?.trim()) || (c === "classroom" && !lesson.classroomLink?.trim());
+                    return (
+                      <button key={c} disabled={disabled} title={disabled ? "Add a link above to use this channel." : undefined} onClick={() => !disabled && u("primaryChannel", c)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.primaryChannel === c ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink", disabled && "opacity-50 cursor-not-allowed hover:text-muted-foreground")}>
+                        {c === "whatsapp" ? <MessageSquare className="size-3.5" /> : c === "classroom" ? <Globe className="size-3.5" /> : <Sparkles className="size-3.5" />} {c === "native" ? "iTutor native" : c}
+                      </button>
+                    );
+                  })}
                 </div>
+                {((lesson.primaryChannel === "whatsapp" && !lesson.whatsappLink?.trim()) || (lesson.primaryChannel === "classroom" && !lesson.classroomLink?.trim())) || (!lesson.whatsappLink?.trim() || !lesson.classroomLink?.trim()) ? (
+                  <div className="text-[11px] text-muted-foreground mt-1.5">Add a link above to use that channel.</div>
+                ) : null}
               </Field>
               <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground inline-flex items-start gap-2">
                 <Video className="size-3.5 mt-0.5 shrink-0" />
