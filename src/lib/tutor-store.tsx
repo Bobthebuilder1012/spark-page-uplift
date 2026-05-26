@@ -355,7 +355,7 @@ export const PLACEHOLDER_LESSONS: TutorLesson[] = [
     pricingMode: "per-session", rateTtd: 100, capacity: 15,
     enrollments: [], materialsCount: 22, notes: "", status: "completed",
     thumbnailGradient: "from-slate-500 to-zinc-500",
-    visibility: "unlisted", archived: true, videoProvider: "zoom",
+    visibility: "private", archived: true, videoProvider: "zoom",
     totalSessionsRun: 24, earningsTtd: 18600, avgAttendance: 84, retention: 72, rating: 4.7, reviewCount: 31,
   },
 ];
