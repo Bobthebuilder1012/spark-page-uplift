@@ -1046,8 +1046,8 @@ function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson
                 </div>
               </Field>
               {lesson.parentFeedbackMode === "paid" && (
-                <Field label="Price per report (TTD)">
-                  <input type="number" value={lesson.parentFeedbackPrice ?? 0} onChange={(e) => u("parentFeedbackPrice", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
+                <Field label="Price per period (TTD)" hint="Required before save.">
+                  <input type="number" min={0} required value={lesson.parentFeedbackPrice ?? 0} onChange={(e) => u("parentFeedbackPrice", Number(e.target.value))} className="w-32 px-3 py-2 rounded-lg border border-border bg-background text-sm" />
                 </Field>
               )}
             </>
