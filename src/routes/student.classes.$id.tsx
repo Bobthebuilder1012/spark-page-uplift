@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import {
   ArrowLeft, Star, Calendar, Clock, Users, FileText, BadgeCheck,
-  Check, Lock, ShieldCheck, CreditCard, X, Loader2,
+  Check, Lock, ShieldCheck, CreditCard, X, Loader2, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MARKET_CLASSES, classState, type MarketClass } from "@/lib/marketplace-data";
