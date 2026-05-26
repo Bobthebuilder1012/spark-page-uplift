@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, SlidersHorizontal, Star, Flame, Heart, FileText, Lock, Loader2 } from "lucide-react";
+import { Search, SlidersHorizontal, Star, Flame, Heart, FileText, Lock, Loader2, Sparkles } from "lucide-react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { cn } from "@/lib/utils";
