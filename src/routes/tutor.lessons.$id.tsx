@@ -852,6 +852,7 @@ type SettingsSectionId = (typeof SETTINGS_SECTIONS)[number]["id"];
 
 function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson: TutorLesson; setLesson: (l: TutorLesson) => void; isOneOnOne: boolean }) {
   const [draft, setDraft] = useState<TutorLesson>(originalLesson);
+  const lastPublicJoinReq = useRef<boolean>(originalLesson.visibility === "public" ? !!originalLesson.joinRequests : false);
   const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(originalLesson), [draft, originalLesson]);
   useUnsavedGuard(dirty);
   const lesson = draft;
