@@ -966,16 +966,32 @@ function SettingsTab({ lesson: originalLesson, setLesson, isOneOnOne }: { lesson
           {section === "access" && (
             <>
               <SettingsHead title="Access & policies" desc="Who can join and what happens when payments fall behind." />
-              <Field label="Visibility" hint="Public classes appear in the marketplace.">
-                <div className="grid grid-cols-3 gap-2">
-                  {(["public","unlisted","private"] as const).map((v) => (
-                    <button key={v} onClick={() => u("visibility", v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.visibility === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                      {v === "public" ? <Globe className="size-3.5" /> : v === "private" ? <Lock className="size-3.5" /> : <Eye className="size-3.5" />} {v}
+              <Field label="Visibility" hint="Public classes appear in the marketplace. Private classes don't, and require approval to join.">
+                <div className="grid grid-cols-2 gap-2">
+                  {(["public","private"] as const).map((v) => (
+                    <button key={v} onClick={() => {
+                      if (v === lesson.visibility) return;
+                      if (v === "private") {
+                        // Remember the last public joinRequests value, then force ON.
+                        lastPublicJoinReq.current = !!lesson.joinRequests;
+                        setDraft({ ...draft, visibility: "private", joinRequests: true });
+                      } else {
+                        // Restore last value from when class was public.
+                        setDraft({ ...draft, visibility: "public", joinRequests: lastPublicJoinReq.current });
+                      }
+                    }} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", lesson.visibility === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
+                      {v === "public" ? <Globe className="size-3.5" /> : <Lock className="size-3.5" />} {v}
                     </button>
                   ))}
                 </div>
               </Field>
-              <Toggle label="Enable join requests" hint="Members must request approval before joining." value={!!lesson.joinRequests} onChange={(v) => u("joinRequests", v)} />
+              <Toggle
+                label="Enable join requests"
+                hint={lesson.visibility === "private" ? "Private classes always require approval to join." : "Members must request approval before joining."}
+                value={!!lesson.joinRequests}
+                onChange={(v) => u("joinRequests", v)}
+                disabled={lesson.visibility === "private"}
+              />
               <Toggle label="Auto-suspend on overdue payment" hint="When a payment goes overdue past the grace window, the member is suspended until they pay." value={!!lesson.autoSuspend} onChange={(v) => u("autoSuspend", v)} />
               {lesson.autoSuspend && (
                 <Field label="Grace window (days)" infoTitle="Grace window" infoBlurb="How many days after a missed payment before the member is auto-suspended. Set to 0 to suspend immediately.">
