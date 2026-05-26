@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
-import { Search, Star, Users, FileText, GraduationCap } from "lucide-react";
+import { Search, Star, Users, FileText, GraduationCap, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MARKET_CLASSES, SUBJECTS, matchSubject, classState, LOW_STOCK_THRESHOLD, type MarketClass } from "@/lib/marketplace-data";
 
