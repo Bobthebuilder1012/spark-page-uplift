@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  ArrowLeft, Star, Users, Calendar, Check, FileText, ShieldCheck, X, CreditCard, ChevronRight, Lock,
+  ArrowLeft, Star, Users, Calendar, Check, FileText, ShieldCheck, X, CreditCard, ChevronRight, Lock, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MARKET_CLASSES, classState, LOW_STOCK_THRESHOLD, type MarketClass } from "@/lib/marketplace-data";
