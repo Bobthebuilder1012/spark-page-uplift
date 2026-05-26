@@ -30,7 +30,7 @@ function CreateClassPage() {
   const [billingModel, setBillingModel] = useState<"per-session" | "per-month" | "prepaid">("per-session");
   const [price, setPrice] = useState(120);
   const [memberFee, setMemberFee] = useState(5);
-  const [visibility, setVisibility] = useState<"public" | "unlisted" | "private">("public");
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [joinRequests, setJoinRequests] = useState(false);
   const [autoSuspend, setAutoSuspend] = useState(true);
   const [graceDays, setGraceDays] = useState(7);
