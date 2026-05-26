@@ -197,10 +197,10 @@ function CreateClassPage() {
 
           <Card title="Access & policies">
             <Field label="Visibility">
-              <div className="grid grid-cols-3 gap-2">
-                {(["public","unlisted","private"] as const).map((v) => (
+              <div className="grid grid-cols-2 gap-2">
+                {(["public","private"] as const).map((v) => (
                   <button key={v} onClick={() => setVisibility(v)} className={cn("px-3 py-2 rounded-lg border text-xs font-semibold capitalize inline-flex items-center justify-center gap-1.5", visibility === v ? "bg-brand-soft border-brand text-brand-deep" : "border-border bg-background text-muted-foreground hover:text-ink")}>
-                    {v === "public" ? <Globe className="size-3.5" /> : v === "private" ? <Lock className="size-3.5" /> : <Eye className="size-3.5" />} {v}
+                    {v === "public" ? <Globe className="size-3.5" /> : <Lock className="size-3.5" />} {v}
                   </button>
                 ))}
               </div>
