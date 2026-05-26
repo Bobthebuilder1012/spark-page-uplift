@@ -106,7 +106,7 @@ export type TutorLesson = {
   // Customization & marketplace
   thumbnailGradient?: string;       // tailwind gradient classes for the banner
   bio?: string;                     // long-form description shown on listing
-  visibility?: "public" | "private" | "unlisted";
+  visibility?: "public" | "private";
   approvalRequired?: boolean;
   waitlistEnabled?: boolean;
   archived?: boolean;
