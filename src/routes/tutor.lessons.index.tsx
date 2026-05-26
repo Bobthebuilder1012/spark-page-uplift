@@ -1,23 +1,69 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTutor, PLACEHOLDER_LESSONS, LESSON_KIND_META, type TutorLesson } from "@/lib/tutor-store";
-import { Plus, Lock, Users, BookOpen, Search } from "lucide-react";
+import {
+  Plus, Lock, Users, BookOpen, Search, MoreVertical, Settings as SettingsIcon,
+  Globe, Trash2, Calendar as CalendarIcon, TrendingUp, Eye,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/tutor/lessons/")({
   head: () => ({ meta: [{ title: "My Classes — iTutor Tutor" }] }),
   component: LessonsPage,
 });
 
+type KindFilter = "all" | "group" | "1on1";
+
 function LessonsPage() {
   const { completion } = useTutor();
   const [search, setSearch] = useState("");
+  const [kind, setKind] = useState<KindFilter>("all");
+  const [lessons, setLessons] = useState<TutorLesson[]>(PLACEHOLDER_LESSONS);
+  const [pendingDelete, setPendingDelete] = useState<TutorLesson | null>(null);
 
-  const lessons = useMemo(() => PLACEHOLDER_LESSONS.filter((l) => {
+  const visibleLessons = useMemo(() => lessons.filter((l) => {
     if (l.archived) return false;
-    const sMatch = search === "" || l.title.toLowerCase().includes(search.toLowerCase()) || l.subject.toLowerCase().includes(search.toLowerCase());
-    return sMatch;
-  }), [search]);
+    if (kind === "group" && !l.kind.startsWith("group")) return false;
+    if (kind === "1on1" && !l.kind.startsWith("1on1")) return false;
+    if (search) {
+      const t = search.toLowerCase();
+      if (!l.title.toLowerCase().includes(t) && !l.subject.toLowerCase().includes(t)) return false;
+    }
+    return true;
+  }), [lessons, search, kind]);
+
+  const totals = useMemo(() => {
+    const active = lessons.filter((l) => !l.archived);
+    return {
+      classes: active.length,
+      students: active.reduce((sum, l) => sum + l.enrollments.length, 0),
+      earnings: active.reduce((sum, l) => sum + (l.earningsTtd ?? 0), 0),
+    };
+  }, [lessons]);
+
+  const toggleVisibility = (id: string) => {
+    setLessons((prev) => prev.map((l) => {
+      if (l.id !== id) return l;
+      const next = l.visibility === "public" ? "private" : "public";
+      toast.success(`"${l.title}" is now ${next}`);
+      return { ...l, visibility: next };
+    }));
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    setLessons((prev) => prev.filter((l) => l.id !== pendingDelete.id));
+    toast.success(`Deleted "${pendingDelete.title}"`);
+    setPendingDelete(null);
+  };
 
   if (!completion.listed) {
     return (
@@ -32,82 +78,229 @@ function LessonsPage() {
 
   return (
     <div className="max-w-7xl space-y-8">
-      <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+      {/* Header */}
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-ink">My Classes</h1>
-          <p className="text-sm text-muted-foreground mt-1">Create, manage, and grow your classes</p>
+          <div className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Workspace</div>
+          <h1 className="text-3xl lg:text-4xl font-bold text-ink mt-1 tracking-tight">My Classes</h1>
+          <p className="text-sm text-muted-foreground mt-1.5">Create, manage and grow every class you run on iTutor.</p>
         </div>
-        <Link to="/tutor/lessons/new" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand/90 shadow-sm">
-          <Plus className="size-4" /> Create a Class
+        <Link to="/tutor/lessons/new"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-white text-sm font-semibold hover:bg-ink/90 shadow-sm self-start sm:self-auto">
+          <Plus className="size-4" /> Create a class
         </Link>
       </header>
 
-      <div className="flex items-center gap-3 pb-3 border-b border-border">
-        <span className="text-sm font-semibold text-ink">{lessons.length} active class{lessons.length === 1 ? "" : "es"}</span>
-        <div className="ml-auto relative w-72 max-w-full hidden md:block">
+      {/* Quick stats */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        <StatTile icon={<BookOpen className="size-4" />} label="Active classes" value={totals.classes.toString()} tint="brand" />
+        <StatTile icon={<Users className="size-4" />} label="Total members" value={totals.students.toString()} tint="ink" />
+        <StatTile icon={<TrendingUp className="size-4" />} label="Lifetime earnings" value={`TTD ${totals.earnings.toLocaleString()}`} tint="coral" />
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex flex-col md:flex-row md:items-center gap-3 pb-4 border-b border-border">
+        <div className="inline-flex p-1 rounded-xl bg-muted text-xs font-semibold">
+          {([
+            { id: "all", label: "All" },
+            { id: "group", label: "Group" },
+            { id: "1on1", label: "1-on-1" },
+          ] as { id: KindFilter; label: string }[]).map((f) => (
+            <button key={f.id} onClick={() => setKind(f.id)}
+              className={cn("px-3 py-1.5 rounded-lg capitalize transition", kind === f.id ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink")}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <div className="ml-auto relative w-full md:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search classes"
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by title or subject"
             className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
         </div>
       </div>
 
-      {/* Cards grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {lessons.map((l) => <LessonCard key={l.id} l={l} />)}
-        {lessons.length === 0 && (
-          <div className="col-span-full text-center py-20 text-sm text-muted-foreground">
-            <BookOpen className="size-10 mx-auto text-muted-foreground/50" />
-            <p className="mt-3">No classes yet — create your first class.</p>
+      {/* Grid */}
+      {visibleLessons.length === 0 ? (
+        <div className="rounded-2xl border-2 border-dashed border-border bg-card/50 p-12 text-center">
+          <div className="mx-auto size-12 rounded-2xl bg-brand-soft text-brand-deep grid place-items-center mb-4">
+            <BookOpen className="size-5" />
           </div>
-        )}
+          <h2 className="font-bold text-ink">No classes match</h2>
+          <p className="text-sm text-muted-foreground mt-1">Try a different filter — or create a new class.</p>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {visibleLessons.map((l) => (
+            <LessonCard key={l.id} l={l}
+              onToggleVisibility={() => toggleVisibility(l.id)}
+              onDelete={() => setPendingDelete(l)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Delete confirm */}
+      <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this class?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{pendingDelete?.title}" and all of its stream posts, sessions and roster history will be permanently removed. Enrolled students will be notified. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-coral text-white hover:bg-coral/90">
+              Delete class
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+function StatTile({ icon, label, value, tint }: { icon: React.ReactNode; label: string; value: string; tint: "brand" | "ink" | "coral" }) {
+  const tints = {
+    brand: "bg-brand-soft text-brand-deep",
+    ink: "bg-ink/5 text-ink",
+    coral: "bg-coral/10 text-coral",
+  } as const;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 flex items-center gap-3">
+      <div className={cn("size-9 rounded-xl grid place-items-center shrink-0", tints[tint])}>{icon}</div>
+      <div className="min-w-0">
+        <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground truncate">{label}</div>
+        <div className="text-base sm:text-lg font-bold text-ink truncate tabular-nums">{value}</div>
       </div>
     </div>
   );
 }
 
-function LessonCard({ l }: { l: TutorLesson }) {
+function LessonCard({
+  l, onToggleVisibility, onDelete,
+}: {
+  l: TutorLesson;
+  onToggleVisibility: () => void;
+  onDelete: () => void;
+}) {
   const m = LESSON_KIND_META[l.kind];
+  const navigate = useNavigate();
   const next = new Date(l.startDate);
+  const upcoming = next > new Date();
+  const isPublic = l.visibility !== "private";
+  const goToLesson = () => navigate({ to: "/tutor/lessons/$id", params: { id: l.id } });
+
   return (
-    <Link to="/tutor/lessons/$id" params={{ id: l.id }}
-      className="group rounded-2xl bg-card border border-border overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all">
-      <div className={cn("h-32 bg-gradient-to-br grid place-items-center relative", l.thumbnailGradient ?? "from-brand to-emerald-400")}>
-        <BookOpen className="size-10 text-white/80" />
-        {l.visibility && (
-          <span className="absolute top-3 right-3 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-white/90 text-ink">{l.visibility}</span>
-        )}
-        {l.archived && <span className="absolute top-3 left-3 text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-ink/80 text-white">Archived</span>}
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={goToLesson}
+      onKeyDown={(e) => { if (e.key === "Enter") goToLesson(); }}
+      className="group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-lg hover:-translate-y-0.5 hover:border-brand-deep/30 transition-all cursor-pointer flex flex-col"
+    >
+      {/* Banner */}
+      <div className={cn("relative h-28 bg-gradient-to-br", l.thumbnailGradient ?? "from-brand to-emerald-400")}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_60%)]" />
+        <BookOpen className="absolute bottom-3 left-4 size-7 text-white/85" />
+
+        {/* Top-right action cluster */}
+        <div className="absolute top-3 right-3 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <span className={cn(
+            "inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full backdrop-blur-sm",
+            isPublic ? "bg-white/90 text-ink" : "bg-ink/80 text-white",
+          )}>
+            {isPublic ? <Globe className="size-3" /> : <Lock className="size-3" />}
+            {isPublic ? "Public" : "Private"}
+          </span>
+        </div>
       </div>
-      <div className="p-5">
+
+      {/* Body */}
+      <div className="p-5 flex-1 flex flex-col">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="font-bold text-ink truncate">{l.title}</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">{l.subject} · {l.level}</p>
-          </div>
-          <span className={cn("shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", m.chip)}>{m.short}</span>
-        </div>
-        <div className="mt-4 grid grid-cols-3 divide-x divide-border rounded-xl border border-border overflow-hidden text-center">
-          <div className="py-2.5">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Members</div>
-            <div className="text-base font-bold text-ink tabular-nums">{l.enrollments.length}</div>
-          </div>
-          <div className="py-2.5">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Sessions</div>
-            <div className="text-base font-bold text-ink tabular-nums">{l.totalSessionsRun ?? 0}</div>
-          </div>
-          <div className="py-2.5">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Next</div>
-            <div className="text-base font-bold text-purple-600">{next > new Date() ? next.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}</div>
+            <div className="flex items-center gap-1.5 flex-wrap mb-1">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-brand-deep bg-brand-soft px-1.5 py-0.5 rounded">{l.subject}</span>
+              <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{l.level}</span>
+              <span className={cn("text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded", m.chip)}>{m.short}</span>
+            </div>
+            <h3 className="font-bold text-ink leading-tight truncate">{l.title}</h3>
           </div>
         </div>
-        <div className="mt-3 rounded-xl bg-brand-soft/50 px-3 py-2 flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-wider text-brand-deep font-bold">Earnings</span>
-          <span className="text-sm font-bold text-brand-deep">TTD {(l.earningsTtd ?? 0).toLocaleString()}</span>
+
+        {/* Stat strip */}
+        <div className="mt-4 grid grid-cols-3 divide-x divide-border rounded-xl border border-border overflow-hidden text-center bg-background">
+          <Stat label="Members" value={`${l.enrollments.length}/${l.capacity}`} />
+          <Stat label="Sessions" value={(l.totalSessionsRun ?? 0).toString()} />
+          <Stat
+            label="Next"
+            value={upcoming ? next.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}
+            tint={upcoming ? "brand" : undefined}
+          />
         </div>
-        <div className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <Users className="size-3" /> {l.enrollments.length}/{l.capacity} enrolled · {l.pricingMode === "per-student" ? `TTD ${l.rateTtd}/student` : `TTD ${l.rateTtd}/${l.pricingMode === "per-block" ? "block" : "session"}`}
+
+        {/* Earnings pill */}
+        <div className="mt-3 rounded-xl bg-brand-soft/60 px-3 py-2 flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-wider text-brand-deep font-bold inline-flex items-center gap-1.5">
+            <TrendingUp className="size-3" /> Earnings
+          </span>
+          <span className="text-sm font-bold text-brand-deep tabular-nums">TTD {(l.earningsTtd ?? 0).toLocaleString()}</span>
+        </div>
+
+        {/* Footer actions */}
+        <div className="mt-4 pt-3 border-t border-border flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <Link
+            to="/tutor/lessons/$id" params={{ id: l.id }}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-ink text-white text-xs font-semibold hover:bg-ink/90 transition"
+          >
+            <Eye className="size-3.5" /> Open class
+          </Link>
+          <Link
+            to="/tutor/lessons/$id" params={{ id: l.id }}
+            aria-label="Class settings"
+            className="inline-flex items-center justify-center size-9 rounded-lg border border-border bg-background text-muted-foreground hover:text-ink hover:border-ink transition"
+          >
+            <SettingsIcon className="size-4" />
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                aria-label="More options"
+                className="inline-flex items-center justify-center size-9 rounded-lg border border-border bg-background text-muted-foreground hover:text-ink hover:border-ink transition"
+              >
+                <MoreVertical className="size-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuItem onClick={() => navigate({ to: "/tutor/lessons/$id", params: { id: l.id } })}>
+                <SettingsIcon className="size-4 mr-2" /> Open settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate({ to: "/tutor/lessons/$id", params: { id: l.id } })}>
+                <CalendarIcon className="size-4 mr-2" /> View sessions
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onToggleVisibility}>
+                {isPublic ? <Lock className="size-4 mr-2" /> : <Globe className="size-4 mr-2" />}
+                Switch to {isPublic ? "private" : "public"}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onDelete} className="text-coral focus:text-coral">
+                <Trash2 className="size-4 mr-2" /> Delete class
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-    </Link>
+    </div>
+  );
+}
+
+function Stat({ label, value, tint }: { label: string; value: string; tint?: "brand" }) {
+  return (
+    <div className="py-2.5">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</div>
+      <div className={cn("text-sm font-bold tabular-nums", tint === "brand" ? "text-brand-deep" : "text-ink")}>{value}</div>
+    </div>
   );
 }
