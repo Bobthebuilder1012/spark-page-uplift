@@ -1235,14 +1235,20 @@ function InfoPop({ title, blurb }: { title: string; blurb: string }) {
     </span>
   );
 }
-function Toggle({ label, hint, value, onChange }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ label, hint, value, onChange, disabled }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-xl border border-border p-4">
+    <div className={cn("flex items-start justify-between gap-4 rounded-xl border border-border p-4", disabled && "opacity-70")}>
       <div className="flex-1">
         <div className="text-sm font-semibold text-ink">{label}</div>
         {hint && <div className="text-xs text-muted-foreground mt-0.5">{hint}</div>}
       </div>
-      <button onClick={() => onChange(!value)} className={cn("w-11 h-6 rounded-full p-0.5 transition shrink-0", value ? "bg-brand" : "bg-muted")}>
+      <button
+        type="button"
+        disabled={disabled}
+        title={disabled ? hint : undefined}
+        onClick={() => !disabled && onChange(!value)}
+        className={cn("w-11 h-6 rounded-full p-0.5 transition shrink-0", value ? "bg-brand" : "bg-muted", disabled && "cursor-not-allowed")}
+      >
         <span className={cn("block size-5 rounded-full bg-white shadow transition", value && "translate-x-5")} />
       </button>
     </div>
