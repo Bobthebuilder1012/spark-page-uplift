@@ -29,16 +29,16 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 function Article({ title }: { title: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-white/10">
+    <div className="border-b border-black/10">
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between py-4 text-left transition-colors hover:text-[#32CC6F]"
       >
-        <span className="font-medium text-white">{title}</span>
-        <ChevronDown className={`h-4 w-4 text-white/50 transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className="font-medium text-black">{title}</span>
+        <ChevronDown className={`h-4 w-4 text-black/50 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="pb-6 text-[#A0A0A0] leading-relaxed">
+        <div className="pb-6 text-[#555555] leading-relaxed">
           <p>Placeholder article body. Full content lives here. Multiple paragraphs supported.</p>
           <p className="mt-3">Placeholder follow-up paragraph for additional context.</p>
         </div>
@@ -55,12 +55,12 @@ function HelpPage() {
         <h1 className="text-5xl font-bold leading-tight tracking-tight sm:text-6xl">
           How can we help?
         </h1>
-        <div className="mx-auto mt-10 flex max-w-2xl items-center gap-3 rounded-full border border-white/15 bg-[#0D0D0D] px-5 py-4">
-          <Search className="h-5 w-5 text-white/50" />
+        <div className="mx-auto mt-10 flex max-w-2xl items-center gap-3 rounded-full border border-black/15 bg-[#F5F5F5] px-5 py-4">
+          <Search className="h-5 w-5 text-black/50" />
           <input
             type="search"
             placeholder="Search for answers..."
-            className="w-full bg-transparent text-base text-white placeholder:text-white/40 focus:outline-none"
+            className="w-full bg-transparent text-base text-black placeholder:text-black/40 focus:outline-none"
           />
         </div>
       </section>
@@ -72,13 +72,13 @@ function HelpPage() {
             <a
               key={c}
               href={`#${slug(c)}`}
-              className="group flex items-start justify-between gap-3 rounded-2xl border border-white/10 bg-[#0D0D0D] p-6 transition-colors hover:border-[#32CC6F]"
+              className="group flex items-start justify-between gap-3 rounded-2xl border border-black/10 bg-[#F5F5F5] p-6 transition-colors hover:border-[#32CC6F]"
             >
               <div>
-                <p className="font-semibold text-white">{c}</p>
-                <p className="mt-1 text-sm text-[#A0A0A0]">Placeholder short descriptor.</p>
+                <p className="font-semibold text-black">{c}</p>
+                <p className="mt-1 text-sm text-[#555555]">Placeholder short descriptor.</p>
               </div>
-              <ChevronRight className="h-5 w-5 shrink-0 text-white/40 transition-transform group-hover:translate-x-1 group-hover:text-[#32CC6F]" />
+              <ChevronRight className="h-5 w-5 shrink-0 text-black/40 transition-transform group-hover:translate-x-1 group-hover:text-[#32CC6F]" />
             </a>
           ))}
         </div>
@@ -99,9 +99,9 @@ function HelpPage() {
       </div>
 
       {/* Still need help */}
-      <section className="border-t border-white/5 bg-[#0D0D0D] py-20 text-center">
+      <section className="border-t border-black/5 bg-[#F5F5F5] py-20 text-center">
         <h2 className="text-2xl font-bold sm:text-3xl">Still need help?</h2>
-        <p className="mt-3 text-[#A0A0A0]">Placeholder supporting line.</p>
+        <p className="mt-3 text-[#555555]">Placeholder supporting line.</p>
         <a
           href="mailto:support@myitutor.com"
           className="mt-6 inline-block text-lg font-semibold text-[#32CC6F] hover:underline"

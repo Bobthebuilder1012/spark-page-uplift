@@ -23,7 +23,7 @@ function Steps() {
           </div>
           <div>
             <h3 className="text-xl font-bold sm:text-2xl">Placeholder step title {n}</h3>
-            <p className="mt-2 max-w-2xl text-[#A0A0A0]">
+            <p className="mt-2 max-w-2xl text-[#555555]">
               Placeholder body text describing this step. Concise, action-oriented, no fluff.
             </p>
           </div>
@@ -32,7 +32,7 @@ function Steps() {
 
       <div className="mt-12 max-w-2xl border-l-2 border-[#32CC6F] pl-6">
         <p className="text-xs font-semibold uppercase tracking-wider text-[#32CC6F]">AI Tools</p>
-        <ul className="mt-3 space-y-2 text-[#A0A0A0]">
+        <ul className="mt-3 space-y-2 text-[#555555]">
           <li>Placeholder AI tool one</li>
           <li>Placeholder AI tool two</li>
           <li>Placeholder AI tool three</li>
@@ -49,7 +49,7 @@ function HowItWorksPage() {
         <h1 className="max-w-4xl text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
           Placeholder How It Works headline.
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-[#A0A0A0]">
+        <p className="mt-6 max-w-2xl text-lg text-[#555555]">
           Placeholder subheadline that frames the three audiences below.
         </p>
       </section>
@@ -67,9 +67,9 @@ function HowItWorksPage() {
       {/* Comparison */}
       <section className="mx-auto max-w-6xl px-6 pb-24">
         <h2 className="text-3xl font-bold sm:text-4xl">How we compare</h2>
-        <div className="mt-8 overflow-x-auto rounded-2xl border border-white/10">
+        <div className="mt-8 overflow-x-auto rounded-2xl border border-black/10">
           <table className="w-full text-left text-sm">
-            <thead className="bg-white/5 text-white">
+            <thead className="bg-black/5 text-black">
               <tr>
                 <th className="px-5 py-4 font-semibold">Feature</th>
                 <th className="px-5 py-4 font-semibold">iTutor</th>
@@ -77,14 +77,14 @@ function HowItWorksPage() {
                 <th className="px-5 py-4 font-semibold">Generic platforms</th>
               </tr>
             </thead>
-            <tbody className="text-[#A0A0A0]">
+            <tbody className="text-[#555555]">
               {[0, 1, 2, 3, 4, 5].map((i) => (
-                <tr key={i} className={i % 2 ? "bg-white/[0.02]" : ""}>
-                  <td className="px-5 py-4 text-white">Placeholder feature {i + 1}</td>
+                <tr key={i} className={i % 2 ? "bg-black/[0.02]" : ""}>
+                  <td className="px-5 py-4 text-black">Placeholder feature {i + 1}</td>
                   <td className="px-5 py-4"><Check className="h-5 w-5 text-[#32CC6F]" /></td>
-                  <td className="px-5 py-4"><X className="h-5 w-5 text-white/30" /></td>
+                  <td className="px-5 py-4"><X className="h-5 w-5 text-black/30" /></td>
                   <td className="px-5 py-4">
-                    {i % 2 ? <Check className="h-5 w-5 text-[#32CC6F]" /> : <X className="h-5 w-5 text-white/30" />}
+                    {i % 2 ? <Check className="h-5 w-5 text-[#32CC6F]" /> : <X className="h-5 w-5 text-black/30" />}
                   </td>
                 </tr>
               ))}
@@ -98,7 +98,7 @@ function HowItWorksPage() {
           {["I'm a Student", "I'm a Tutor", "I'm a Parent"].map((l) => (
             <button
               key={l}
-              className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:border-[#32CC6F] hover:text-[#32CC6F]"
+              className="rounded-full border border-black/25 px-7 py-3.5 text-sm font-semibold text-black transition-colors hover:border-[#32CC6F] hover:text-[#32CC6F]"
             >
               {l}
             </button>

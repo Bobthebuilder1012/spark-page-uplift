@@ -8,7 +8,7 @@ export function SectionTabs({ tabs, initialId }: { tabs: TabItem[]; initialId?: 
 
   return (
     <div>
-      <div role="tablist" className="flex flex-wrap gap-2 border-b border-white/10">
+      <div role="tablist" className="flex flex-wrap gap-2 border-b border-black/10">
         {tabs.map((t) => {
           const isActive = t.id === current.id;
           return (
@@ -18,7 +18,7 @@ export function SectionTabs({ tabs, initialId }: { tabs: TabItem[]; initialId?: 
               aria-selected={isActive}
               onClick={() => setActive(t.id)}
               className={`relative px-5 py-3 text-sm font-semibold transition-colors ${
-                isActive ? "text-white" : "text-white/55 hover:text-white/80"
+                isActive ? "text-black" : "text-black/55 hover:text-black/80"
               }`}
             >
               {t.label}
