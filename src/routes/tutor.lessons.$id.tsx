@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import {
   PLACEHOLDER_LESSONS, PLACEHOLDER_SESSIONS, PLACEHOLDER_STREAM_POSTS,
   LESSON_KIND_META, MEMBER_STATUS_META, PAYMENT_STATUS_META, PAYMENT_PERIODS,
-  generatePaymentGrid,
+  generatePaymentGrid, getStudentContact,
   useTutor,
   type TutorLesson, type EnrolledStudent, type MemberStatus, type StreamPost, type PaymentCellStatus,
 } from "@/lib/tutor-store";
@@ -633,14 +633,20 @@ function RosterTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; set
         </div>
       )}
 
+      {(lesson.whatsappLink || lesson.classroomLink) && (
+        <Banner tone="amber" icon={ShieldAlert} title="Heads up: external access" body="When a member leaves or is removed here, also remove them from your WhatsApp group and Google Classroom — iTutor can't do that for you." />
+      )}
+
       {lesson.enrollments.length === 0 ? (
         <EmptyState icon={Users} title="No members yet" body="Invite by link or by user to start filling this class." />
       ) : (
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="rounded-2xl border border-border bg-card overflow-x-auto">
+          <table className="w-full text-sm min-w-[900px]">
             <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="text-left font-bold px-4 py-2">Member</th>
+                <th className="text-left font-bold px-4 py-2">Contact</th>
+                <th className="text-left font-bold px-4 py-2">Parent</th>
                 <th className="text-left font-bold px-4 py-2">Status</th>
                 <th className="text-left font-bold px-4 py-2">Payment</th>
                 <th className="text-left font-bold px-4 py-2">Joined</th>
@@ -703,6 +709,36 @@ function RosterRow({ e, onUpdate }: { e: EnrolledStudent; onUpdate: (p: Partial<
             {overdue && <div className="text-[11px] text-rose-600 font-semibold">Outstanding TTD {e.outstandingTtd ?? 0}</div>}
           </div>
         </div>
+      </td>
+      <td className="px-4 py-3 text-xs">
+        {(() => {
+          const c = getStudentContact(e.studentId);
+          if (!c) return <span className="text-muted-foreground">—</span>;
+          return (
+            <div className="space-y-0.5">
+              {c.email && <a href={`mailto:${c.email}`} className="block text-ink hover:text-brand-deep hover:underline">{c.email}</a>}
+              {c.phone && <a href={`tel:${c.phone}`} className="block text-muted-foreground hover:text-ink">{c.phone}</a>}
+            </div>
+          );
+        })()}
+      </td>
+      <td className="px-4 py-3 text-xs">
+        {(() => {
+          const c = getStudentContact(e.studentId);
+          if (!c?.parentName) return <span className="text-muted-foreground">—</span>;
+          return (
+            <div className="space-y-0.5">
+              <div className="font-semibold text-ink inline-flex items-center gap-1">
+                {c.parentLinked
+                  ? <span title="Linked iTutor parent account" className="text-brand-deep">●</span>
+                  : <span title="No linked parent account" className="text-muted-foreground">○</span>}
+                {c.parentName}
+              </div>
+              {c.parentPhone && <a href={`tel:${c.parentPhone}`} className="block text-muted-foreground hover:text-ink">{c.parentPhone}</a>}
+              {c.parentEmail && <a href={`mailto:${c.parentEmail}`} className="block text-muted-foreground hover:text-ink">{c.parentEmail}</a>}
+            </div>
+          );
+        })()}
       </td>
       <td className="px-4 py-3"><span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border", sm.chip)}>{sm.label}</span></td>
       <td className="px-4 py-3"><Pill tone={e.paymentStatus === "paid" ? "emerald" : e.paymentStatus === "overdue" ? "rose" : "amber"} label={e.paymentStatus} /></td>

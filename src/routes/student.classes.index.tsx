@@ -158,12 +158,12 @@ function ClassCard({ c, saved, onSave }: { c: MarketClass; saved: boolean; onSav
 
       <div className="p-4 space-y-3 flex-1 flex flex-col">
         <div>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-ink leading-tight">{c.title}</h3>
-            <div className="flex items-center gap-1 text-sm shrink-0">
-              <Star className="size-3.5 fill-coral text-coral" />
-              <span className="font-semibold">{c.tutorRating}</span>
-            </div>
+            <span className="inline-flex items-center gap-1 shrink-0 px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold tabular-nums">
+              <Star className="size-3.5 fill-amber-500 text-amber-500" />
+              {c.tutorRating.toFixed(1)}
+            </span>
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
             by {c.tutorName} · <span className="text-ink/60">{c.subject} · {c.level}</span>

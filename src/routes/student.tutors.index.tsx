@@ -267,10 +267,10 @@ function ExplorePage() {
                   </div>
 
                   <div className="flex items-center gap-2 mt-1.5 text-xs">
-                    <span className="inline-flex items-center gap-1 font-semibold text-ink">
-                      <Star className="size-3 fill-coral text-coral" />{t.rating}
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold tabular-nums">
+                      <Star className="size-3 fill-amber-500 text-amber-500" />{t.rating.toFixed(1)}
                     </span>
-                    <span className="text-muted-foreground">({t.reviews})</span>
+                    <span className="text-muted-foreground">({t.reviews} reviews)</span>
                     {t.topRated && <span className="px-1.5 py-0.5 rounded-full bg-brand-soft text-forest text-[10px] font-bold uppercase tracking-wide">Top rated</span>}
                   </div>
 

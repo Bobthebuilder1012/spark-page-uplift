@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PLACEHOLDER_STUDENTS, PLACEHOLDER_LESSONS, PLACEHOLDER_SESSIONS, PLACEHOLDER_TRANSACTIONS, TAG_LIBRARY } from "@/lib/tutor-store";
-import { ArrowLeft, MessageSquare, Calendar, Plus, Pin, Star, Phone, AlertCircle, TrendingUp } from "lucide-react";
+import { ArrowLeft, MessageSquare, Calendar, Plus, Pin, Star, Phone, Mail, AlertCircle, TrendingUp, UserCheck, UserX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tutor/students/$id")({
@@ -41,7 +41,22 @@ function StudentDetail() {
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold text-ink">{s.name}</h1>
           <div className="text-sm text-muted-foreground mt-0.5">{s.level} · {s.primarySubjects.join(" · ")}</div>
-          {s.parentName && <div className="text-xs text-muted-foreground mt-1 inline-flex items-center gap-1.5"><Phone className="size-3" /> Parent: {s.parentName} ({s.parentPhone})</div>}
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            {s.email && <a href={`mailto:${s.email}`} className="inline-flex items-center gap-1 hover:text-ink"><Mail className="size-3" /> {s.email}</a>}
+            {s.phone && <a href={`tel:${s.phone}`} className="inline-flex items-center gap-1 hover:text-ink"><Phone className="size-3" /> {s.phone}</a>}
+          </div>
+          {s.parentName && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+              <span className="inline-flex items-center gap-1 font-semibold text-ink">
+                {s.parentLinked
+                  ? <span title="Parent has linked iTutor account" className="inline-flex items-center gap-0.5 text-brand-deep"><UserCheck className="size-3.5" /> Linked</span>
+                  : <span title="No linked parent account" className="inline-flex items-center gap-0.5 text-muted-foreground"><UserX className="size-3.5" /> Unlinked</span>}
+                Parent: {s.parentName}
+              </span>
+              {s.parentPhone && <a href={`tel:${s.parentPhone}`} className="text-muted-foreground hover:text-ink inline-flex items-center gap-1"><Phone className="size-3" /> {s.parentPhone}</a>}
+              {s.parentEmail && <a href={`mailto:${s.parentEmail}`} className="text-muted-foreground hover:text-ink inline-flex items-center gap-1"><Mail className="size-3" /> {s.parentEmail}</a>}
+            </div>
+          )}
           <div className="mt-3 flex flex-wrap gap-1.5">
             {s.tagIds.map((tid) => { const t = TAG_LIBRARY.find((x) => x.id === tid); return t && <span key={tid} className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full", t.color)}>{t.label}</span>; })}
             <button className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground hover:bg-ink hover:text-white">+ Tag</button>

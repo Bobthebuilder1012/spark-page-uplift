@@ -4,7 +4,7 @@ import { ALL_LESSONS, UPCOMING_EVENTS } from "@/lib/student-store";
 import {
   ArrowLeft, FileText, Video, MessageCircle, Paperclip, Bell, Sparkles, Link as LinkIcon,
   Calendar as CalendarIcon, Users, Pin, ExternalLink, Star, Download, Clock, Check, X,
-  ShieldAlert, Ban, CreditCard,
+  ShieldAlert, Ban, CreditCard, MessageSquare, Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -176,6 +176,7 @@ function Stream({ lesson }: { lesson: (typeof ALL_LESSONS)[number] }) {
   return (
     <div className="grid lg:grid-cols-[1fr,280px] gap-6">
       <div className="space-y-3">
+        <ChannelJoinBanner lesson={lesson} />
         <div className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
           The stream is read-only — your tutor posts here. Use Messages to reply.
         </div>
@@ -228,6 +229,53 @@ function Stream({ lesson }: { lesson: (typeof ALL_LESSONS)[number] }) {
           </ul>
         </div>
       </aside>
+    </div>
+  );
+}
+
+function ChannelJoinBanner({ lesson }: { lesson: (typeof ALL_LESSONS)[number] }) {
+  const wa = lesson.whatsappLink?.trim();
+  const gc = lesson.classroomLink?.trim();
+  if (!wa && !gc) return null;
+  const KEY = `itutor.joinedChannels.${lesson.id}`;
+  const [joined, setJoined] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch { return {}; }
+  });
+  const mark = (k: "wa" | "gc") => {
+    const next = { ...joined, [k]: true };
+    setJoined(next);
+    try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
+  };
+  const allJoined = (!wa || joined.wa) && (!gc || joined.gc);
+  if (allJoined) return null;
+
+  return (
+    <div className="rounded-2xl border border-brand/30 bg-brand-soft/40 p-4">
+      <div className="flex items-start gap-3">
+        <div className="size-10 rounded-xl bg-brand text-white grid place-items-center shrink-0"><Sparkles className="size-5" /></div>
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-ink">Join your class group chat</div>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {lesson.tutor} runs class chatter outside iTutor. Join below so you don't miss reminders, materials, or schedule changes.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {wa && !joined.wa && (
+              <a href={wa} target="_blank" rel="noreferrer" onClick={() => mark("wa")}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#25D366] text-white text-sm font-semibold hover:opacity-90">
+                <MessageSquare className="size-4" /> Join WhatsApp group
+              </a>
+            )}
+            {gc && !joined.gc && (
+              <a href={gc} target="_blank" rel="noreferrer" onClick={() => mark("gc")}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-ink text-white text-sm font-semibold hover:bg-forest">
+                <Globe className="size-4" /> Join Google Classroom
+              </a>
+            )}
+            {wa && joined.wa && <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-deep"><Check className="size-3.5" /> WhatsApp joined</span>}
+            {gc && joined.gc && <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-deep"><Check className="size-3.5" /> Classroom joined</span>}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
