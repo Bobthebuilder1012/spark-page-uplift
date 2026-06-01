@@ -169,6 +169,34 @@ function StudentRow({ s, cols, selected, onToggle }: { s: StudentRecord; cols: s
       )}
       {cols.includes("level") && <td className="px-3 py-3 text-muted-foreground">{s.level}</td>}
       {cols.includes("subjects") && <td className="px-3 py-3 text-muted-foreground text-xs">{s.primarySubjects.join(", ")}</td>}
+      {cols.includes("contact") && (
+        <td className="px-3 py-3 text-xs">
+          <div className="space-y-0.5">
+            {s.email ? (
+              <a href={`mailto:${s.email}`} className="inline-flex items-center gap-1 text-ink hover:text-brand-deep hover:underline"><Mail className="size-3 text-muted-foreground" /> {s.email}</a>
+            ) : <span className="text-muted-foreground">No email</span>}
+            {s.phone ? (
+              <a href={`tel:${s.phone}`} className="block inline-flex items-center gap-1 text-muted-foreground hover:text-ink"><Phone className="size-3" /> {s.phone}</a>
+            ) : null}
+          </div>
+        </td>
+      )}
+      {cols.includes("parent") && (
+        <td className="px-3 py-3 text-xs">
+          {s.parentName ? (
+            <div className="space-y-0.5">
+              <div className="inline-flex items-center gap-1 font-semibold text-ink">
+                {s.parentLinked
+                  ? <span title="Parent has linked iTutor account" className="inline-flex items-center gap-0.5 text-brand-deep"><UserCheck className="size-3" /></span>
+                  : <span title="No linked parent account" className="inline-flex items-center gap-0.5 text-muted-foreground"><UserX className="size-3" /></span>}
+                {s.parentName}
+              </div>
+              {s.parentPhone && <a href={`tel:${s.parentPhone}`} className="block text-muted-foreground hover:text-ink">{s.parentPhone}</a>}
+              {s.parentEmail && <a href={`mailto:${s.parentEmail}`} className="block text-muted-foreground hover:text-ink">{s.parentEmail}</a>}
+            </div>
+          ) : <span className="text-muted-foreground">—</span>}
+        </td>
+      )}
       {cols.includes("tags") && (
         <td className="px-3 py-3">
           <div className="flex flex-wrap gap-1">
