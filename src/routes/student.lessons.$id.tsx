@@ -4,7 +4,7 @@ import { ALL_LESSONS, UPCOMING_EVENTS } from "@/lib/student-store";
 import {
   ArrowLeft, FileText, Video, MessageCircle, Paperclip, Bell, Sparkles, Link as LinkIcon,
   Calendar as CalendarIcon, Users, Pin, ExternalLink, Star, Download, Clock, Check, X,
-  ShieldAlert, Ban, CreditCard,
+  ShieldAlert, Ban, CreditCard, MessageSquare, Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
