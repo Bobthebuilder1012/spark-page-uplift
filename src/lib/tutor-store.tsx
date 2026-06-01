@@ -239,7 +239,9 @@ export const TAG_LIBRARY: StudentTag[] = [
 
 export const PLACEHOLDER_STUDENTS: StudentRecord[] = [
   {
-    id: "u1", name: "Aliyah Mohammed", initials: "AM", level: "Form 5", parentName: "Ramona Mohammed", parentPhone: "+1 868 555 0188",
+    id: "u1", name: "Aliyah Mohammed", initials: "AM", level: "Form 5",
+    email: "aliyah.m@example.tt", phone: "+1 868 555 0121",
+    parentName: "Ramona Mohammed", parentPhone: "+1 868 555 0188", parentEmail: "ramona.m@example.tt", parentLinked: true,
     primarySubjects: ["CSEC Mathematics", "Add. Maths"], tagIds: ["exam", "advanced"], joinedAt: iso(-24*120), lastSessionAt: iso(-26),
     totalSessions: 14, revenueTtd: 2520, paymentReliability: 96, outstandingTtd: 0, active: true,
     enrollmentLessonIds: ["l1", "l2"],
@@ -251,7 +253,9 @@ export const PLACEHOLDER_STUDENTS: StudentRecord[] = [
     performanceHistory: [{date: "Wk 1", score: 62},{date: "Wk 2", score: 68},{date: "Wk 3", score: 71},{date: "Wk 4", score: 78},{date: "Wk 5", score: 82},{date: "Wk 6", score: 85}],
   },
   {
-    id: "u2", name: "Devon Charles", initials: "DC", level: "Form 5", primarySubjects: ["CSEC Physics"],
+    id: "u2", name: "Devon Charles", initials: "DC", level: "Form 5",
+    email: "devon.c@example.tt", phone: "+1 868 555 0134",
+    primarySubjects: ["CSEC Physics"],
     tagIds: ["exam"], joinedAt: iso(-24*60), lastSessionAt: iso(-72),
     totalSessions: 7, revenueTtd: 1260, paymentReliability: 78, outstandingTtd: 360, active: true,
     enrollmentLessonIds: ["l3"],
@@ -260,7 +264,9 @@ export const PLACEHOLDER_STUDENTS: StudentRecord[] = [
     performanceHistory: [{date: "Wk 1", score: 55},{date: "Wk 2", score: 58},{date: "Wk 3", score: 62},{date: "Wk 4", score: 60},{date: "Wk 5", score: 65}],
   },
   {
-    id: "u3", name: "Keshawn Boodoo", initials: "KB", level: "Lower 6", primarySubjects: ["CAPE Pure Maths"],
+    id: "u3", name: "Keshawn Boodoo", initials: "KB", level: "Lower 6",
+    email: "keshawn.b@example.tt", phone: "+1 868 555 0145",
+    primarySubjects: ["CAPE Pure Maths"],
     tagIds: ["advanced", "scholarship"], joinedAt: iso(-24*40), lastSessionAt: iso(-150),
     totalSessions: 4, revenueTtd: 720, paymentReliability: 100, outstandingTtd: 0, active: true,
     enrollmentLessonIds: ["l2"], notes: [],
@@ -268,7 +274,9 @@ export const PLACEHOLDER_STUDENTS: StudentRecord[] = [
     performanceHistory: [{date: "Wk 1", score: 70},{date: "Wk 2", score: 74},{date: "Wk 3", score: 80},{date: "Wk 4", score: 88}],
   },
   {
-    id: "u4", name: "Sade Williams", initials: "SW", level: "Form 4", parentName: "Pat Williams", parentPhone: "+1 868 555 0177",
+    id: "u4", name: "Sade Williams", initials: "SW", level: "Form 4",
+    email: "sade.w@example.tt", phone: "+1 868 555 0152",
+    parentName: "Pat Williams", parentPhone: "+1 868 555 0177", parentEmail: "pat.w@example.tt", parentLinked: false,
     primarySubjects: ["CSEC Add. Maths"], tagIds: ["follow", "parent"], joinedAt: iso(-24*200), lastSessionAt: iso(-24*9),
     totalSessions: 9, revenueTtd: 1620, paymentReliability: 88, outstandingTtd: 180, active: true,
     enrollmentLessonIds: ["l1"], notes: [],
@@ -276,7 +284,9 @@ export const PLACEHOLDER_STUDENTS: StudentRecord[] = [
     performanceHistory: [{date: "Wk 1", score: 50},{date: "Wk 2", score: 55},{date: "Wk 3", score: 58}],
   },
   {
-    id: "u5", name: "Renée Phillip", initials: "RP", level: "Form 5", primarySubjects: ["CSEC English A"],
+    id: "u5", name: "Renée Phillip", initials: "RP", level: "Form 5",
+    email: "renee.p@example.tt", phone: "+1 868 555 0163",
+    primarySubjects: ["CSEC English A"],
     tagIds: [], joinedAt: iso(-24*15), lastSessionAt: iso(-24*15),
     totalSessions: 1, revenueTtd: 180, paymentReliability: 100, outstandingTtd: 0, active: false,
     enrollmentLessonIds: [], notes: [],
