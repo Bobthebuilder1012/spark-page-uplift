@@ -7,6 +7,8 @@ export type Lesson = {
   tutor: string;
   color: string; // tailwind text/bg color class slug
   emoji: string;
+  whatsappLink?: string;
+  classroomLink?: string;
 };
 
 export type CalendarEvent = {
@@ -21,9 +23,9 @@ export type CalendarEvent = {
 };
 
 export const ALL_LESSONS: Lesson[] = [
-  { id: "csec-maths", title: "CSEC Mathematics", subject: "Maths", tutor: "Mr. Ramdeen", color: "coral", emoji: "📐" },
-  { id: "csec-physics", title: "CSEC Physics", subject: "Physics", tutor: "Ms. Singh", color: "sky", emoji: "⚛️" },
-  { id: "english-lit", title: "English Literature", subject: "English", tutor: "Mr. Joseph", color: "lavender", emoji: "📚" },
+  { id: "csec-maths", title: "CSEC Mathematics", subject: "Maths", tutor: "Mr. Ramdeen", color: "coral", emoji: "📐", whatsappLink: "https://chat.whatsapp.com/demo-csec-maths", classroomLink: "https://classroom.google.com/c/demo-csec-maths" },
+  { id: "csec-physics", title: "CSEC Physics", subject: "Physics", tutor: "Ms. Singh", color: "sky", emoji: "⚛️", whatsappLink: "https://chat.whatsapp.com/demo-csec-physics" },
+  { id: "english-lit", title: "English Literature", subject: "English", tutor: "Mr. Joseph", color: "lavender", emoji: "📚", classroomLink: "https://classroom.google.com/c/demo-english-lit" },
   { id: "biology", title: "CSEC Biology", subject: "Biology", tutor: "Ms. Ali", color: "brand", emoji: "🧬" },
   { id: "chemistry", title: "CAPE Chemistry", subject: "Chemistry", tutor: "Mr. Thomas", color: "peach", emoji: "🧪" },
 ];
