@@ -37,7 +37,7 @@ function StudentsPage() {
   const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [sort, setSort] = useState("recent");
   const [showCols, setShowCols] = useState(false);
-  const [visibleCols, setVisibleCols] = useState<string[]>(["name", "level", "subjects", "tags", "lastSession", "sessions", "outstanding"]);
+  const [visibleCols, setVisibleCols] = useState<string[]>(["name", "level", "contact", "parent", "tags", "lastSession", "outstanding"]);
   const [selected, setSelected] = useState<string[]>([]);
 
   const filtered = useMemo(() => {
