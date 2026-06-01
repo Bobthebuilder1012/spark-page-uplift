@@ -633,14 +633,20 @@ function RosterTab({ lesson, setLesson, isOneOnOne }: { lesson: TutorLesson; set
         </div>
       )}
 
+      {(lesson.whatsappLink || lesson.classroomLink) && (
+        <Banner tone="amber" icon={ShieldAlert} title="Heads up: external access" body="When a member leaves or is removed here, also remove them from your WhatsApp group and Google Classroom — iTutor can't do that for you." />
+      )}
+
       {lesson.enrollments.length === 0 ? (
         <EmptyState icon={Users} title="No members yet" body="Invite by link or by user to start filling this class." />
       ) : (
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="rounded-2xl border border-border bg-card overflow-x-auto">
+          <table className="w-full text-sm min-w-[900px]">
             <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="text-left font-bold px-4 py-2">Member</th>
+                <th className="text-left font-bold px-4 py-2">Contact</th>
+                <th className="text-left font-bold px-4 py-2">Parent</th>
                 <th className="text-left font-bold px-4 py-2">Status</th>
                 <th className="text-left font-bold px-4 py-2">Payment</th>
                 <th className="text-left font-bold px-4 py-2">Joined</th>
