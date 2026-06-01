@@ -156,8 +156,12 @@ export type StudentRecord = {
   name: string;
   initials: string;
   level: string;
+  email?: string;
+  phone?: string;
   parentName?: string;
   parentPhone?: string;
+  parentEmail?: string;
+  parentLinked?: boolean; // parent has a linked iTutor account
   primarySubjects: string[];
   tagIds: string[];
   joinedAt: string;
@@ -172,6 +176,11 @@ export type StudentRecord = {
   performance: { metric: string; value: number; max: number }[];
   performanceHistory: { date: string; score: number }[];
 };
+
+// Lookup helper used by class rosters to surface contact info.
+export function getStudentContact(studentId: string) {
+  return PLACEHOLDER_STUDENTS.find((s) => s.id === studentId);
+}
 
 // Wallet
 export type Transaction = {
