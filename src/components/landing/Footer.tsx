@@ -37,15 +37,15 @@ const faqs = [
 function Faq({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-black/10">
+    <div className="border-b border-white/10">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between py-4 text-left transition-colors hover:text-black"
+        className="flex w-full items-center justify-between py-4 text-left transition-colors hover:text-white"
       >
-        <span className="font-medium text-black">{q}</span>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-black/60 transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className="font-medium text-white">{q}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-white/60 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      <div className={`grid overflow-hidden text-sm text-black/60 transition-all duration-300 ${open ? "grid-rows-[1fr] pb-4" : "grid-rows-[0fr]"}`}>
+      <div className={`grid overflow-hidden text-sm text-white/60 transition-all duration-300 ${open ? "grid-rows-[1fr] pb-4" : "grid-rows-[0fr]"}`}>
         <div className="min-h-0">{a}</div>
       </div>
     </div>
@@ -54,16 +54,16 @@ function Faq({ q, a }: { q: string; a: string }) {
 
 export function Footer() {
   return (
-    <footer id="faq" className="bg-[#F5F5F5] text-black">
+    <footer id="faq" className="bg-black text-white">
       <div className="mx-auto max-w-7xl px-6 pb-10 pt-20 sm:px-10">
         <div className="grid gap-12 lg:grid-cols-12">
           {/* Brand column */}
           <div className="lg:col-span-4">
             <Logo size={32} />
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-black/60">
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/60">
               Placeholder description copy for the footer — Claude Code will replace this with the real brand line.
             </p>
-            <a href="mailto:support@myitutor.com" className="mt-6 inline-flex items-center gap-2 text-sm text-black/80 hover:text-black transition-colors">
+            <a href="mailto:support@myitutor.com" className="mt-6 inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors">
               <Mail className="h-4 w-4 text-brand" />
               support@myitutor.com
             </a>
@@ -77,7 +77,7 @@ export function Footer() {
                 <a
                   key={label}
                   href="#"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/5 text-black/80 transition-all hover:bg-brand hover:text-white"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white/80 transition-all hover:bg-brand hover:text-white"
                   aria-label={label}
                 >
                   <Icon className="h-4 w-4" />
@@ -88,11 +88,11 @@ export function Footer() {
 
           {/* Company */}
           <div className="lg:col-span-2">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-black/50">Company</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50">Company</h3>
             <ul className="mt-5 space-y-3 text-sm">
               {company.map((c) => (
                 <li key={c.label}>
-                  <a href={c.href} className="text-black/75 transition-colors hover:text-black">
+                  <a href={c.href} className="text-white/75 transition-colors hover:text-white">
                     {c.label}
                   </a>
                 </li>
@@ -102,11 +102,11 @@ export function Footer() {
 
           {/* Offers */}
           <div className="lg:col-span-2">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-black/50">Programmes</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50">Programmes</h3>
             <ul className="mt-5 space-y-3 text-sm">
               {offers.map((o) => (
                 <li key={o}>
-                  <a href="#" className="text-black/75 transition-colors hover:text-black">
+                  <a href="#" className="text-white/75 transition-colors hover:text-white">
                     {o}
                   </a>
                 </li>
@@ -116,7 +116,7 @@ export function Footer() {
 
           {/* FAQ */}
           <div className="lg:col-span-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-black/50">Frequently Asked</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-white/50">Frequently Asked</h3>
             <div className="mt-3">
               {faqs.map((f) => (
                 <Faq key={f.q} {...f} />
@@ -125,16 +125,15 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t border-black/10 pt-6 text-sm text-black/50 sm:flex-row sm:items-center">
+        <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-sm text-white/50 sm:flex-row sm:items-center">
           <p>© {new Date().getFullYear()} iTutor — Astronova Technologies Ltd. All rights reserved.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-black transition-colors">Privacy</a>
-            <a href="#" className="hover:text-black transition-colors">Terms</a>
-            <a href="#" className="hover:text-black transition-colors">Help</a>
+            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms</a>
+            <a href="#" className="hover:text-white transition-colors">Help</a>
           </div>
         </div>
       </div>
     </footer>
   );
 }
-
