@@ -176,6 +176,7 @@ function Stream({ lesson }: { lesson: (typeof ALL_LESSONS)[number] }) {
   return (
     <div className="grid lg:grid-cols-[1fr,280px] gap-6">
       <div className="space-y-3">
+        <ChannelJoinBanner lesson={lesson} />
         <div className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
           The stream is read-only — your tutor posts here. Use Messages to reply.
         </div>
