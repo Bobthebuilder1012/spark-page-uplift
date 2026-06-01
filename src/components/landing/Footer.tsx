@@ -2,6 +2,15 @@ import { useState } from "react";
 import { ChevronDown, Facebook, Instagram, Linkedin, Mail } from "lucide-react";
 import { Logo } from "./Logo";
 
+// TikTok glyph (not in lucide-react)
+function TikTok({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.42a8.16 8.16 0 0 0 4.77 1.52V6.49a4.85 4.85 0 0 1-1.84.2Z" />
+    </svg>
+  );
+}
+
 const offers = [
   "CSEC Subjects",
   "CAPE Subjects",
@@ -52,19 +61,24 @@ export function Footer() {
           <div className="lg:col-span-4">
             <Logo size={32} />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/60">
-              The Caribbean's home for verified 1-on-1 tutors. Built for SEA, CSEC and CAPE students who want real results.
+              Placeholder description copy for the footer — Claude Code will replace this with the real brand line.
             </p>
             <a href="mailto:support@myitutor.com" className="mt-6 inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors">
               <Mail className="h-4 w-4 text-brand" />
               support@myitutor.com
             </a>
             <div className="mt-6 flex gap-2">
-              {[Facebook, Instagram, Linkedin].map((Icon, i) => (
+              {[
+                { Icon: Facebook, label: "Facebook" },
+                { Icon: Instagram, label: "Instagram" },
+                { Icon: Linkedin, label: "LinkedIn" },
+                { Icon: TikTok, label: "TikTok" },
+              ].map(({ Icon, label }) => (
                 <a
-                  key={i}
+                  key={label}
                   href="#"
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white/80 transition-all hover:bg-brand hover:text-white"
-                  aria-label="Social link"
+                  aria-label={label}
                 >
                   <Icon className="h-4 w-4" />
                 </a>
@@ -112,7 +126,7 @@ export function Footer() {
         </div>
 
         <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-sm text-white/50 sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} iTutor — Nora Digital, Ltd. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} iTutor — Astronova Technologies Ltd. All rights reserved.</p>
           <div className="flex gap-6">
             <a href="#" className="hover:text-white transition-colors">Privacy</a>
             <a href="#" className="hover:text-white transition-colors">Terms</a>
