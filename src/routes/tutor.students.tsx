@@ -13,6 +13,8 @@ const COLUMNS = [
   { id: "name", label: "Name", required: true },
   { id: "level", label: "Level" },
   { id: "subjects", label: "Subjects" },
+  { id: "contact", label: "Contact" },
+  { id: "parent", label: "Parent" },
   { id: "tags", label: "Tags" },
   { id: "lastSession", label: "Last session" },
   { id: "sessions", label: "Sessions" },
