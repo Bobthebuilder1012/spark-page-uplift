@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import {
   PLACEHOLDER_LESSONS, PLACEHOLDER_SESSIONS, PLACEHOLDER_STREAM_POSTS,
   LESSON_KIND_META, MEMBER_STATUS_META, PAYMENT_STATUS_META, PAYMENT_PERIODS,
-  generatePaymentGrid,
+  generatePaymentGrid, getStudentContact,
   useTutor,
   type TutorLesson, type EnrolledStudent, type MemberStatus, type StreamPost, type PaymentCellStatus,
 } from "@/lib/tutor-store";
