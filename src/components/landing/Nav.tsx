@@ -19,21 +19,22 @@ export function Nav() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`fixed inset-x-0 top-0 z-50 transition-all ${
         scrolled
-          ? "bg-white/85 backdrop-blur-xl border-b border-black/10"
-          : "bg-white border-b border-transparent"
+          ? "bg-black/85 backdrop-blur-xl border-b border-white/10"
+          : "bg-black border-b border-transparent"
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 sm:px-8 sm:py-4">
         <a href="#" className="flex items-center" aria-label="itutor home">
           <Logo size={28} />
         </a>
-        <nav className="hidden items-center gap-8 text-sm font-medium text-black/70 md:flex">
-          <a href="#how" className="hover:text-black transition-colors">How it works</a>
-          <a href="#testimonials" className="hover:text-black transition-colors">Reviews</a>
-          <a href="#faq" className="hover:text-black transition-colors">FAQ</a>
+        <nav className="hidden items-center gap-8 text-sm font-medium text-white/70 md:flex">
+          <a href="#how" className="hover:text-white transition-colors">How it works</a>
+          <a href="#testimonials" className="hover:text-white transition-colors">Reviews</a>
+          <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
         </nav>
         <div className="flex items-center gap-2">
-          <Link to="/signup" className="hidden rounded-full px-4 py-2 text-sm font-medium text-black/80 hover:text-black sm:inline-flex">
+          <Link to="/signup" className="hidden rounded-full px-4 py-2 text-sm font-medium text-white/80 hover:text-white sm:inline-flex">
+
             Sign Up
           </Link>
           <Link to="/login" className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-pop transition-transform hover:scale-[1.04] active:scale-95">
