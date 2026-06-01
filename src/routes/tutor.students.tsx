@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PLACEHOLDER_STUDENTS, TAG_LIBRARY, type StudentRecord } from "@/lib/tutor-store";
-import { MessageSquare, Search, LayoutGrid, List as ListIcon, SlidersHorizontal, Tag, Archive, X, ChevronRight, AlertCircle } from "lucide-react";
+import { MessageSquare, Search, LayoutGrid, List as ListIcon, SlidersHorizontal, Tag, Archive, X, ChevronRight, AlertCircle, Mail, Phone, UserCheck, UserX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tutor/students")({
