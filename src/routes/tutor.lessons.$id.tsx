@@ -710,6 +710,36 @@ function RosterRow({ e, onUpdate }: { e: EnrolledStudent; onUpdate: (p: Partial<
           </div>
         </div>
       </td>
+      <td className="px-4 py-3 text-xs">
+        {(() => {
+          const c = getStudentContact(e.studentId);
+          if (!c) return <span className="text-muted-foreground">—</span>;
+          return (
+            <div className="space-y-0.5">
+              {c.email && <a href={`mailto:${c.email}`} className="block text-ink hover:text-brand-deep hover:underline">{c.email}</a>}
+              {c.phone && <a href={`tel:${c.phone}`} className="block text-muted-foreground hover:text-ink">{c.phone}</a>}
+            </div>
+          );
+        })()}
+      </td>
+      <td className="px-4 py-3 text-xs">
+        {(() => {
+          const c = getStudentContact(e.studentId);
+          if (!c?.parentName) return <span className="text-muted-foreground">—</span>;
+          return (
+            <div className="space-y-0.5">
+              <div className="font-semibold text-ink inline-flex items-center gap-1">
+                {c.parentLinked
+                  ? <span title="Linked iTutor parent account" className="text-brand-deep">●</span>
+                  : <span title="No linked parent account" className="text-muted-foreground">○</span>}
+                {c.parentName}
+              </div>
+              {c.parentPhone && <a href={`tel:${c.parentPhone}`} className="block text-muted-foreground hover:text-ink">{c.parentPhone}</a>}
+              {c.parentEmail && <a href={`mailto:${c.parentEmail}`} className="block text-muted-foreground hover:text-ink">{c.parentEmail}</a>}
+            </div>
+          );
+        })()}
+      </td>
       <td className="px-4 py-3"><span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border", sm.chip)}>{sm.label}</span></td>
       <td className="px-4 py-3"><Pill tone={e.paymentStatus === "paid" ? "emerald" : e.paymentStatus === "overdue" ? "rose" : "amber"} label={e.paymentStatus} /></td>
       <td className="px-4 py-3 text-xs text-muted-foreground">{e.joinedAt ? new Date(e.joinedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}</td>
