@@ -24,6 +24,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TutorIndexRouteImport } from './routes/tutor.index'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
 import { Route as ParentIndexRouteImport } from './routes/parent.index'
+import { Route as ClassesIndexRouteImport } from './routes/classes.index'
 import { Route as TutorWalletRouteImport } from './routes/tutor.wallet'
 import { Route as TutorToolsRouteImport } from './routes/tutor.tools'
 import { Route as TutorStudentsRouteImport } from './routes/tutor.students'
@@ -139,6 +140,11 @@ const ParentIndexRoute = ParentIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ParentRoute,
+} as any)
+const ClassesIndexRoute = ClassesIndexRouteImport.update({
+  id: '/classes/',
+  path: '/classes/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TutorWalletRoute = TutorWalletRouteImport.update({
   id: '/wallet',
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/tutor/students': typeof TutorStudentsRouteWithChildren
   '/tutor/tools': typeof TutorToolsRoute
   '/tutor/wallet': typeof TutorWalletRoute
+  '/classes/': typeof ClassesIndexRoute
   '/parent/': typeof ParentIndexRoute
   '/student/': typeof StudentIndexRoute
   '/tutor/': typeof TutorIndexRoute
@@ -434,6 +441,7 @@ export interface FileRoutesByTo {
   '/tutor/students': typeof TutorStudentsRouteWithChildren
   '/tutor/tools': typeof TutorToolsRoute
   '/tutor/wallet': typeof TutorWalletRoute
+  '/classes': typeof ClassesIndexRoute
   '/parent': typeof ParentIndexRoute
   '/student': typeof StudentIndexRoute
   '/tutor': typeof TutorIndexRoute
@@ -492,6 +500,7 @@ export interface FileRoutesById {
   '/tutor/students': typeof TutorStudentsRouteWithChildren
   '/tutor/tools': typeof TutorToolsRoute
   '/tutor/wallet': typeof TutorWalletRoute
+  '/classes/': typeof ClassesIndexRoute
   '/parent/': typeof ParentIndexRoute
   '/student/': typeof StudentIndexRoute
   '/tutor/': typeof TutorIndexRoute
@@ -551,6 +560,7 @@ export interface FileRouteTypes {
     | '/tutor/students'
     | '/tutor/tools'
     | '/tutor/wallet'
+    | '/classes/'
     | '/parent/'
     | '/student/'
     | '/tutor/'
@@ -605,6 +615,7 @@ export interface FileRouteTypes {
     | '/tutor/students'
     | '/tutor/tools'
     | '/tutor/wallet'
+    | '/classes'
     | '/parent'
     | '/student'
     | '/tutor'
@@ -662,6 +673,7 @@ export interface FileRouteTypes {
     | '/tutor/students'
     | '/tutor/tools'
     | '/tutor/wallet'
+    | '/classes/'
     | '/parent/'
     | '/student/'
     | '/tutor/'
@@ -695,6 +707,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TutorRoute: typeof TutorRouteWithChildren
   AdminModerationRoute: typeof AdminModerationRoute
+  ClassesIndexRoute: typeof ClassesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -803,6 +816,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/parent/'
       preLoaderRoute: typeof ParentIndexRouteImport
       parentRoute: typeof ParentRoute
+    }
+    '/classes/': {
+      id: '/classes/'
+      path: '/classes'
+      fullPath: '/classes/'
+      preLoaderRoute: typeof ClassesIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/tutor/wallet': {
       id: '/tutor/wallet'
@@ -1221,6 +1241,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TutorRoute: TutorRouteWithChildren,
   AdminModerationRoute: AdminModerationRoute,
+  ClassesIndexRoute: ClassesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
