@@ -9,7 +9,7 @@ export const Route = createFileRoute("/student/notifications")({
   component: Notifications,
 });
 
-type NotifType = "lesson" | "message" | "assignment" | "review" | "system";
+type NotifType = "lesson" | "message" | "assignment" | "review" | "system" | "class_rating";
 
 type Notif = {
   id: string;
@@ -18,9 +18,12 @@ type Notif = {
   body: string;
   time: string;
   unread: boolean;
+  className?: string;
+  tutorName?: string;
 };
 
 const NOTIFS: Notif[] = [
+  { id: "0", type: "class_rating", title: "How is your CSEC Mathematics class going?", body: "Your monthly payment was confirmed. Take 30 seconds to rate the class.", time: "Just now", unread: true, className: "CSEC Mathematics — Algebra & Functions", tutorName: "Asha Persad" },
   { id: "1", type: "lesson", title: "Lesson starting in 15 minutes", body: "CSEC Maths with Mr. Ramdeen — meeting link is open.", time: "Just now", unread: true },
   { id: "2", type: "message", title: "Mr. Ramdeen sent a message", body: "Great work today! Here are the practice problems for next session.", time: "2h ago", unread: true },
   { id: "3", type: "assignment", title: "New assignment posted", body: "Past Paper 2023 Q1–5 due Friday 6 PM in CSEC Maths.", time: "Yesterday", unread: true },
@@ -35,6 +38,7 @@ const META: Record<NotifType, { icon: any; bg: string; color: string; label: str
   assignment: { icon: FileText, bg: "bg-lavender", color: "text-ink", label: "Assignments" },
   review: { icon: Star, bg: "bg-peach", color: "text-ink", label: "Reviews" },
   system: { icon: Bell, bg: "bg-brand-soft", color: "text-brand-deep", label: "System" },
+  class_rating: { icon: Star, bg: "bg-brand-soft", color: "text-brand-deep", label: "Class Rating" },
 };
 
 const FILTERS = ["All", "Unread", "Lessons", "Messages", "Assignments"] as const;
