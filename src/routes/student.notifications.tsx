@@ -2,13 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Bell, Calendar, MessageCircle, FileText, Star, CheckCheck, Settings as SettingsIcon, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ClassRatingModal } from "@/components/classes/ClassRatingModal";
 
 export const Route = createFileRoute("/student/notifications")({
   head: () => ({ meta: [{ title: "Notifications — iTutor Student" }] }),
   component: Notifications,
 });
 
-type NotifType = "lesson" | "message" | "assignment" | "review" | "system";
+type NotifType = "lesson" | "message" | "assignment" | "review" | "system" | "class_rating";
 
 type Notif = {
   id: string;
@@ -17,9 +18,12 @@ type Notif = {
   body: string;
   time: string;
   unread: boolean;
+  className?: string;
+  tutorName?: string;
 };
 
 const NOTIFS: Notif[] = [
+  { id: "0", type: "class_rating", title: "How is your CSEC Mathematics class going?", body: "Your monthly payment was confirmed. Take 30 seconds to rate the class.", time: "Just now", unread: true, className: "CSEC Mathematics — Algebra & Functions", tutorName: "Asha Persad" },
   { id: "1", type: "lesson", title: "Lesson starting in 15 minutes", body: "CSEC Maths with Mr. Ramdeen — meeting link is open.", time: "Just now", unread: true },
   { id: "2", type: "message", title: "Mr. Ramdeen sent a message", body: "Great work today! Here are the practice problems for next session.", time: "2h ago", unread: true },
   { id: "3", type: "assignment", title: "New assignment posted", body: "Past Paper 2023 Q1–5 due Friday 6 PM in CSEC Maths.", time: "Yesterday", unread: true },
@@ -34,6 +38,7 @@ const META: Record<NotifType, { icon: any; bg: string; color: string; label: str
   assignment: { icon: FileText, bg: "bg-lavender", color: "text-ink", label: "Assignments" },
   review: { icon: Star, bg: "bg-peach", color: "text-ink", label: "Reviews" },
   system: { icon: Bell, bg: "bg-brand-soft", color: "text-brand-deep", label: "System" },
+  class_rating: { icon: Star, bg: "bg-brand-soft", color: "text-brand-deep", label: "Class Rating" },
 };
 
 const FILTERS = ["All", "Unread", "Lessons", "Messages", "Assignments"] as const;
@@ -41,6 +46,7 @@ const FILTERS = ["All", "Unread", "Lessons", "Messages", "Assignments"] as const
 function Notifications() {
   const [filter, setFilter] = useState<typeof FILTERS[number]>("All");
   const [items, setItems] = useState(NOTIFS);
+  const [ratingTarget, setRatingTarget] = useState<Notif | null>(null);
 
   const filtered = items.filter((n) => {
     if (filter === "All") return true;
@@ -119,16 +125,25 @@ function Notifications() {
         {filtered.map((n) => {
           const meta = META[n.type];
           const Icon = meta.icon;
+          const isRating = n.type === "class_rating";
           return (
             <button
               key={n.id}
-              onClick={() => toggleRead(n.id)}
+              onClick={() => {
+                if (isRating) {
+                  setRatingTarget(n);
+                  setItems((p) => p.map((x) => x.id === n.id ? { ...x, unread: false } : x));
+                } else {
+                  toggleRead(n.id);
+                }
+              }}
               className={cn(
                 "w-full text-left flex gap-3 p-4 border-b border-border last:border-b-0 hover:bg-muted/40 transition relative",
-                n.unread && "bg-brand-soft/30"
+                n.unread && !isRating && "bg-brand-soft/30",
+                isRating && "border-l-4 border-l-brand pl-3",
               )}
             >
-              {n.unread && <span className="absolute left-1.5 top-1/2 -translate-y-1/2 size-2 rounded-full bg-coral" />}
+              {n.unread && !isRating && <span className="absolute left-1.5 top-1/2 -translate-y-1/2 size-2 rounded-full bg-coral" />}
               <div className={cn("size-10 rounded-xl grid place-items-center shrink-0", meta.bg)}>
                 <Icon className={cn("size-4", meta.color)} />
               </div>
@@ -138,12 +153,23 @@ function Notifications() {
                   <div className="text-[11px] text-muted-foreground shrink-0">{n.time}</div>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
-                <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-1.5">{meta.label}</div>
+                {isRating ? (
+                  <div className="text-xs font-semibold text-brand-deep mt-1.5">Rate now →</div>
+                ) : (
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-1.5">{meta.label}</div>
+                )}
               </div>
             </button>
           );
         })}
       </div>
+
+      <ClassRatingModal
+        open={!!ratingTarget}
+        onClose={() => setRatingTarget(null)}
+        className={ratingTarget?.className ?? ""}
+        tutorName={ratingTarget?.tutorName ?? ""}
+      />
     </div>
   );
 }
