@@ -125,16 +125,25 @@ function Notifications() {
         {filtered.map((n) => {
           const meta = META[n.type];
           const Icon = meta.icon;
+          const isRating = n.type === "class_rating";
           return (
             <button
               key={n.id}
-              onClick={() => toggleRead(n.id)}
+              onClick={() => {
+                if (isRating) {
+                  setRatingTarget(n);
+                  setItems((p) => p.map((x) => x.id === n.id ? { ...x, unread: false } : x));
+                } else {
+                  toggleRead(n.id);
+                }
+              }}
               className={cn(
                 "w-full text-left flex gap-3 p-4 border-b border-border last:border-b-0 hover:bg-muted/40 transition relative",
-                n.unread && "bg-brand-soft/30"
+                n.unread && !isRating && "bg-brand-soft/30",
+                isRating && "border-l-4 border-l-brand pl-3",
               )}
             >
-              {n.unread && <span className="absolute left-1.5 top-1/2 -translate-y-1/2 size-2 rounded-full bg-coral" />}
+              {n.unread && !isRating && <span className="absolute left-1.5 top-1/2 -translate-y-1/2 size-2 rounded-full bg-coral" />}
               <div className={cn("size-10 rounded-xl grid place-items-center shrink-0", meta.bg)}>
                 <Icon className={cn("size-4", meta.color)} />
               </div>
@@ -144,12 +153,23 @@ function Notifications() {
                   <div className="text-[11px] text-muted-foreground shrink-0">{n.time}</div>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
-                <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-1.5">{meta.label}</div>
+                {isRating ? (
+                  <div className="text-xs font-semibold text-brand-deep mt-1.5">Rate now →</div>
+                ) : (
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mt-1.5">{meta.label}</div>
+                )}
               </div>
             </button>
           );
         })}
       </div>
+
+      <ClassRatingModal
+        open={!!ratingTarget}
+        onClose={() => setRatingTarget(null)}
+        className={ratingTarget?.className ?? ""}
+        tutorName={ratingTarget?.tutorName ?? ""}
+      />
     </div>
   );
 }
