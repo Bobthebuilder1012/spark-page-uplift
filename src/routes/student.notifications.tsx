@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Bell, Calendar, MessageCircle, FileText, Star, CheckCheck, Settings as SettingsIcon, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ClassRatingModal } from "@/components/classes/ClassRatingModal";
 
 export const Route = createFileRoute("/student/notifications")({
   head: () => ({ meta: [{ title: "Notifications — iTutor Student" }] }),
