@@ -50,6 +50,7 @@ import { Route as StudentBookingsRouteImport } from './routes/student.bookings'
 import { Route as ParentSettingsRouteImport } from './routes/parent.settings'
 import { Route as ParentNotificationsRouteImport } from './routes/parent.notifications'
 import { Route as ParentBillingRouteImport } from './routes/parent.billing'
+import { Route as ClassesIdRouteImport } from './routes/classes.$id'
 import { Route as AdminModerationRouteImport } from './routes/admin.moderation'
 import { Route as TutorLessonsIndexRouteImport } from './routes/tutor.lessons.index'
 import { Route as StudentTutorsIndexRouteImport } from './routes/student.tutors.index'
@@ -271,6 +272,11 @@ const ParentBillingRoute = ParentBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => ParentRoute,
 } as any)
+const ClassesIdRoute = ClassesIdRouteImport.update({
+  id: '/classes/$id',
+  path: '/classes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminModerationRoute = AdminModerationRouteImport.update({
   id: '/admin/moderation',
   path: '/admin/moderation',
@@ -361,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/tutor': typeof TutorRouteWithChildren
   '/admin/moderation': typeof AdminModerationRoute
+  '/classes/$id': typeof ClassesIdRoute
   '/parent/billing': typeof ParentBillingRoute
   '/parent/notifications': typeof ParentNotificationsRoute
   '/parent/settings': typeof ParentSettingsRoute
@@ -416,6 +423,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/admin/moderation': typeof AdminModerationRoute
+  '/classes/$id': typeof ClassesIdRoute
   '/parent/billing': typeof ParentBillingRoute
   '/parent/notifications': typeof ParentNotificationsRoute
   '/parent/settings': typeof ParentSettingsRoute
@@ -475,6 +483,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/tutor': typeof TutorRouteWithChildren
   '/admin/moderation': typeof AdminModerationRoute
+  '/classes/$id': typeof ClassesIdRoute
   '/parent/billing': typeof ParentBillingRoute
   '/parent/notifications': typeof ParentNotificationsRoute
   '/parent/settings': typeof ParentSettingsRoute
@@ -535,6 +544,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/tutor'
     | '/admin/moderation'
+    | '/classes/$id'
     | '/parent/billing'
     | '/parent/notifications'
     | '/parent/settings'
@@ -590,6 +600,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/terms'
     | '/admin/moderation'
+    | '/classes/$id'
     | '/parent/billing'
     | '/parent/notifications'
     | '/parent/settings'
@@ -648,6 +659,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/tutor'
     | '/admin/moderation'
+    | '/classes/$id'
     | '/parent/billing'
     | '/parent/notifications'
     | '/parent/settings'
@@ -707,6 +719,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TutorRoute: typeof TutorRouteWithChildren
   AdminModerationRoute: typeof AdminModerationRoute
+  ClassesIdRoute: typeof ClassesIdRoute
   ClassesIndexRoute: typeof ClassesIndexRoute
 }
 
@@ -999,6 +1012,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParentBillingRouteImport
       parentRoute: typeof ParentRoute
     }
+    '/classes/$id': {
+      id: '/classes/$id'
+      path: '/classes/$id'
+      fullPath: '/classes/$id'
+      preLoaderRoute: typeof ClassesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/moderation': {
       id: '/admin/moderation'
       path: '/admin/moderation'
@@ -1241,6 +1261,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TutorRoute: TutorRouteWithChildren,
   AdminModerationRoute: AdminModerationRoute,
+  ClassesIdRoute: ClassesIdRoute,
   ClassesIndexRoute: ClassesIndexRoute,
 }
 export const routeTree = rootRouteImport
