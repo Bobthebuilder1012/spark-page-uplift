@@ -46,6 +46,7 @@ const FILTERS = ["All", "Unread", "Lessons", "Messages", "Assignments"] as const
 function Notifications() {
   const [filter, setFilter] = useState<typeof FILTERS[number]>("All");
   const [items, setItems] = useState(NOTIFS);
+  const [ratingTarget, setRatingTarget] = useState<Notif | null>(null);
 
   const filtered = items.filter((n) => {
     if (filter === "All") return true;
