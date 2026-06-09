@@ -235,7 +235,20 @@ function TutorDetail() {
           <section className="rounded-3xl bg-background border border-border p-6">
             <h2 className="font-semibold text-ink mb-2">About</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
-            <div className="flex flex-wrap gap-2 mt-4">
+            {profile.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {profile.tags.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-trust-bg text-trust-text text-xs font-semibold border border-brand/20"
+                  >
+                    <Sparkles className="size-3" />
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2 mt-3">
               {profile.tags.map((s) => <span key={s} className="px-3 py-1 rounded-full bg-brand-soft text-forest text-xs font-medium">{s}</span>)}
             </div>
           </section>
@@ -255,6 +268,11 @@ function TutorDetail() {
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold text-ink">{q.subject}</div>
                     <div className="text-xs text-muted-foreground">{q.credential}</div>
+                    {q.verified && (
+                      <div className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-brand-deep">
+                        <BadgeCheck className="size-3" /> Credential verified
+                      </div>
+                    )}
                   </div>
                   <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full", q.verified ? "bg-brand-soft text-forest" : "bg-muted text-muted-foreground")}>
                     {q.verified ? "Verified" : "Pending"}
