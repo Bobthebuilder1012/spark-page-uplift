@@ -303,6 +303,10 @@ function TutorDetail() {
             scrollDays={scrollDays}
             onContinue={() => { setBookingStep(3); setShowBooking(true); }}
           />
+          <TrustBox
+            title="Not a match?"
+            body="You still have 2 free tutor trials. Try another tutor at no cost."
+          />
         </aside>
       </div>
 
