@@ -240,57 +240,8 @@ function ExplorePage() {
           <div className="text-sm text-muted-foreground">
             {tutors.length} tutor{tutors.length === 1 ? "" : "s"} for 1:1 sessions {ql && <>matching "<span className="text-ink font-medium">{query}</span>"</>}
           </div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {tutors.map((t) => (
-              <Link
-                key={t.id}
-                to="/student/tutors/$id"
-                params={{ id: t.id }}
-                className="group rounded-2xl bg-background border border-border p-4 hover:shadow-card hover:border-brand/40 transition-all flex gap-3 items-start"
-              >
-                <TutorAvatar name={t.name} hue={t.hue} size={56} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <h3 className="font-semibold text-ink truncate">{t.name}</h3>
-                        {t.verified && <BadgeCheck className="size-4 text-brand-deep shrink-0" />}
-                      </div>
-                      <div className="text-xs text-muted-foreground truncate">{t.subjects.join(" · ")}</div>
-                    </div>
-                    <button
-                      onClick={(e) => { e.preventDefault(); setSaved((s) => { const n = new Set(s); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n; }); }}
-                      className="size-8 rounded-full hover:bg-muted grid place-items-center shrink-0 -mr-1 -mt-1"
-                    >
-                      <Heart className={cn("size-4", saved.has(t.id) ? "fill-coral text-coral" : "text-muted-foreground")} />
-                    </button>
-                  </div>
+          <TutorGrid tutors={tutors} saved={saved} setSaved={setSaved} />
 
-                  <div className="flex items-center gap-2 mt-1.5 text-xs">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold tabular-nums">
-                      <Star className="size-3 fill-amber-500 text-amber-500" />{t.rating.toFixed(1)}
-                    </span>
-                    <span className="text-muted-foreground">({t.reviews} reviews)</span>
-                    {t.topRated && <span className="px-1.5 py-0.5 rounded-full bg-brand-soft text-forest text-[10px] font-bold uppercase tracking-wide">Top rated</span>}
-                  </div>
-
-                  <p className="text-xs text-muted-foreground mt-2 line-clamp-1">{t.blurb}</p>
-
-                  <div className="flex items-center gap-1.5 text-[11px] text-brand-deep font-medium mt-2">
-                    <Clock className="size-3" /> Next: {t.nextSlot}
-                  </div>
-
-                  <div className="flex items-end justify-between mt-3 pt-3 border-t border-border">
-                    <div>
-                      <span className="text-base font-bold text-ink">TT${t.price}</span>
-                      <span className="text-[11px] text-muted-foreground">/hr</span>
-                    </div>
-                    <span className="text-xs font-semibold text-brand-deep group-hover:underline">View profile →</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
         </>
       )}
 
