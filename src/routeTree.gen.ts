@@ -69,6 +69,7 @@ import { Route as StudentLessonsIdRouteImport } from './routes/student.lessons.$
 import { Route as StudentClassesIdRouteImport } from './routes/student.classes.$id'
 import { Route as ParentClassesIdRouteImport } from './routes/parent.classes.$id'
 import { Route as ParentChildrenChildIdRouteImport } from './routes/parent.children.$childId'
+import { Route as StudentTutorsIdBookRouteImport } from './routes/student.tutors.$id.book'
 
 const TutorRoute = TutorRouteImport.update({
   id: '/tutor',
@@ -370,6 +371,11 @@ const ParentChildrenChildIdRoute = ParentChildrenChildIdRouteImport.update({
   path: '/children/$childId',
   getParentRoute: () => ParentRoute,
 } as any)
+const StudentTutorsIdBookRoute = StudentTutorsIdBookRouteImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => StudentTutorsIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -422,7 +428,7 @@ export interface FileRoutesByFullPath {
   '/parent/classes/$id': typeof ParentClassesIdRoute
   '/student/classes/$id': typeof StudentClassesIdRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
-  '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/student/tutors/$id': typeof StudentTutorsIdRouteWithChildren
   '/tutor/lessons/$id': typeof TutorLessonsIdRoute
   '/tutor/lessons/new': typeof TutorLessonsNewRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
@@ -432,6 +438,7 @@ export interface FileRoutesByFullPath {
   '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
   '/tutor/lessons/': typeof TutorLessonsIndexRoute
+  '/student/tutors/$id/book': typeof StudentTutorsIdBookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -481,7 +488,7 @@ export interface FileRoutesByTo {
   '/parent/classes/$id': typeof ParentClassesIdRoute
   '/student/classes/$id': typeof StudentClassesIdRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
-  '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/student/tutors/$id': typeof StudentTutorsIdRouteWithChildren
   '/tutor/lessons/$id': typeof TutorLessonsIdRoute
   '/tutor/lessons/new': typeof TutorLessonsNewRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
@@ -491,6 +498,7 @@ export interface FileRoutesByTo {
   '/student/lessons': typeof StudentLessonsIndexRoute
   '/student/tutors': typeof StudentTutorsIndexRoute
   '/tutor/lessons': typeof TutorLessonsIndexRoute
+  '/student/tutors/$id/book': typeof StudentTutorsIdBookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -544,7 +552,7 @@ export interface FileRoutesById {
   '/parent/classes/$id': typeof ParentClassesIdRoute
   '/student/classes/$id': typeof StudentClassesIdRoute
   '/student/lessons/$id': typeof StudentLessonsIdRoute
-  '/student/tutors/$id': typeof StudentTutorsIdRoute
+  '/student/tutors/$id': typeof StudentTutorsIdRouteWithChildren
   '/tutor/lessons/$id': typeof TutorLessonsIdRoute
   '/tutor/lessons/new': typeof TutorLessonsNewRoute
   '/tutor/students/$id': typeof TutorStudentsIdRoute
@@ -554,6 +562,7 @@ export interface FileRoutesById {
   '/student/lessons/': typeof StudentLessonsIndexRoute
   '/student/tutors/': typeof StudentTutorsIndexRoute
   '/tutor/lessons/': typeof TutorLessonsIndexRoute
+  '/student/tutors/$id/book': typeof StudentTutorsIdBookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -618,6 +627,7 @@ export interface FileRouteTypes {
     | '/student/lessons/'
     | '/student/tutors/'
     | '/tutor/lessons/'
+    | '/student/tutors/$id/book'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -677,6 +687,7 @@ export interface FileRouteTypes {
     | '/student/lessons'
     | '/student/tutors'
     | '/tutor/lessons'
+    | '/student/tutors/$id/book'
   id:
     | '__root__'
     | '/'
@@ -739,6 +750,7 @@ export interface FileRouteTypes {
     | '/student/lessons/'
     | '/student/tutors/'
     | '/tutor/lessons/'
+    | '/student/tutors/$id/book'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1184,6 +1196,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParentChildrenChildIdRouteImport
       parentRoute: typeof ParentRoute
     }
+    '/student/tutors/$id/book': {
+      id: '/student/tutors/$id/book'
+      path: '/book'
+      fullPath: '/student/tutors/$id/book'
+      preLoaderRoute: typeof StudentTutorsIdBookRouteImport
+      parentRoute: typeof StudentTutorsIdRoute
+    }
   }
 }
 
@@ -1212,6 +1231,18 @@ const ParentRouteChildren: ParentRouteChildren = {
 const ParentRouteWithChildren =
   ParentRoute._addFileChildren(ParentRouteChildren)
 
+interface StudentTutorsIdRouteChildren {
+  StudentTutorsIdBookRoute: typeof StudentTutorsIdBookRoute
+}
+
+const StudentTutorsIdRouteChildren: StudentTutorsIdRouteChildren = {
+  StudentTutorsIdBookRoute: StudentTutorsIdBookRoute,
+}
+
+const StudentTutorsIdRouteWithChildren = StudentTutorsIdRoute._addFileChildren(
+  StudentTutorsIdRouteChildren,
+)
+
 interface StudentRouteChildren {
   StudentBookingsRoute: typeof StudentBookingsRoute
   StudentCalendarRoute: typeof StudentCalendarRoute
@@ -1222,7 +1253,7 @@ interface StudentRouteChildren {
   StudentIndexRoute: typeof StudentIndexRoute
   StudentClassesIdRoute: typeof StudentClassesIdRoute
   StudentLessonsIdRoute: typeof StudentLessonsIdRoute
-  StudentTutorsIdRoute: typeof StudentTutorsIdRoute
+  StudentTutorsIdRoute: typeof StudentTutorsIdRouteWithChildren
   StudentClassesIndexRoute: typeof StudentClassesIndexRoute
   StudentLessonsIndexRoute: typeof StudentLessonsIndexRoute
   StudentTutorsIndexRoute: typeof StudentTutorsIndexRoute
@@ -1238,7 +1269,7 @@ const StudentRouteChildren: StudentRouteChildren = {
   StudentIndexRoute: StudentIndexRoute,
   StudentClassesIdRoute: StudentClassesIdRoute,
   StudentLessonsIdRoute: StudentLessonsIdRoute,
-  StudentTutorsIdRoute: StudentTutorsIdRoute,
+  StudentTutorsIdRoute: StudentTutorsIdRouteWithChildren,
   StudentClassesIndexRoute: StudentClassesIndexRoute,
   StudentLessonsIndexRoute: StudentLessonsIndexRoute,
   StudentTutorsIndexRoute: StudentTutorsIndexRoute,
