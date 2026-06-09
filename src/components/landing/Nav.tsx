@@ -23,6 +23,7 @@ export function Nav() {
           : "bg-black border-b border-transparent"
       }`}
     >
+      <div className="h-[3px] w-full bg-brand" aria-hidden />
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 sm:px-8 sm:py-4">
         <a href="#" className="flex items-center" aria-label="itutor home">
           <Logo size={28} />
