@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { BookTrialModal } from "@/components/booking/BookTrialModal";
 
-export const Route = createFileRoute("/student/tutors/$id")({
+export const Route = createFileRoute("/student/tutors/$id/")({
   head: () => ({ meta: [{ title: "Tutor profile — iTutor" }] }),
   component: TutorDetail,
 });
