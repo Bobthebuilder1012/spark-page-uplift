@@ -155,8 +155,8 @@ export function Hero() {
             <div className="flex items-center gap-3">
               <Avatar name="Mr Ramdeen" hue={30} size={36} />
               <div>
-                <p className="text-sm font-semibold text-ink">Mr. Ramdeen</p>
-                <p className="text-xs text-muted-foreground">Parent · Chaguanas</p>
+                <p className="text-sm font-semibold text-ink whitespace-pre-line">MR{"\n\n"}Mr. Ramdeen</p>
+                <p className="text-xs text-muted-foreground whitespace-pre-line">{"\n"}Parent · Chaguanas</p>
               </div>
             </div>
             <div className="mt-2 flex">
@@ -164,8 +164,8 @@ export function Hero() {
                 <Star key={i} className="h-3 w-3 fill-coral text-coral" />
               ))}
             </div>
-            <p className="mt-1.5 text-xs leading-relaxed text-ink/80">
-              My daughter pulled a 3 on her mocks. Weeks after joining iTutor, she came home with a Grade I — straight A's.
+            <p className="mt-1.5 text-xs leading-relaxed text-ink/80 whitespace-pre-line">
+              {"\n"}My daughter pulled a 3 on her mocks. Weeks after joining iTutor, she came home with a Grade I — straight A's.
             </p>
           </motion.div>
 
