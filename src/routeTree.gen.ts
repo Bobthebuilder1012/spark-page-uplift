@@ -15,6 +15,7 @@ import { Route as StudentRouteImport } from './routes/student'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ParentRouteImport } from './routes/parent'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HelpRouteImport } from './routes/help'
@@ -52,6 +53,7 @@ import { Route as ParentNotificationsRouteImport } from './routes/parent.notific
 import { Route as ParentBillingRouteImport } from './routes/parent.billing'
 import { Route as ClassesManageRouteImport } from './routes/classes.manage'
 import { Route as ClassesIdRouteImport } from './routes/classes.$id'
+import { Route as CheckoutTutorIdRouteImport } from './routes/checkout.$tutorId'
 import { Route as AdminModerationRouteImport } from './routes/admin.moderation'
 import { Route as TutorLessonsIndexRouteImport } from './routes/tutor.lessons.index'
 import { Route as StudentTutorsIndexRouteImport } from './routes/student.tutors.index'
@@ -96,6 +98,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const ParentRoute = ParentRouteImport.update({
   id: '/parent',
   path: '/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -283,6 +290,11 @@ const ClassesIdRoute = ClassesIdRouteImport.update({
   path: '/classes/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutTutorIdRoute = CheckoutTutorIdRouteImport.update({
+  id: '/checkout/$tutorId',
+  path: '/checkout/$tutorId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminModerationRoute = AdminModerationRouteImport.update({
   id: '/admin/moderation',
   path: '/admin/moderation',
@@ -366,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/help': typeof HelpRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/parent': typeof ParentRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
@@ -373,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/tutor': typeof TutorRouteWithChildren
   '/admin/moderation': typeof AdminModerationRoute
+  '/checkout/$tutorId': typeof CheckoutTutorIdRoute
   '/classes/$id': typeof ClassesIdRoute
   '/classes/manage': typeof ClassesManageRoute
   '/parent/billing': typeof ParentBillingRoute
@@ -426,10 +440,12 @@ export interface FileRoutesByTo {
   '/help': typeof HelpRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/admin/moderation': typeof AdminModerationRoute
+  '/checkout/$tutorId': typeof CheckoutTutorIdRoute
   '/classes/$id': typeof ClassesIdRoute
   '/classes/manage': typeof ClassesManageRoute
   '/parent/billing': typeof ParentBillingRoute
@@ -484,6 +500,7 @@ export interface FileRoutesById {
   '/help': typeof HelpRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/parent': typeof ParentRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
@@ -491,6 +508,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/tutor': typeof TutorRouteWithChildren
   '/admin/moderation': typeof AdminModerationRoute
+  '/checkout/$tutorId': typeof CheckoutTutorIdRoute
   '/classes/$id': typeof ClassesIdRoute
   '/classes/manage': typeof ClassesManageRoute
   '/parent/billing': typeof ParentBillingRoute
@@ -546,6 +564,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/how-it-works'
     | '/login'
+    | '/onboarding'
     | '/parent'
     | '/privacy'
     | '/signup'
@@ -553,6 +572,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/tutor'
     | '/admin/moderation'
+    | '/checkout/$tutorId'
     | '/classes/$id'
     | '/classes/manage'
     | '/parent/billing'
@@ -606,10 +626,12 @@ export interface FileRouteTypes {
     | '/help'
     | '/how-it-works'
     | '/login'
+    | '/onboarding'
     | '/privacy'
     | '/signup'
     | '/terms'
     | '/admin/moderation'
+    | '/checkout/$tutorId'
     | '/classes/$id'
     | '/classes/manage'
     | '/parent/billing'
@@ -663,6 +685,7 @@ export interface FileRouteTypes {
     | '/help'
     | '/how-it-works'
     | '/login'
+    | '/onboarding'
     | '/parent'
     | '/privacy'
     | '/signup'
@@ -670,6 +693,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/tutor'
     | '/admin/moderation'
+    | '/checkout/$tutorId'
     | '/classes/$id'
     | '/classes/manage'
     | '/parent/billing'
@@ -724,6 +748,7 @@ export interface RootRouteChildren {
   HelpRoute: typeof HelpRoute
   HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
   ParentRoute: typeof ParentRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRoute
@@ -731,6 +756,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TutorRoute: typeof TutorRouteWithChildren
   AdminModerationRoute: typeof AdminModerationRoute
+  CheckoutTutorIdRoute: typeof CheckoutTutorIdRoute
   ClassesIdRoute: typeof ClassesIdRoute
   ClassesManageRoute: typeof ClassesManageRoute
   ClassesIndexRoute: typeof ClassesIndexRoute
@@ -778,6 +804,13 @@ declare module '@tanstack/react-router' {
       path: '/parent'
       fullPath: '/parent'
       preLoaderRoute: typeof ParentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1039,6 +1072,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/$tutorId': {
+      id: '/checkout/$tutorId'
+      path: '/checkout/$tutorId'
+      fullPath: '/checkout/$tutorId'
+      preLoaderRoute: typeof CheckoutTutorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/moderation': {
       id: '/admin/moderation'
       path: '/admin/moderation'
@@ -1274,6 +1314,7 @@ const rootRouteChildren: RootRouteChildren = {
   HelpRoute: HelpRoute,
   HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
   ParentRoute: ParentRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRoute,
@@ -1281,6 +1322,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TutorRoute: TutorRouteWithChildren,
   AdminModerationRoute: AdminModerationRoute,
+  CheckoutTutorIdRoute: CheckoutTutorIdRoute,
   ClassesIdRoute: ClassesIdRoute,
   ClassesManageRoute: ClassesManageRoute,
   ClassesIndexRoute: ClassesIndexRoute,

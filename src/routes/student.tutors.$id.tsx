@@ -1,570 +1,286 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Star, Heart, MapPin, Award, Clock, MessageSquare, Video, BadgeCheck, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown, ShieldCheck, FileText, X, Check, Sparkles, TrendingUp } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, Star, Heart, Share2, MessageSquare, Play, BadgeCheck, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { TrustBox } from "@/components/ui/TrustBox";
-import { RatingBreakdown } from "@/components/ratings/RatingBreakdown";
-import { CommentSection } from "@/components/ratings/CommentSection";
-import { getSummary } from "@/lib/ratings-store";
+import { BookTrialModal } from "@/components/booking/BookTrialModal";
 
 export const Route = createFileRoute("/student/tutors/$id")({
-  head: () => ({ meta: [{ title: "Tutor profile — iTutor Student" }] }),
+  head: () => ({ meta: [{ title: "Tutor profile — iTutor" }] }),
   component: TutorDetail,
 });
 
-type Qualification = { subject: string; credential: string; verified: boolean };
-
 type Profile = {
   name: string;
+  flag: string;
+  country: string;
   subjects: string[];
-  level: string;
-  price: number;
+  speaks: { lang: string; level: string }[];
+  pricePerLesson: number;
   hue: number;
+  rating: number;
+  reviews: number;
+  lessons: number;
+  headline: string;
   bio: string;
-  tags: string[];
-  qualifications: Qualification[];
-  bannerFrom: string;
-  bannerTo: string;
+  highlights: { label: string; color: string }[];
+  ratings: { reassurance: number; clarity: number; progress: number; preparation: number };
+  ratingsCount: number;
+  recentBookings: number;
 };
 
-const TUTOR_PROFILES: Record<string, Profile> = {
+const PROFILES: Record<string, Profile> = {
   ramdeen: {
-    name: "Mr. Ramdeen", subjects: ["Mathematics", "Physics"], level: "CSEC & CAPE", price: 120, hue: 145,
-    bio: "Caribbean-trained tutor with a decade of experience preparing students for SEA, CSEC and CAPE exams. Friendly, patient, and focused on real understanding.",
-    tags: ["Functions", "Calculus", "Trigonometry", "Mechanics", "Statistics"],
-    qualifications: [
-      { subject: "Mathematics", credential: "CAPE Pure Maths · Grade I", verified: true },
-      { subject: "Mathematics", credential: "BSc Maths, UWI", verified: true },
-      { subject: "Physics", credential: "CAPE Physics · Grade I", verified: true },
-    ],
-    bannerFrom: "from-brand", bannerTo: "to-brand-deep",
+    name: "Mr. Ramdeen", flag: "🇹🇹", country: "Trinidad", subjects: ["Mathematics", "Physics"],
+    speaks: [{ lang: "English", level: "Native" }, { lang: "Hindi", level: "B1" }],
+    pricePerLesson: 35, hue: 145, rating: 4.9, reviews: 128, lessons: 14207,
+    headline: "Expert Maths & Physics Tutor with 10+ Years' Experience | CSEC, CAPE, GCSE, A-Level, IB HL/SL, Cambridge, & More",
+    bio: "Welcome to my profile! I'm Ramdeen, your dedicated guide to academic excellence and personal growth. With 10 years of experience, I am here to empower you to master Maths and Physics with confidence.",
+    highlights: [{ label: "Patient", color: "bg-coral-soft text-ink" }, { label: "Structured", color: "bg-lavender text-ink" }, { label: "Goal-Focused", color: "bg-sky text-ink" }],
+    ratings: { reassurance: 4.9, clarity: 4.8, progress: 4.8, preparation: 4.8 }, ratingsCount: 71, recentBookings: 13,
   },
-  singh: { name: "Ms. Singh", subjects: ["Physics"], level: "CSEC & CAPE", price: 110, hue: 220, bio: "UWI Physics graduate. I make complex concepts intuitive through real-world examples.", tags: ["Mechanics", "Waves", "Electricity"], qualifications: [{ subject: "Physics", credential: "BSc Physics, UWI", verified: true }], bannerFrom: "from-sky", bannerTo: "to-lavender" },
-  joseph: { name: "Mr. Joseph", subjects: ["English Literature", "English"], level: "CSEC", price: 100, hue: 20, bio: "Literature tutor with a love for Caribbean writers.", tags: ["Essays", "Poetry", "Drama"], qualifications: [{ subject: "English Literature", credential: "CSEC English Lit · Grade I", verified: true }, { subject: "English", credential: "BA English, UWI", verified: true }], bannerFrom: "from-coral", bannerTo: "to-peach" },
-  ali: { name: "Ms. Ali", subjects: ["Biology"], level: "CSEC & CAPE", price: 115, hue: 280, bio: "Biology educator focused on diagrams, mnemonics, and exam technique.", tags: ["Cells", "Genetics", "Ecology"], qualifications: [{ subject: "Biology", credential: "Verification pending", verified: false }], bannerFrom: "from-lavender", bannerTo: "to-brand-soft" },
-  thomas: { name: "Mr. Thomas", subjects: ["Chemistry"], level: "CAPE", price: 130, hue: 165, bio: "PhD Chemistry tutor specialising in CAPE preparation.", tags: ["Organic", "Inorganic", "Physical"], qualifications: [{ subject: "Chemistry", credential: "PhD Chemistry, UWI", verified: true }], bannerFrom: "from-brand-deep", bannerTo: "to-forest" },
-  khan: { name: "Ms. Khan", subjects: ["SEA Prep", "Mathematics", "English"], level: "Primary", price: 80, hue: 35, bio: "Patient SEA preparation tutor. Building strong fundamentals one step at a time.", tags: ["Maths", "English", "Comprehension"], qualifications: [{ subject: "SEA Prep", credential: "B.Ed Primary Education", verified: true }, { subject: "Mathematics", credential: "CSEC Maths · Grade I", verified: true }], bannerFrom: "from-peach", bannerTo: "to-coral" },
+  singh: { name: "Ms. Singh", flag: "🇹🇹", country: "Trinidad", subjects: ["Physics"], speaks: [{ lang: "English", level: "Native" }], pricePerLesson: 28, hue: 220, rating: 4.85, reviews: 94, lessons: 3120, headline: "UWI Physics graduate — making complex concepts intuitive for CSEC & CAPE", bio: "I make complex Physics concepts intuitive through real-world examples.", highlights: [{ label: "Clear", color: "bg-sky text-ink" }, { label: "Practical", color: "bg-coral-soft text-ink" }], ratings: { reassurance: 4.8, clarity: 4.9, progress: 4.8, preparation: 4.8 }, ratingsCount: 54, recentBookings: 9 },
+  joseph: { name: "Mr. Joseph", flag: "🇹🇹", country: "Trinidad", subjects: ["English Literature", "English"], speaks: [{ lang: "English", level: "Native" }], pricePerLesson: 30, hue: 20, rating: 4.95, reviews: 211, lessons: 8400, headline: "CSEC English & Literature — essays, poetry, drama with Grade I track record", bio: "Literature tutor with a love for Caribbean writers.", highlights: [{ label: "Encouraging", color: "bg-coral-soft text-ink" }, { label: "Creative", color: "bg-lavender text-ink" }], ratings: { reassurance: 4.95, clarity: 4.9, progress: 4.9, preparation: 4.9 }, ratingsCount: 142, recentBookings: 16 },
+  ali: { name: "Ms. Ali", flag: "🇹🇹", country: "Trinidad", subjects: ["Biology"], speaks: [{ lang: "English", level: "Native" }], pricePerLesson: 30, hue: 280, rating: 4.7, reviews: 67, lessons: 1800, headline: "Biology — diagrams, mnemonics, exam strategy for CSEC & CAPE", bio: "I help students remember biology through visuals and stories.", highlights: [{ label: "Visual", color: "bg-lavender text-ink" }, { label: "Patient", color: "bg-coral-soft text-ink" }], ratings: { reassurance: 4.7, clarity: 4.7, progress: 4.6, preparation: 4.7 }, ratingsCount: 36, recentBookings: 5 },
+  thomas: { name: "Mr. Thomas", flag: "🇹🇹", country: "Trinidad", subjects: ["Chemistry"], speaks: [{ lang: "English", level: "Native" }, { lang: "French", level: "B2" }], pricePerLesson: 32, hue: 165, rating: 4.9, reviews: 142, lessons: 5600, headline: "PhD Chemistry — Organic, Inorganic & Physical for CAPE", bio: "PhD-trained chemist focusing on CAPE preparation and deep conceptual understanding.", highlights: [{ label: "Expert", color: "bg-sky text-ink" }, { label: "Rigorous", color: "bg-coral-soft text-ink" }], ratings: { reassurance: 4.9, clarity: 4.9, progress: 4.9, preparation: 4.9 }, ratingsCount: 95, recentBookings: 11 },
+  khan: { name: "Ms. Khan", flag: "🇹🇹", country: "Trinidad", subjects: ["SEA Prep", "Mathematics", "English"], speaks: [{ lang: "English", level: "Native" }], pricePerLesson: 22, hue: 35, rating: 4.92, reviews: 178, lessons: 9100, headline: "SEA Prep specialist — building strong fundamentals with patience and care", bio: "Patient SEA preparation tutor with 7 years of experience.", highlights: [{ label: "Patient", color: "bg-coral-soft text-ink" }, { label: "Caring", color: "bg-lavender text-ink" }], ratings: { reassurance: 4.95, clarity: 4.9, progress: 4.92, preparation: 4.9 }, ratingsCount: 118, recentBookings: 19 },
 };
 
-// Availability is defined as continuous windows (decimal hours, 24h).
-// e.g. { start: 15.5, end: 21 } means tutor is free 3:30 PM – 9:00 PM.
-// Booked sub-ranges are subtracted so they never appear as available start times.
-type Window = { start: number; end: number };
-type DayAvail = { date: Date; windows: Window[]; booked: Window[] };
-
-const SLOT_STEP = 0.5; // 30-minute granularity
-const DURATION_OPTIONS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
-
-function fmtTime(h: number) {
-  const hr = Math.floor(h);
-  const m = Math.round((h - hr) * 60);
-  const ampm = hr >= 12 ? "PM" : "AM";
-  const h12 = ((hr + 11) % 12) + 1;
-  return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
-
-// Subtract booked windows from availability windows.
-function effectiveWindows(windows: Window[], booked: Window[]): Window[] {
-  let out = windows.map((w) => ({ ...w }));
-  for (const b of booked) {
-    const next: Window[] = [];
-    for (const w of out) {
-      if (b.end <= w.start || b.start >= w.end) { next.push(w); continue; }
-      if (b.start > w.start) next.push({ start: w.start, end: b.start });
-      if (b.end < w.end) next.push({ start: b.end, end: w.end });
-    }
-    out = next;
-  }
-  return out.filter((w) => w.end - w.start >= SLOT_STEP);
-}
-
-// Compute valid start times for a given duration across all effective windows.
-function startsForDuration(eff: Window[], duration: number): number[] {
-  const out: number[] = [];
-  for (const w of eff) {
-    let t = Math.ceil(w.start / SLOT_STEP) * SLOT_STEP;
-    while (t + duration <= w.end + 1e-9) {
-      out.push(Number(t.toFixed(2)));
-      t += SLOT_STEP;
-    }
-  }
-  return out;
-}
-
-function buildSlots(days = 30): DayAvail[] {
-  const out: DayAvail[] = [];
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  for (let i = 0; i < days; i++) {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    const dow = d.getDay();
-    let windows: Window[] = [];
-    if (dow === 0) windows = [{ start: 15.5, end: 18 }];
-    else if (dow === 6) windows = [{ start: 10, end: 13 }, { start: 14, end: 18 }];
-    else if (i % 7 === 4) windows = [];
-    else windows = [{ start: 15.5, end: 21 }];
-    // Demo: simulate some prior bookings that reduce availability.
-    const booked: Window[] = [];
-    if (dow === 2) booked.push({ start: 17, end: 18 });
-    if (dow === 4) booked.push({ start: 16, end: 17.5 });
-    out.push({ date: d, windows, booked });
-  }
-  return out;
-}
-
-type Review = { id: string; name: string; hue: number; quote: string; rating: number; verifiedStudent: boolean; up: number; down: number };
-const SEED_REVIEWS: Review[] = [
-  { id: "r1", name: "Kareem H.", hue: 220, quote: "Made calculus actually click for me. Went from D to A in three months.", rating: 5, verifiedStudent: true, up: 24, down: 1 },
-  { id: "r2", name: "Anika P.", hue: 20, quote: "Patient and explains things in different ways until you really understand.", rating: 5, verifiedStudent: true, up: 18, down: 0 },
-  { id: "r3", name: "Devan R.", hue: 145, quote: "Good notes shared after every session.", rating: 4, verifiedStudent: true, up: 9, down: 2 },
+const REVIEWS = [
+  { id: "r1", name: "Ayza S.", hue: 280, date: "June 7, 2026", rating: 5, text: "I have been studying physics with this tutor for almost a year now and I can say that they are amazing! Helps me achieve top grades by explaining the…" },
+  { id: "r2", name: "Remya", hue: 165, date: "June 6, 2026", rating: 5, text: "She is very friendly and would explain the topics according to the student's pace of choice." },
+  { id: "r3", name: "Abraham", hue: 220, date: "June 5, 2026", rating: 5, text: "It is my pleasure to recognize this tutor for her outstanding service. She consistently demonstrates exceptional dedication, patience, and genuine care f…" },
+  { id: "r4", name: "Tricia N.", hue: 35, date: "June 2, 2026", rating: 5, text: "Great teacher explains really well. She's patient and knowledgable. I really enjoy the lessons with her." },
 ];
 
-function Avatar({ name, hue, size = 40, ring = false }: { name: string; hue: number; size?: number; ring?: boolean }) {
+function Avatar({ name, hue, size = 40, square = false }: { name: string; hue: number; size?: number; square?: boolean }) {
   const initials = name.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
   return (
     <div
-      className={cn("inline-flex items-center justify-center rounded-full font-bold shrink-0", ring && "ring-4 ring-background")}
+      className={cn("grid place-items-center font-bold shrink-0", square ? "rounded-xl" : "rounded-full")}
       style={{ width: size, height: size, background: `oklch(0.85 0.1 ${hue})`, color: `oklch(0.28 0.07 ${hue})`, fontSize: size * 0.36 }}
-      aria-hidden
     >
       {initials}
     </div>
   );
 }
 
+function Stars({ n }: { n: number }) {
+  return (
+    <div className="inline-flex">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star key={i} className={cn("size-3.5", i < n ? "fill-ink text-ink" : "text-muted-foreground/30")} />
+      ))}
+    </div>
+  );
+}
+
+function RatingTile({ icon: Icon, label, value }: { icon: any; label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-border bg-background p-4">
+      <div className="flex items-start justify-between">
+        <div className="text-2xl font-bold text-ink">{value.toFixed(1)}</div>
+        <Icon className="size-5 text-ink" />
+      </div>
+      <div className="mt-2 text-sm font-semibold text-ink">{label}</div>
+    </div>
+  );
+}
+
 function TutorDetail() {
   const { id } = Route.useParams();
-  const profile = TUTOR_PROFILES[id] ?? TUTOR_PROFILES.ramdeen;
-  const slots = useMemo(() => buildSlots(30), []);
-  const [pickedSubject, setPickedSubject] = useState(profile.subjects[0]);
-  const [pickedDay, setPickedDay] = useState(0);
-  const [pickedTime, setPickedTime] = useState<number | null>(null);
-  const [duration, setDuration] = useState<number>(1);
+  const p = PROFILES[id] ?? PROFILES.ramdeen;
   const [saved, setSaved] = useState(false);
-  const [showBooking, setShowBooking] = useState(false);
-  const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
-  const [reviews, setReviews] = useState<Review[]>(SEED_REVIEWS);
-  const [voted, setVoted] = useState<Record<string, "up" | "down" | undefined>>({});
-  const dayScrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollDays = (dir: 1 | -1) => dayScrollRef.current?.scrollBy({ left: dir * 280, behavior: "smooth" });
-
-  const vote = (id: string, dir: "up" | "down") => {
-    setReviews((rs) => rs.map((r) => {
-      if (r.id !== id) return r;
-      const prev = voted[id];
-      let up = r.up, down = r.down;
-      if (prev === "up") up--;
-      if (prev === "down") down--;
-      if (prev !== dir) { if (dir === "up") up++; else down++; }
-      return { ...r, up, down };
-    }));
-    setVoted((v) => ({ ...v, [id]: v[id] === dir ? undefined : dir }));
-  };
-
-  const openBooking = () => { setBookingStep(1); setPickedTime(null); setShowBooking(true); };
+  const [booking, setBooking] = useState(false);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-5">
       <Link to="/student/tutors" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-ink">
         <ArrowLeft className="size-4" /> Back to tutors
       </Link>
 
-      {/* LinkedIn-style header: banner with pfp overlapping bottom; name BELOW the banner */}
-      <div className="rounded-3xl bg-background border border-border overflow-hidden">
-        <div className={cn("h-32 sm:h-40 bg-gradient-to-br", profile.bannerFrom, profile.bannerTo)} />
-        <div className="px-5 sm:px-6 pb-6">
-          <div className="flex items-end justify-between -mt-12 sm:-mt-14">
-            <Avatar name={profile.name} hue={profile.hue} size={96} ring />
-            <div className="flex gap-2 mb-1">
-              <button onClick={() => setSaved((s) => !s)} className="size-10 rounded-full border border-border bg-background grid place-items-center hover:bg-muted">
+      <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+        {/* LEFT */}
+        <div className="space-y-6">
+          {/* Video intro */}
+          <div
+            className="relative aspect-video rounded-3xl overflow-hidden border border-border"
+            style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${p.hue}), oklch(0.6 0.15 ${p.hue}))` }}
+          >
+            <div className="absolute inset-0 grid place-items-center">
+              <button className="size-20 rounded-full bg-brand text-white grid place-items-center shadow-pop hover:scale-105 transition">
+                <Play className="size-9 fill-white ml-1" />
+              </button>
+            </div>
+            <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/40 backdrop-blur text-white px-3 py-1.5 rounded-full text-xs font-semibold">
+              <Play className="size-3 fill-white" /> iTutor introduction
+            </div>
+          </div>
+
+          {/* Identity */}
+          <div className="flex items-start gap-4">
+            <Avatar name={p.name} hue={p.hue} size={88} square />
+            <div className="flex-1 min-w-0 pt-1">
+              <h1 className="text-4xl font-bold text-ink leading-tight">{p.name}</h1>
+              <div className="mt-1 text-sm text-muted-foreground inline-flex items-center gap-2">
+                {p.subjects[0].toLowerCase()} tutor <span>·</span> From {p.country} <span className="text-base">{p.flag}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Headline */}
+          <p className="text-base text-ink leading-relaxed">{p.headline}</p>
+
+          {/* Highlights */}
+          <div>
+            <div className="inline-flex items-center gap-2 text-sm font-bold text-ink">
+              <Sparkles className="size-4 text-brand-deep" /> {p.name.split(" ").pop()}'s highlights
+            </div>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {p.highlights.map((h) => (
+                <span key={h.label} className={cn("rounded-lg px-3 py-1.5 text-sm font-semibold", h.color)}>
+                  {h.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* More about me */}
+          <section>
+            <h2 className="text-2xl font-bold text-ink">More about me</h2>
+            <p className="mt-3 text-sm text-ink leading-relaxed">
+              {p.bio} <button className="font-semibold underline">…read more</button>
+            </p>
+            <div className="mt-4 space-y-2 text-sm">
+              <div className="inline-flex items-center gap-2 text-ink">
+                <GraduationCap className="size-4 text-muted-foreground" />
+                I teach: <span className="underline font-semibold">{p.subjects.join(", ")}</span>
+              </div>
+              <div className="inline-flex items-center gap-2 text-ink">
+                <Languages className="size-4 text-muted-foreground" />
+                I speak: {p.speaks.map((s) => `${s.lang} (${s.level})`).join(" · ")}
+              </div>
+            </div>
+          </section>
+
+          {/* Lesson rating */}
+          <section>
+            <h2 className="text-2xl font-bold text-ink">Lesson rating</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+              <RatingTile icon={Smile} label="Reassurance" value={p.ratings.reassurance} />
+              <RatingTile icon={MessageCircle} label="Clarity" value={p.ratings.clarity} />
+              <RatingTile icon={Target} label="Progress" value={p.ratings.progress} />
+              <RatingTile icon={Pencil} label="Preparation" value={p.ratings.preparation} />
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground">Based on {p.ratingsCount} anonymous student reviews</div>
+          </section>
+
+          {/* What my students say */}
+          <section>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-ink">What my students say</h2>
+              <Info className="size-4 text-muted-foreground" />
+            </div>
+            <div className="flex items-center gap-3 mt-3">
+              <span className="text-4xl font-bold text-ink">{p.rating.toFixed(1)}</span>
+              <div className="size-10 rounded-full bg-amber-400 grid place-items-center">
+                <Star className="size-5 fill-ink text-ink" />
+              </div>
+            </div>
+            <div className="text-sm text-muted-foreground mt-1">Based on {p.reviews} student reviews</div>
+
+            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 mt-6">
+              {REVIEWS.map((r) => (
+                <div key={r.id}>
+                  <div className="flex items-center gap-3">
+                    <Avatar name={r.name} hue={r.hue} size={40} square />
+                    <div>
+                      <div className="font-bold text-ink text-sm">{r.name}</div>
+                      <div className="text-xs text-muted-foreground">{r.date}</div>
+                    </div>
+                  </div>
+                  <div className="mt-3"><Stars n={r.rating} /></div>
+                  <p className="text-sm text-ink mt-2 leading-relaxed">{r.text}</p>
+                  <button className="mt-2 text-sm font-semibold text-ink underline">Show more</button>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* RIGHT — sticky booking card */}
+        <aside className="lg:sticky lg:top-20 self-start">
+          <div className="rounded-3xl border border-border bg-background p-5 shadow-card space-y-4">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-ink">${p.pricePerLesson}</span>
+              <span className="text-sm text-muted-foreground">50-min lesson</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pb-2 border-b border-border">
+              <div>
+                <div className="inline-flex items-center gap-1">
+                  <Star className="size-4 fill-ink text-ink" />
+                  <span className="text-xl font-bold text-ink">{p.rating.toFixed(1)}</span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">{p.reviews} reviews</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-ink">{p.lessons.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">lessons</div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setBooking(true)}
+              className="w-full py-3.5 rounded-2xl bg-brand text-white font-bold hover:bg-brand-deep transition"
+            >
+              Book trial lesson
+            </button>
+
+            <div className="grid grid-cols-3 gap-2">
+              <button className="rounded-xl border border-border py-3 grid place-items-center hover:bg-muted">
+                <MessageSquare className="size-4" />
+              </button>
+              <button onClick={() => setSaved((s) => !s)} className="rounded-xl border border-border py-3 grid place-items-center hover:bg-muted">
                 <Heart className={cn("size-4", saved && "fill-coral text-coral")} />
               </button>
-              <button className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-border font-semibold text-sm hover:bg-muted">
-                <MessageSquare className="size-4" /> Message
+              <button className="rounded-xl border border-border py-3 grid place-items-center hover:bg-muted">
+                <Share2 className="size-4" />
               </button>
             </div>
-          </div>
 
-          <div className="mt-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold text-ink">{profile.name}</h1>
-              {profile.qualifications.some((q) => q.verified) && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-deep bg-brand-soft px-2 py-0.5 rounded-full">
-                  <BadgeCheck className="size-3.5" /> Verified
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground mt-0.5">{profile.subjects.join(" · ")} · {profile.level}</p>
-            <div className="flex items-center gap-3 mt-2 text-sm flex-wrap">
-              <span className="inline-flex items-center gap-1">
-                <Star className="size-4 fill-coral text-coral" />
-                <span className="font-semibold">4.9</span>
-                <span className="text-muted-foreground">(128 reviews)</span>
-              </span>
-              <span className="text-muted-foreground">•</span>
-              <span className="inline-flex items-center gap-1 text-muted-foreground"><MapPin className="size-3.5" />Trinidad</span>
-              <span className="text-muted-foreground">•</span>
-              <span className="inline-flex items-center gap-1 text-muted-foreground"><Clock className="size-3.5" />Replies &lt; 1 hr</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-5">
-            {[
-              { icon: Award, label: "Experience", value: "10+ years" },
-              { icon: Clock, label: "Hourly rate", value: `TT$${profile.price}` },
-              { icon: ShieldCheck, label: "Verified", value: `${profile.qualifications.filter((q) => q.verified).length} subj.` },
-            ].map((m) => (
-              <div key={m.label} className="rounded-2xl bg-mint p-3">
-                <m.icon className="size-4 text-brand-deep mb-1" />
-                <div className="text-[11px] text-muted-foreground">{m.label}</div>
-                <div className="text-sm font-semibold text-ink">{m.value}</div>
+            <div className="rounded-2xl bg-trust-bg p-4">
+              <div className="inline-flex items-center gap-2 font-bold text-trust-text">
+                <ShieldCheck className="size-4 fill-ink text-trust-bg" />
+                Not a match?
               </div>
-            ))}
-          </div>
+              <div className="text-sm text-trust-text mt-1">You still have 2 free tutor trials.</div>
+            </div>
 
-          <button onClick={openBooking} className="mt-4 w-full sm:hidden inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-brand text-white font-semibold">
-            <Video className="size-4" /> Book a 1:1 — TT${profile.price}/hr
-          </button>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <section className="rounded-3xl bg-background border border-border p-6">
-            <h2 className="font-semibold text-ink mb-2">About</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
-            {profile.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-4">
-                {profile.tags.slice(0, 3).map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-trust-bg text-trust-text text-xs font-semibold border border-brand/20"
-                  >
-                    <Sparkles className="size-3" />
-                    {tag}
-                  </span>
-                ))}
+            <div className="flex items-start gap-2 text-sm">
+              <TrendingUp className="size-4 text-ink mt-0.5 shrink-0" />
+              <div>
+                <div className="font-bold text-ink">Very popular</div>
+                <div className="text-muted-foreground text-xs">{p.recentBookings} lesson bookings in the last 2 days.</div>
               </div>
-            )}
-            <div className="flex flex-wrap gap-2 mt-3">
-              {profile.tags.map((s) => <span key={s} className="px-3 py-1 rounded-full bg-brand-soft text-forest text-xs font-medium">{s}</span>)}
             </div>
-          </section>
-
-          {/* Verified qualifications */}
-          <section className="rounded-3xl bg-background border border-border p-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-ink inline-flex items-center gap-2"><ShieldCheck className="size-4 text-brand-deep" /> Qualifications</h2>
-              <span className="text-xs text-muted-foreground">Reviewed by iTutor</span>
-            </div>
-            <ul className="divide-y divide-border">
-              {profile.qualifications.map((q, i) => (
-                <li key={i} className="py-3 flex items-start gap-3">
-                  <div className={cn("size-9 rounded-full grid place-items-center shrink-0", q.verified ? "bg-brand-soft text-brand-deep" : "bg-muted text-muted-foreground")}>
-                    {q.verified ? <BadgeCheck className="size-5" /> : <FileText className="size-4" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-ink">{q.subject}</div>
-                    <div className="text-xs text-muted-foreground">{q.credential}</div>
-                    {q.verified && (
-                      <div className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-brand-deep">
-                        <BadgeCheck className="size-3" /> Credential verified
-                      </div>
-                    )}
-                  </div>
-                  <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full", q.verified ? "bg-brand-soft text-forest" : "bg-muted text-muted-foreground")}>
-                    {q.verified ? "Verified" : "Pending"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* Ratings & Reviews — shared system */}
-          <RatingsAndComments tutorId={id} tutorName={profile.name} />
-        </div>
-
-        {/* Desktop booking sidebar */}
-        <aside className="hidden lg:block lg:sticky lg:top-20 self-start space-y-4">
-          <BookingCard
-            profile={profile}
-            slots={slots}
-            pickedSubject={pickedSubject}
-            setPickedSubject={setPickedSubject}
-            pickedDay={pickedDay}
-            setPickedDay={setPickedDay}
-            pickedTime={pickedTime}
-            setPickedTime={setPickedTime}
-            duration={duration}
-            setDuration={setDuration}
-            scrollRef={dayScrollRef}
-            scrollDays={scrollDays}
-            onContinue={() => { setBookingStep(3); setShowBooking(true); }}
-          />
-          <TrustBox
-            title="Not a match?"
-            body="You still have 2 free tutor trials. Try another tutor at no cost."
-          />
+          </div>
         </aside>
       </div>
 
-      {/* Booking sheet — mobile bottom sheet, desktop centered modal (confirmation step) */}
-      {showBooking && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowBooking(false)}>
-          <div className="bg-background w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-background border-b border-border px-5 py-3 flex items-center justify-between">
-              <div>
-                <div className="text-xs text-muted-foreground">Step {bookingStep} of 3</div>
-                <div className="font-semibold text-ink text-sm">
-                  {bookingStep === 1 ? "Pick a subject" : bookingStep === 2 ? "Pick a date & time" : "Confirm booking"}
-                </div>
-              </div>
-              <button onClick={() => setShowBooking(false)} className="size-8 rounded-full hover:bg-muted grid place-items-center"><X className="size-4" /></button>
-            </div>
-            <div className="p-5">
-              {bookingStep === 1 && (
-                <div className="space-y-2">
-                  {profile.subjects.map((s) => {
-                    const q = profile.qualifications.find((x) => x.subject === s);
-                    return (
-                      <button key={s} onClick={() => { setPickedSubject(s); setBookingStep(2); }} className={cn("w-full text-left px-4 py-3 rounded-2xl border flex items-center justify-between transition", pickedSubject === s ? "border-brand bg-brand-soft" : "border-border hover:border-brand/50")}>
-                        <div>
-                          <div className="font-semibold text-ink text-sm">{s}</div>
-                          {q && <div className="text-xs text-muted-foreground">{q.credential}</div>}
-                        </div>
-                        {q?.verified && <BadgeCheck className="size-5 text-brand-deep" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {bookingStep === 2 && (
-                <BookingCard
-                  profile={profile}
-                  slots={slots}
-                  pickedSubject={pickedSubject}
-                  setPickedSubject={setPickedSubject}
-                  pickedDay={pickedDay}
-                  setPickedDay={setPickedDay}
-                  pickedTime={pickedTime}
-                  setPickedTime={setPickedTime}
-                  duration={duration}
-                  setDuration={setDuration}
-                  scrollRef={dayScrollRef}
-                  scrollDays={scrollDays}
-                  embedded
-                  onContinue={() => setBookingStep(3)}
-                />
-              )}
-              {bookingStep === 3 && (
-                <div className="space-y-4">
-                  <div className="rounded-2xl border border-border p-4 space-y-2 text-sm">
-                    <Row label="Tutor" value={profile.name} />
-                    <Row label="Subject" value={pickedSubject} />
-                    <Row label="Date" value={slots[pickedDay].date.toLocaleDateString("en", { weekday: "long", month: "short", day: "numeric" })} />
-                    <Row label="Time" value={pickedTime != null ? `${fmtTime(pickedTime)} – ${fmtTime(pickedTime + duration)}` : "—"} />
-                    <Row label="Duration" value={`${duration} hr${duration === 1 ? "" : "s"}`} />
-                    <div className="border-t border-border pt-2 flex justify-between font-semibold text-ink">
-                      <span>Total</span><span>TT${(profile.price * duration).toFixed(0)}</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">By confirming, you agree to rate this tutor after the class. Free cancellation up to 24h before.</p>
-                  <button className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-brand text-white font-semibold hover:bg-brand-deep">
-                    <Check className="size-4" /> Confirm & pay
-                  </button>
-                  <TrustBox title="Money-back guarantee" body="Full refund if you cancel up to 24h before your session — no questions asked." />
-                </div>
-              )}
-            </div>
-            {bookingStep > 1 && bookingStep < 3 && (
-              <div className="sticky bottom-0 bg-background border-t border-border p-4">
-                <button onClick={() => setBookingStep((s) => (s - 1) as 1 | 2 | 3)} className="text-sm text-muted-foreground">← Back</button>
-              </div>
-            )}
-          </div>
+      {/* Mobile floating book bar */}
+      <div className="lg:hidden fixed bottom-16 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between">
+        <div>
+          <div className="text-lg font-bold text-ink">${p.pricePerLesson}</div>
+          <div className="text-[11px] text-muted-foreground">50-min lesson</div>
         </div>
+        <button onClick={() => setBooking(true)} className="rounded-full bg-brand text-white px-6 py-2.5 text-sm font-bold">
+          Book trial lesson
+        </button>
+      </div>
+
+      {booking && (
+        <BookTrialModal open onClose={() => setBooking(false)} tutorId={id} tutorName={p.name} tutorHue={p.hue} />
       )}
     </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between"><span className="text-muted-foreground">{label}</span><span className="text-ink font-medium">{value}</span></div>;
-}
-
-function BookingCard({
-  profile, slots, pickedSubject, setPickedSubject, pickedDay, setPickedDay, pickedTime, setPickedTime, duration, setDuration, scrollRef, scrollDays, embedded, onContinue,
-}: {
-  profile: Profile;
-  slots: DayAvail[];
-  pickedSubject: string;
-  setPickedSubject: (s: string) => void;
-  pickedDay: number;
-  setPickedDay: (n: number) => void;
-  pickedTime: number | null;
-  setPickedTime: (n: number | null) => void;
-  duration: number;
-  setDuration: (n: number) => void;
-  scrollRef: React.RefObject<HTMLDivElement | null>;
-  scrollDays: (dir: 1 | -1) => void;
-  embedded?: boolean;
-  onContinue?: () => void;
-}) {
-  const day = slots[pickedDay];
-  const eff = effectiveWindows(day.windows, day.booked);
-  const longestWindow = eff.reduce((m, w) => Math.max(m, w.end - w.start), 0);
-  const starts = startsForDuration(eff, duration);
-  // If the currently picked time no longer fits (e.g. duration changed), clear it.
-  useEffect(() => {
-    if (pickedTime != null && !starts.includes(pickedTime)) setPickedTime(null);
-  }, [pickedTime, starts, setPickedTime]);
-
-  return (
-    <div className={cn(!embedded && "rounded-3xl bg-background border border-border p-5")}>
-      {!embedded && (
-        <>
-          <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-brand-deep bg-brand-soft px-2.5 py-1 rounded-full mb-3">
-            <TrendingUp className="size-3" />
-            Very popular — booked 13 times in the last 2 days
-          </div>
-          <div className="flex items-baseline justify-between mb-4">
-            <div><span className="text-2xl font-bold text-ink">TT${profile.price}</span><span className="text-sm text-muted-foreground">/hr</span></div>
-            <span className="text-xs px-2 py-1 rounded-full bg-brand-soft text-forest font-semibold">Available</span>
-          </div>
-        </>
-      )}
-
-      {profile.subjects.length > 1 && (
-        <>
-          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Subject</div>
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {profile.subjects.map((s) => (
-              <button key={s} onClick={() => setPickedSubject(s)} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border transition", pickedSubject === s ? "bg-ink text-white border-ink" : "border-border text-muted-foreground hover:border-ink/30")}>
-                {s}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pick a day</div>
-        <div className="flex gap-1">
-          <button onClick={() => scrollDays(-1)} className="size-6 grid place-items-center rounded-full hover:bg-muted"><ChevronLeft className="size-3.5" /></button>
-          <button onClick={() => scrollDays(1)} className="size-6 grid place-items-center rounded-full hover:bg-muted"><ChevronRight className="size-3.5" /></button>
-        </div>
-      </div>
-      <div ref={scrollRef} className="flex gap-1.5 overflow-x-auto pb-2 mb-4 -mx-1 px-1 snap-x">
-        {slots.map((s, i) => {
-          const dayEff = effectiveWindows(s.windows, s.booked);
-          const disabled = dayEff.length === 0;
-          return (
-            <button key={i} onClick={() => { setPickedDay(i); setPickedTime(null); }} disabled={disabled} className={cn("shrink-0 w-14 py-2 rounded-xl text-center transition snap-start disabled:opacity-30 border", pickedDay === i ? "bg-ink text-white border-ink" : "border-border hover:border-brand")}>
-              <div className="text-[10px] font-semibold opacity-70 uppercase">{i === 0 ? "Today" : s.date.toLocaleDateString("en", { weekday: "short" })}</div>
-              <div className="text-base font-bold mt-0.5">{s.date.getDate()}</div>
-              <div className="text-[9px] opacity-60 mt-0.5">{s.date.toLocaleDateString("en", { month: "short" })}</div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Duration selector */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Duration</div>
-        <div className="text-[11px] text-muted-foreground">TT${(profile.price * duration).toFixed(0)} total</div>
-      </div>
-      <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 -mx-1 px-1">
-        {DURATION_OPTIONS.map((d) => {
-          const fits = longestWindow >= d - 1e-9;
-          const active = duration === d;
-          return (
-            <button
-              key={d}
-              onClick={() => setDuration(d)}
-              disabled={!fits}
-              className={cn(
-                "shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition disabled:opacity-30",
-                active ? "bg-ink text-white border-ink" : "border-border text-muted-foreground hover:border-ink/30",
-              )}
-            >
-              {d % 1 === 0 ? `${d} hr` : `${d} hrs`}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Available start times — segmented per continuous window */}
-      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-        Start times · {day.date.toLocaleDateString("en", { weekday: "long", month: "short", day: "numeric" })}
-      </div>
-      {eff.length === 0 ? (
-        <div className="text-sm text-muted-foreground py-4 text-center mb-4">Tutor isn't available on this day</div>
-      ) : starts.length === 0 ? (
-        <div className="text-sm text-muted-foreground py-4 text-center mb-4">
-          No {duration} hr slot fits. Try a shorter duration or another day.
-        </div>
-      ) : (
-        <div className="space-y-3 mb-4">
-          {eff.map((w, wi) => {
-            const winStarts = starts.filter((t) => t >= w.start - 1e-9 && t + duration <= w.end + 1e-9);
-            if (winStarts.length === 0) return null;
-            return (
-              <div key={wi}>
-                <div className="text-[10px] text-muted-foreground mb-1.5">
-                  Free {fmtTime(w.start)} – {fmtTime(w.end)}
-                </div>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {winStarts.map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setPickedTime(t)}
-                      className={cn(
-                        "py-2 rounded-xl text-xs font-medium border transition",
-                        pickedTime === t ? "bg-brand text-white border-brand" : "border-border hover:border-brand hover:bg-trust-bg",
-                      )}
-                    >
-                      {fmtTime(t)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <button
-        disabled={pickedTime == null}
-        onClick={onContinue}
-        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-brand text-white font-semibold hover:bg-brand-deep transition disabled:opacity-50"
-      >
-        <Video className="size-4" />
-        {pickedTime != null
-          ? (embedded
-              ? `Continue · ${fmtTime(pickedTime)} – ${fmtTime(pickedTime + duration)}`
-              : `Book ${duration} hr${duration === 1 ? "" : "s"} · ${fmtTime(pickedTime)}`)
-          : "Select a start time"}
-      </button>
-      {!embedded && <p className="text-xs text-muted-foreground text-center mt-3">Free cancellation up to 24h before</p>}
-    </div>
-  );
-}
-
-function RatingsAndComments({ tutorId, tutorName }: { tutorId: string; tutorName: string }) {
-  const [filter, setFilter] = useState<number | null>(null);
-  const summary = getSummary("tutor", tutorId);
-  return (
-    <>
-      <RatingBreakdown summary={summary} activeFilter={filter} onFilterChange={setFilter} />
-      <CommentSection
-        targetKind="tutor"
-        targetId={tutorId}
-        targetName={tutorName}
-        activeRatingFilter={filter}
-        onClearFilter={() => setFilter(null)}
-      />
-    </>
   );
 }
