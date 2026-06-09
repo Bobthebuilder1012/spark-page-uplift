@@ -224,12 +224,14 @@ function ShellInner() {
                   to={item.to}
                   title={collapsed ? item.label : undefined}
                   className={cn(
-                    "flex items-center rounded-xl text-sm font-medium transition-colors group",
+                    "flex items-center rounded-xl text-sm font-medium transition-colors group relative",
                     collapsed ? "justify-center p-2" : "gap-3 px-2 py-2",
-                    active ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    active
+                      ? "bg-brand-soft text-brand-deep border-l-2 border-brand"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   )}
                 >
-                  <span className={cn("size-8 rounded-lg grid place-items-center transition", item.tint, !active && "opacity-80 group-hover:opacity-100")}>
+                  <span className={cn("size-8 rounded-lg grid place-items-center transition", active ? "bg-brand text-white" : cn(item.tint, "opacity-80 group-hover:opacity-100"))}>
                     <Icon className="size-4" />
                   </span>
                   {!collapsed && <span>{item.label}</span>}
