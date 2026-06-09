@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { BookTrialModal } from "@/components/booking/BookTrialModal";
 
-export const Route = createFileRoute("/student/tutors/$id")({
+export const Route = createFileRoute("/student/tutors/$id/")({
   head: () => ({ meta: [{ title: "Tutor profile — iTutor" }] }),
   component: TutorDetail,
 });
@@ -235,6 +235,13 @@ function TutorDetail() {
             >
               Book trial lesson
             </button>
+            <Link
+              to="/student/tutors/$id/book"
+              params={{ id }}
+              className="block w-full text-center py-3 rounded-2xl border border-border text-ink font-semibold hover:bg-muted transition"
+            >
+              View full schedule
+            </Link>
 
             <div className="grid grid-cols-3 gap-2">
               <button className="rounded-xl border border-border py-3 grid place-items-center hover:bg-muted">
