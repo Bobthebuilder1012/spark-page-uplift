@@ -374,6 +374,7 @@ function TutorDetail() {
                   <button className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-brand text-white font-semibold hover:bg-brand-deep">
                     <Check className="size-4" /> Confirm & pay
                   </button>
+                  <TrustBox title="Money-back guarantee" body="Full refund if you cancel up to 24h before your session — no questions asked." />
                 </div>
               )}
             </div>
