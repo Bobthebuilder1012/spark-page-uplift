@@ -423,10 +423,16 @@ function BookingCard({
   return (
     <div className={cn(!embedded && "rounded-3xl bg-background border border-border p-5")}>
       {!embedded && (
-        <div className="flex items-baseline justify-between mb-4">
-          <div><span className="text-2xl font-bold text-ink">TT${profile.price}</span><span className="text-sm text-muted-foreground">/hr</span></div>
-          <span className="text-xs px-2 py-1 rounded-full bg-brand-soft text-forest font-semibold">Available</span>
-        </div>
+        <>
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-brand-deep bg-brand-soft px-2.5 py-1 rounded-full mb-3">
+            <TrendingUp className="size-3" />
+            Very popular — booked 13 times in the last 2 days
+          </div>
+          <div className="flex items-baseline justify-between mb-4">
+            <div><span className="text-2xl font-bold text-ink">TT${profile.price}</span><span className="text-sm text-muted-foreground">/hr</span></div>
+            <span className="text-xs px-2 py-1 rounded-full bg-brand-soft text-forest font-semibold">Available</span>
+          </div>
+        </>
       )}
 
       {profile.subjects.length > 1 && (
