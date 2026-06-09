@@ -49,6 +49,8 @@
   --color-peach: var(--peach);
   --color-sky: var(--sky);
   --color-forest: var(--forest);
+  --color-trust-bg: var(--trust-bg);
+  --color-trust-text: var(--trust-text);
 
   --animate-marquee: marquee 50s linear infinite;
   --animate-marquee-reverse: marquee-reverse 55s linear infinite;
@@ -62,9 +64,11 @@
   --radius: 0.875rem;
 
   /* Brand */
-  --brand: oklch(0.74 0.19 145);            /* vivid green */
-  --brand-soft: oklch(0.95 0.07 150);       /* mint chip */
-  --brand-deep: oklch(0.55 0.16 150);       /* darker green */
+  --brand: oklch(0.70 0.20 144);            /* #32CC6F — official logo green */
+  --brand-soft: oklch(0.95 0.06 144);       /* light tint — trust boxes, badges */
+  --brand-deep: oklch(0.50 0.17 144);       /* darker green — hover states */
+  --trust-bg: oklch(0.97 0.04 144);         /* very light green wash */
+  --trust-text: oklch(0.28 0.09 144);       /* dark green text on trust-bg */
   --mint: oklch(0.985 0.003 240);           /* near-white page wash */
   --mint-deep: oklch(0.95 0.01 230);
   --ink: oklch(0.18 0.02 240);              /* near-black headings */
