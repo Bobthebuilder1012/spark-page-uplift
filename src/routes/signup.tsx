@@ -799,14 +799,14 @@ function RoleCard({
       className={cn(
         "flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition",
         active
-          ? "border-forest bg-forest/5"
-          : "border-border bg-white hover:border-forest/40",
+          ? "border-brand bg-brand-soft text-trust-text"
+          : "border-border bg-background text-ink hover:border-brand/40",
       )}
     >
       <div
         className={cn(
           "grid h-11 w-11 shrink-0 place-items-center rounded-xl",
-          active ? "bg-forest text-white" : "bg-muted text-muted-foreground",
+          active ? "bg-brand text-white" : "bg-muted text-muted-foreground",
         )}
       >
         {icon}
@@ -818,7 +818,7 @@ function RoleCard({
       <div
         className={cn(
           "grid h-5 w-5 place-items-center rounded-full border-2",
-          active ? "border-forest bg-forest text-white" : "border-border",
+          active ? "border-brand bg-brand text-white" : "border-border",
         )}
       >
         {active && <Check className="h-3 w-3" strokeWidth={3} />}
