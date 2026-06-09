@@ -89,6 +89,156 @@ function TutorAvatar({ name, hue, size = 40 }: { name: string; hue: number; size
   );
 }
 
+function TutorGrid({
+  tutors,
+  saved,
+  setSaved,
+}: {
+  tutors: Tutor[];
+  saved: Set<string>;
+  setSaved: React.Dispatch<React.SetStateAction<Set<string>>>;
+}) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const hovered = tutors.find((t) => t.id === hoveredId) ?? null;
+
+  return (
+    <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
+      <div className="space-y-3">
+        {tutors.map((t) => (
+          <div
+            key={t.id}
+            onMouseEnter={() => setHoveredId(t.id)}
+            onMouseLeave={() => setHoveredId((id) => (id === t.id ? null : id))}
+            className="group rounded-2xl border border-border bg-background p-4 hover:shadow-card hover:border-brand/40 transition-all flex flex-row gap-4 items-start"
+          >
+            <div className="relative shrink-0">
+              <Link to="/student/tutors/$id" params={{ id: t.id }} aria-label={t.name}>
+                <TutorAvatar name={t.name} hue={t.hue} size={64} />
+              </Link>
+              <button
+                onClick={() =>
+                  setSaved((s) => {
+                    const n = new Set(s);
+                    n.has(t.id) ? n.delete(t.id) : n.add(t.id);
+                    return n;
+                  })
+                }
+                className="absolute -top-1 -right-1 size-7 rounded-full bg-background border border-border grid place-items-center hover:bg-muted"
+                aria-label="Save tutor"
+              >
+                <Heart className={cn("size-3.5", saved.has(t.id) ? "fill-coral text-coral" : "text-muted-foreground")} />
+              </button>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <Link
+                    to="/student/tutors/$id"
+                    params={{ id: t.id }}
+                    className="inline-flex items-center gap-1.5 hover:underline"
+                  >
+                    <h3 className="font-semibold text-ink truncate">{t.name}</h3>
+                    {t.verified && <BadgeCheck className="size-4 text-brand-deep shrink-0" />}
+                  </Link>
+                  <div className="text-xs text-muted-foreground truncate mt-0.5">
+                    {t.subjects.join(" · ")}
+                  </div>
+                  <div className="flex items-center gap-2 mt-2 text-xs flex-wrap">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold tabular-nums">
+                      <Star className="size-3 fill-amber-500 text-amber-500" />
+                      {t.rating.toFixed(1)}
+                    </span>
+                    <span className="text-muted-foreground">{t.reviews} reviews</span>
+                    {t.topRated && (
+                      <span className="bg-brand-soft text-trust-text text-[10px] font-bold uppercase px-2 py-0.5 rounded-full">
+                        Top Rated
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-1">{t.blurb}</p>
+                  <div className="flex items-center gap-1.5 text-[11px] text-brand-deep font-medium mt-2">
+                    <Clock className="size-3" /> Next: {t.nextSlot}
+                  </div>
+                </div>
+                <div className="text-right shrink-0 flex flex-col items-end gap-2">
+                  <div>
+                    <div className="text-xl font-bold text-ink leading-none">TT${t.price}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">/hr</div>
+                  </div>
+                  <button className="bg-brand text-white rounded-xl px-3 py-1.5 text-xs font-semibold hover:bg-brand-deep transition">
+                    Book trial
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop hover preview panel */}
+      <div className="hidden lg:block sticky top-24 self-start">
+        <AnimatePresence mode="wait">
+          {hovered ? (
+            <motion.div
+              key={hovered.id}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16 }}
+              transition={{ duration: 0.18 }}
+              className="rounded-2xl border border-border bg-background p-5 shadow-card"
+            >
+              <div className="flex items-center gap-3">
+                <TutorAvatar name={hovered.name} hue={hovered.hue} size={80} />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <div className="font-bold text-ink truncate">{hovered.name}</div>
+                    {hovered.verified && <BadgeCheck className="size-4 text-brand-deep" />}
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">{hovered.subjects.join(" · ")}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">TT${hovered.price}/hr</div>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mt-4 leading-relaxed">{hovered.blurb}</p>
+              <div className="flex items-center gap-1.5 text-xs text-brand-deep font-medium mt-3">
+                <Clock className="size-3.5" /> Next available: {hovered.nextSlot}
+              </div>
+              <div className="mt-4 flex flex-col gap-2">
+                <Link
+                  to="/student/tutors/$id"
+                  params={{ id: hovered.id }}
+                  className="w-full text-center text-sm font-semibold px-3 py-2 rounded-xl border border-brand text-brand-deep hover:bg-brand-soft transition"
+                >
+                  View full schedule →
+                </Link>
+                <Link
+                  to="/student/tutors/$id"
+                  params={{ id: hovered.id }}
+                  className="w-full text-center text-sm font-semibold px-3 py-2 rounded-xl border border-border text-ink hover:bg-muted transition"
+                >
+                  See {hovered.name}'s profile →
+                </Link>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground"
+            >
+              Hover a tutor to preview their availability.
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+
+
 function ExplorePage() {
   const { q, tab } = Route.useSearch();
   const navigate = Route.useNavigate();
