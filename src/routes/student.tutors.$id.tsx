@@ -515,7 +515,7 @@ function BookingCard({
                       onClick={() => setPickedTime(t)}
                       className={cn(
                         "py-2 rounded-xl text-xs font-medium border transition",
-                        pickedTime === t ? "bg-brand text-white border-brand" : "border-border hover:border-brand",
+                        pickedTime === t ? "bg-brand text-white border-brand" : "border-border hover:border-brand hover:bg-trust-bg",
                       )}
                     >
                       {fmtTime(t)}
