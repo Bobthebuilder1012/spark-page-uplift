@@ -11,7 +11,8 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ClassesShell } from "@/components/classes/ClassesShell";
 import { AvailabilityFilter, hourLabel } from "@/components/filters/AvailabilityFilter";
-import { CLASSES_CATALOG, type ClassListing } from "@/lib/classes-catalog";
+import { CLASSES_CATALOG, getClassBadges, type ClassListing, type ClassBadge } from "@/lib/classes-catalog";
+import { useFavoriteTutors } from "@/lib/social-store";
 import { cn } from "@/lib/utils";
 
 
@@ -197,7 +198,7 @@ function ClassRowCard({ c, onHover, onEnroll }: { c: ClassRow; onHover: () => vo
             <span className="inline-flex items-center gap-1 rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 text-[10px] font-bold">
               <Users className="size-3" /> Group
             </span>
-            {badges.slice(0, 2).map((b) => (
+            {badges.slice(0, 2).map((b: ClassBadge) => (
               <span key={b.key} className={cn(
                 "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
                 b.tone === "ink" && "bg-ink text-white",
@@ -366,8 +367,7 @@ function ExplorePage() {
   const update = (patch: any) => navigate({ to: "/classes", search: { ...search, ...patch } as any });
 
   const [query, setQuery] = useState(q || "");
-  const [savedT, setSavedT] = useState<Set<string>>(new Set());
-  const [savedC, setSavedC] = useState<Set<string>>(new Set());
+  const favTutors = useFavoriteTutors();
   const [hoveredT, setHoveredT] = useState<string | null>(TUTORS[0].id);
   const [hoveredC, setHoveredC] = useState<string | null>(CLASSES[0].id);
 
@@ -480,15 +480,13 @@ function ExplorePage() {
             {tab === "tutors"
               ? pageItems.map((t) => (
                   <TutorCard key={(t as Tutor).id} t={t as Tutor}
-                    saved={savedT.has((t as Tutor).id)}
-                    toggleSave={() => setSavedT((s) => { const n = new Set(s); n.has((t as Tutor).id) ? n.delete((t as Tutor).id) : n.add((t as Tutor).id); return n; })}
+                    saved={favTutors.has((t as Tutor).id)}
+                    toggleSave={() => favTutors.toggle((t as Tutor).id)}
                     onHover={() => setHoveredT((t as Tutor).id)}
                     onBook={() => onBookTutor(t as Tutor)} />
                 ))
               : pageItems.map((c) => (
                   <ClassRowCard key={(c as ClassRow).id} c={c as ClassRow}
-                    saved={savedC.has((c as ClassRow).id)}
-                    toggleSave={() => setSavedC((s) => { const n = new Set(s); n.has((c as ClassRow).id) ? n.delete((c as ClassRow).id) : n.add((c as ClassRow).id); return n; })}
                     onHover={() => setHoveredC((c as ClassRow).id)}
                     onEnroll={() => onEnroll(c as ClassRow)} />
                 ))}
