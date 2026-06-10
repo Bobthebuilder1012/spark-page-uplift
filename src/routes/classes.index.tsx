@@ -178,8 +178,8 @@ function TutorCard({ t, saved, toggleSave, onHover, onBook }: { t: Tutor; saved:
               <TrendingUp className="size-3.5" /> Booked {t.recentBookings} times recently
             </div>
             <div className="flex items-center gap-2 ml-auto">
-              <button className="hidden sm:grid size-10 rounded-xl border border-border place-items-center hover:bg-muted"><MessageSquare className="size-4" /></button>
               <button onClick={onBook} className="rounded-full bg-brand text-white px-4 sm:px-5 py-2.5 text-sm font-bold hover:bg-brand-deep">
+
                 Book trial lesson
               </button>
             </div>
@@ -281,47 +281,6 @@ function SubjectFilter({ value, onApply }: { value: string; onApply: (s: string)
   );
 }
 
-// ---------- availability filter (AM/PM bands) ----------
-function AvailabilityFilter({ days, times, onApply }: { days: string[]; times: string[]; onApply: (d: string[], t: string[]) => void }) {
-  const [d, setD] = useState(days);
-  const [t, setT] = useState(times);
-  const toggle = (arr: string[], v: string, set: (a: string[]) => void) =>
-    set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
-
-  const section = (label: string, group: "morning" | "daytime" | "evening") => (
-    <div>
-      <div className="text-[11px] font-semibold text-muted-foreground mb-1.5">{label}</div>
-      <div className="grid grid-cols-3 gap-1.5">
-        {TIME_BANDS.filter((b) => b.group === group).map((b) => (
-          <button key={b.key} onClick={() => toggle(t, b.key, setT)}
-            className={cn("px-2 py-2 rounded-lg border text-xs font-semibold", t.includes(b.key) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>
-            {b.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-  return (
-    <div className="space-y-3">
-      <div className="text-xs font-bold uppercase tracking-wider text-ink">Times</div>
-      {section("Daytime", "daytime")}
-      {section("Evening and night", "evening")}
-      {section("Morning", "morning")}
-      <div className="pt-1">
-        <div className="text-xs font-bold uppercase tracking-wider text-ink mb-1.5">Days</div>
-        <div className="grid grid-cols-4 gap-1.5">
-          {DAY_KEYS.map((day) => (
-            <button key={day} onClick={() => toggle(d, day, setD)}
-              className={cn("py-2 rounded-lg border text-xs font-semibold", d.includes(day) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>
-              {day}
-            </button>
-          ))}
-        </div>
-      </div>
-      <button onClick={() => onApply(d, t)} className="w-full rounded-full bg-brand text-white py-2 text-sm font-bold hover:bg-brand-deep">Apply</button>
-    </div>
-  );
-}
 
 function PriceFilter({ min, max, onApply }: { min: number; max: number; onApply: (lo: number, hi: number) => void }) {
   const [v, setV] = useState<[number, number]>([min, max]);
