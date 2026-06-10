@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronLeft, ChevronRight, Star, Heart, Share2, MessageSquare, Play, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil, Users, Clock } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { getClassesByTutorId } from "@/lib/classes-catalog";
+import { useFavoriteTutors, shareLink } from "@/lib/social-store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id/")({
@@ -103,11 +104,20 @@ function TutorDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const p = PROFILES[id] ?? PROFILES.ramdeen;
-  const [saved, setSaved] = useState(false);
+  const favs = useFavoriteTutors();
+  const saved = favs.has(id);
+  const [toast, setToast] = useState<string | null>(null);
   const [duration, setDuration] = useState<30 | 60>(30);
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState<{ dayIdx: number; time: string } | null>(null);
   const scheduleRef = useRef<HTMLDivElement>(null);
+
+  const onShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const r = await shareLink(url, `${p.name} on iTutor`);
+    setToast(r === "shared" ? "Shared" : "Profile link copied");
+    setTimeout(() => setToast(null), 1800);
+  };
 
   const monday = useMemo(() => {
     const t = new Date();
