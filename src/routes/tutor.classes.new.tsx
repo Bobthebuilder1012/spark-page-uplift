@@ -98,11 +98,46 @@ function NewClassBuilder() {
                 </Field>
               </div>
             </div>
+
+            {/* Banner image upload */}
+            <div className="mt-4">
+              <Field label="Banner image (optional — overrides colour)">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="inline-flex items-center gap-2 rounded-xl border border-dashed border-border bg-muted/40 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-muted"
+                  >
+                    <Upload className="size-4" /> {bannerUrl ? "Replace image" : "Upload image"}
+                  </button>
+                  {bannerUrl && (
+                    <button type="button" onClick={() => setBannerUrl(null)} className="text-xs text-muted-foreground hover:text-coral inline-flex items-center gap-1">
+                      <X className="size-3.5" /> Remove
+                    </button>
+                  )}
+                  <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><ImageIcon className="size-3.5" /> 1600×600 recommended</span>
+                  <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => onPickBanner(e.target.files?.[0])} />
+                </div>
+              </Field>
+            </div>
+
             {/* Live preview */}
             <div className="mt-4 rounded-2xl overflow-hidden border border-border">
-              <div className="relative h-28 grid place-items-center text-white" style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${hue}), oklch(0.55 0.16 ${hue}))` }}>
-                <span className="absolute right-3 bottom-1 text-[5rem] leading-none opacity-30 font-black">{emoji || subject[0] || "?"}</span>
-                <div className="absolute top-3 left-3 text-[10px] font-bold uppercase rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5">{level}</div>
+              <div
+                className="relative h-32 grid place-items-center text-white bg-cover bg-center"
+                style={bannerUrl
+                  ? { backgroundImage: `url(${bannerUrl})` }
+                  : { background: `linear-gradient(135deg, oklch(0.85 0.1 ${hue}), oklch(0.55 0.16 ${hue}))` }}
+              >
+                {!bannerUrl && (
+                  <span className="absolute right-3 bottom-1 text-[5rem] leading-none opacity-30 font-black">{emoji || subject[0] || "?"}</span>
+                )}
+                <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5">{level}</span>
+                  <span className="text-[10px] font-bold uppercase rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 inline-flex items-center gap-1">
+                    {visibility === "public" ? <Globe className="size-3" /> : <Lock className="size-3" />} {visibility}
+                  </span>
+                </div>
               </div>
               <div className="p-4 bg-background">
                 <div className="text-sm font-bold text-ink">{title || "Class title goes here"}</div>
