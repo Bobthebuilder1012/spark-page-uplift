@@ -52,7 +52,7 @@ function BookingPage() {
   const navigate = useNavigate();
   const p = TUTORS[id] ?? TUTORS.ramdeen;
 
-  const [duration, setDuration] = useState<25 | 50>(50);
+  const [duration, setDuration] = useState<30 | 60>(50);
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState<{ dayIdx: number; time: string } | null>(null);
 
@@ -112,10 +112,10 @@ function BookingPage() {
 
           {/* Duration toggle */}
           <div className="grid grid-cols-2 rounded-2xl bg-muted p-1 max-w-md">
-            {[25, 50].map((d) => (
+            {[30, 60].map((d) => (
               <button
                 key={d}
-                onClick={() => setDuration(d as 25 | 50)}
+                onClick={() => setDuration(d as 30 | 60)}
                 className={cn(
                   "py-3 rounded-xl text-sm font-bold transition",
                   duration === d ? "bg-background text-ink shadow-sm" : "text-muted-foreground",

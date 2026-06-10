@@ -212,7 +212,7 @@ function TutorDetail() {
           <div className="rounded-3xl border border-border bg-background p-5 shadow-card space-y-4">
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold text-ink">${p.pricePerLesson}</span>
-              <span className="text-sm text-muted-foreground">50-min lesson</span>
+              <span className="text-sm text-muted-foreground">60-min lesson</span>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pb-2 border-b border-border">
@@ -278,7 +278,7 @@ function TutorDetail() {
       <div className="lg:hidden fixed bottom-16 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between">
         <div>
           <div className="text-lg font-bold text-ink">${p.pricePerLesson}</div>
-          <div className="text-[11px] text-muted-foreground">50-min lesson</div>
+          <div className="text-[11px] text-muted-foreground">60-min lesson</div>
         </div>
         <button onClick={() => setBooking(true)} className="rounded-full bg-brand text-white px-6 py-2.5 text-sm font-bold">
           Book trial lesson
