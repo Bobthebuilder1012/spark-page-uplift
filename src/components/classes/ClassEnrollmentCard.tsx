@@ -16,7 +16,7 @@ export type EnrollmentClass = {
   };
 };
 
-export function ClassEnrollmentCard({ c }: { c: EnrollmentClass }) {
+export function ClassEnrollmentCard({ c, onJoin }: { c: EnrollmentClass; onJoin?: () => void }) {
   return (
     <aside className="sticky top-24 rounded-2xl border border-[#1F1F1F] bg-[#111111] p-6 space-y-5">
       <div>
@@ -29,7 +29,7 @@ export function ClassEnrollmentCard({ c }: { c: EnrollmentClass }) {
           <Check className="size-4" /> You're enrolled
         </span>
       ) : (
-        <button className="w-full rounded-full bg-[#32CC6F] px-4 py-3 text-sm font-bold text-black hover:brightness-110 transition">
+        <button onClick={onJoin} className="w-full rounded-full bg-[#32CC6F] px-4 py-3 text-sm font-bold text-black hover:brightness-110 transition">
           Join Class
         </button>
       )}
