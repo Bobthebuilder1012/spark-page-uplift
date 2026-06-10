@@ -11,6 +11,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ClassesShell } from "@/components/classes/ClassesShell";
 import { AvailabilityFilter, hourLabel } from "@/components/filters/AvailabilityFilter";
+import { CLASSES_CATALOG, type ClassListing } from "@/lib/classes-catalog";
 import { cn } from "@/lib/utils";
 
 
@@ -58,24 +59,9 @@ const TUTORS: Tutor[] = [
   { id: "thompson", name: "Ms. Thompson", flag: "🇹🇹", country: "Trinidad", subjects: ["English Language Arts", "Creative Writing"], level: "SEA", rating: 4.95, reviews: 92, pricePerLesson: 18, hue: 340, verified: true, superTutor: true, headline: "SEA ELA & Creative Writing — confidence-building sessions", blurb: "Help SEA students enjoy writing and feel calm in the exam room.", activeStudents: 64, lessonsTaught: "4,100", topPercent: "Top 10%", recentBookings: 14 },
 ];
 
-type ClassRow = {
-  id: string; name: string; subject: string; description: string;
-  tutorName: string; verified: boolean; rating: number; ratingCount: number;
-  priceTTD: number; level: string; schedule: string;
-  seatsLeft: number; enrolled: number; recentJoins: number;
-  popular?: boolean; hue: number;
-};
-
-const CLASSES: ClassRow[] = [
-  { id: "c1", name: "CSEC Mathematics — Algebra & Functions", subject: "Mathematics", level: "CSEC", description: "Weekly group class covering algebra and functions with worked past-paper questions.", tutorName: "Asha Persad", verified: true, rating: 4.8, ratingCount: 24, priceTTD: 350, schedule: "Tue · 4:00 PM (90 min)", seatsLeft: 4, enrolled: 18, recentJoins: 7, popular: true, hue: 145 },
-  { id: "c2", name: "English A — Paper 2 Essay Workshop", subject: "English", level: "CSEC", description: "Structured essay-writing focused on Paper 2 — planning, argumentation and revision.", tutorName: "Marcus Hill", verified: true, rating: 4.7, ratingCount: 18, priceTTD: 300, schedule: "Thu · 6:00 PM (75 min)", seatsLeft: 6, enrolled: 14, recentJoins: 4, hue: 20 },
-  { id: "c3", name: "CSEC Biology — Cells, Genetics & Systems", subject: "Biology", level: "CSEC", description: "Live lessons through every CSEC Biology unit with diagrams and weekly quizzes.", tutorName: "Dr. Renee Joseph", verified: true, rating: 4.9, ratingCount: 41, priceTTD: 400, schedule: "Wed · 5:00 PM (90 min)", seatsLeft: 2, enrolled: 22, recentJoins: 9, popular: true, hue: 280 },
-  { id: "c4", name: "Chemistry Crash Course — Acids, Bases & Salts", subject: "Chemistry", level: "CSEC", description: "Exam-priority topics with live demos and structured practice sets.", tutorName: "Ravi Singh", verified: true, rating: 4.6, ratingCount: 12, priceTTD: 375, schedule: "Sat · 10:00 AM (60 min)", seatsLeft: 9, enrolled: 8, recentJoins: 3, hue: 165 },
-  { id: "c5", name: "CSEC Physics — Mechanics Mastery", subject: "Physics", level: "CSEC", description: "Break mechanics into bite-size problems, with weekly check-ins and homework reviews.", tutorName: "Kieran Pierre", verified: true, rating: 4.5, ratingCount: 9, priceTTD: 350, schedule: "Mon · 5:30 PM (75 min)", seatsLeft: 12, enrolled: 6, recentJoins: 2, hue: 220 },
-  { id: "c6", name: "Mathematics — Geometry & Trigonometry", subject: "Mathematics", level: "CSEC", description: "Geometry and trig with visual proofs and timed practice.", tutorName: "Asha Persad", verified: true, rating: 4.8, ratingCount: 33, priceTTD: 350, schedule: "Fri · 4:00 PM (90 min)", seatsLeft: 5, enrolled: 19, recentJoins: 6, hue: 145 },
-  { id: "c7", name: "SEA Prep — English Comprehension Bootcamp", subject: "SEA Prep", level: "SEA", description: "Comprehension, vocab and exam writing for SEA students.", tutorName: "Ms. Thompson", verified: true, rating: 4.95, ratingCount: 52, priceTTD: 250, schedule: "Sat · 9:00 AM (60 min)", seatsLeft: 3, enrolled: 21, recentJoins: 11, popular: true, hue: 35 },
-  { id: "c8", name: "CAPE Pure Maths — Calculus Sprint", subject: "Mathematics", level: "CAPE", description: "Six-week sprint focused on Unit 1 calculus with past-paper drills.", tutorName: "Ms. Persad", verified: true, rating: 4.92, ratingCount: 28, priceTTD: 500, schedule: "Sun · 5:00 PM (90 min)", seatsLeft: 6, enrolled: 14, recentJoins: 5, hue: 240 },
-];
+// Group classes pulled from the shared catalog so explore, detail and tutor profiles stay in sync.
+type ClassRow = ClassListing;
+const CLASSES: ClassRow[] = CLASSES_CATALOG;
 
 const PAGE_SIZE = 12;
 
