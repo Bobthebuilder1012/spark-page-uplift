@@ -237,7 +237,7 @@ function TutorDetail() {
             </div>
 
             <button
-              onClick={() => setBooking(true)}
+              onClick={book}
               className="w-full py-3.5 rounded-2xl bg-brand text-white font-bold hover:bg-brand-deep transition"
             >
               Book trial lesson
