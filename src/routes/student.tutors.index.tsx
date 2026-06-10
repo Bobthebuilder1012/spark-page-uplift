@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { isAuthed } from "@/lib/auth";
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
@@ -276,10 +275,6 @@ function ExplorePage() {
   const hoveredTutor = pageTutors.find((t) => t.id === hovered) ?? pageTutors[0] ?? null;
 
   const onBook = (t: Tutor) => {
-    if (!isAuthed()) {
-      navigate({ to: "/signup", search: { next: `/student/tutors/${t.id}/book` } as any });
-      return;
-    }
     navigate({ to: "/student/tutors/$id/book", params: { id: t.id } });
   };
 

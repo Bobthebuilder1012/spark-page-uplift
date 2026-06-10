@@ -96,7 +96,8 @@ const BREAKDOWN = [
 
 function ClassDetailPage() {
   const [tab, setTab] = useState<Tab>("About");
-  const visibleTabs = ALL_TABS.filter((t) => t !== "Stream" || CLASS.enrolled);
+  const [enrolled, setEnrolled] = useState(CLASS.enrolled);
+  const visibleTabs = ALL_TABS.filter((t) => t !== "Stream" || enrolled);
 
   return (
     <ClassesShell>
@@ -150,9 +151,13 @@ function ClassDetailPage() {
             name: CLASS.name,
             priceTTD: CLASS.priceTTD,
             nextBilling: CLASS.nextBilling,
-            enrolled: CLASS.enrolled,
+            enrolled,
             highlights: CLASS.highlights,
             tutor: { name: CLASS.tutorName, verified: CLASS.verified, rating: CLASS.rating, students: 24 },
+          }}
+          onJoin={() => {
+            setEnrolled(true);
+            setTab("Stream");
           }}
         />
       </div>

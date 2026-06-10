@@ -10,7 +10,6 @@ import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ClassesShell } from "@/components/classes/ClassesShell";
-import { isAuthed } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 // ---------- search params ----------
@@ -438,17 +437,9 @@ function ExplorePage() {
   const hoveredClass = tab === "classes" ? (filteredC.find((c) => c.id === hoveredC) ?? filteredC[0] ?? null) : null;
 
   const onBookTutor = (t: Tutor) => {
-    if (!isAuthed()) {
-      navigate({ to: "/signup", search: { next: `/student/tutors/${t.id}/book` } as any });
-      return;
-    }
     navigate({ to: "/student/tutors/$id/book", params: { id: t.id } });
   };
   const onEnroll = (c: ClassRow) => {
-    if (!isAuthed()) {
-      navigate({ to: "/signup", search: { next: `/classes/${c.id}` } as any });
-      return;
-    }
     navigate({ to: "/classes/$id", params: { id: c.id } });
   };
 
