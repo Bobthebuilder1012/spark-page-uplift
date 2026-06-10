@@ -194,6 +194,11 @@ function LessonCard({
   const upcoming = next > new Date();
   const isPublic = l.visibility !== "private";
   const goToLesson = () => navigate({ to: "/tutor/lessons/$id", params: { id: l.id } });
+  // Derive a deterministic hue from the title so the card feels branded.
+  const hue = (Array.from(l.subject + l.title).reduce((a, c) => a + c.charCodeAt(0), 0) * 7) % 360;
+  const mark = (l.subject?.[0] ?? "?").toUpperCase();
+  const enrolled = l.enrollments.length;
+  const seatPct = Math.min(100, Math.round((enrolled / Math.max(1, l.capacity)) * 100));
 
   return (
     <div
@@ -203,16 +208,20 @@ function LessonCard({
       onKeyDown={(e) => { if (e.key === "Enter") goToLesson(); }}
       className="group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-lg hover:-translate-y-0.5 hover:border-brand-deep/30 transition-all cursor-pointer flex flex-col"
     >
-      {/* Banner */}
-      <div className={cn("relative h-28 bg-gradient-to-br", l.thumbnailGradient ?? "from-brand to-emerald-400")}>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_60%)]" />
-        <BookOpen className="absolute bottom-3 left-4 size-7 text-white/85" />
-
-        {/* Top-right action cluster */}
-        <div className="absolute top-3 right-3 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      {/* Coursera-style branded banner */}
+      <div
+        className="relative h-32 overflow-hidden"
+        style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${hue}), oklch(0.55 0.16 ${hue}))` }}
+      >
+        <span className="absolute right-2 -bottom-3 text-[7rem] leading-none opacity-25 font-black text-white select-none">{mark}</span>
+        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider rounded-full bg-white/85 text-ink px-2 py-0.5">{l.level}</span>
+          <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full", m.chip)}>{m.short}</span>
+        </div>
+        <div className="absolute top-3 right-3" onClick={(e) => e.stopPropagation()}>
           <span className={cn(
-            "inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full backdrop-blur-sm",
-            isPublic ? "bg-white/90 text-ink" : "bg-ink/80 text-white",
+            "inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur",
+            isPublic ? "bg-white/85 text-ink" : "bg-ink/80 text-white",
           )}>
             {isPublic ? <Globe className="size-3" /> : <Lock className="size-3" />}
             {isPublic ? "Public" : "Private"}
@@ -220,91 +229,72 @@ function LessonCard({
         </div>
       </div>
 
-      {/* Body */}
+      {/* Body — mirrors student-side class card */}
       <div className="p-5 flex-1 flex flex-col">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap mb-1">
-              <span className="text-[10px] uppercase tracking-wider font-bold text-brand-deep bg-brand-soft px-1.5 py-0.5 rounded">{l.subject}</span>
-              <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{l.level}</span>
-              <span className={cn("text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded", m.chip)}>{m.short}</span>
-            </div>
-            <h3 className="font-bold text-ink leading-tight truncate">{l.title}</h3>
+        <div className="text-[10px] uppercase tracking-wider font-bold text-brand-deep">{l.subject}</div>
+        <h3 className="mt-1 font-bold text-ink leading-snug line-clamp-2">{l.title}</h3>
+
+        {/* Capacity progress */}
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1"><Users className="size-3" /> {enrolled}/{l.capacity} enrolled</span>
+            <span className="tabular-nums">{seatPct}%</span>
+          </div>
+          <div className="mt-1 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-brand-deep" style={{ width: `${seatPct}%` }} />
           </div>
         </div>
 
-        {/* Stat strip */}
-        <div className="mt-4 grid grid-cols-3 divide-x divide-border rounded-xl border border-border overflow-hidden text-center bg-background">
-          <Stat label="Members" value={`${l.enrollments.length}/${l.capacity}`} />
-          <Stat label="Sessions" value={(l.totalSessionsRun ?? 0).toString()} />
-          <Stat
-            label="Next"
-            value={upcoming ? next.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}
-            tint={upcoming ? "brand" : undefined}
-          />
+        {/* Meta row */}
+        <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><CalendarIcon className="size-3" /> {upcoming ? next.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "No upcoming"}</span>
+          <span>·</span>
+          <span className="inline-flex items-center gap-1"><TrendingUp className="size-3" /> TTD {(l.earningsTtd ?? 0).toLocaleString()}</span>
         </div>
 
-        {/* Earnings pill */}
-        <div className="mt-3 rounded-xl bg-brand-soft/60 px-3 py-2 flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-wider text-brand-deep font-bold inline-flex items-center gap-1.5">
-            <TrendingUp className="size-3" /> Earnings
-          </span>
-          <span className="text-sm font-bold text-brand-deep tabular-nums">TTD {(l.earningsTtd ?? 0).toLocaleString()}</span>
-        </div>
-
-        {/* Footer actions */}
-        <div className="mt-4 pt-3 border-t border-border flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-          <Link
-            to="/tutor/lessons/$id" params={{ id: l.id }}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-ink text-white text-xs font-semibold hover:bg-ink/90 transition"
-          >
-            <Eye className="size-3.5" /> Open class
-          </Link>
-          <Link
-            to="/tutor/lessons/$id" params={{ id: l.id }}
-            aria-label="Class settings"
-            className="inline-flex items-center justify-center size-9 rounded-lg border border-border bg-background text-muted-foreground hover:text-ink hover:border-ink transition"
-          >
-            <SettingsIcon className="size-4" />
-          </Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                aria-label="More options"
-                className="inline-flex items-center justify-center size-9 rounded-lg border border-border bg-background text-muted-foreground hover:text-ink hover:border-ink transition"
-              >
-                <MoreVertical className="size-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem onClick={() => navigate({ to: "/tutor/lessons/$id", params: { id: l.id } })}>
-                <SettingsIcon className="size-4 mr-2" /> Open settings
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate({ to: "/tutor/lessons/$id", params: { id: l.id } })}>
-                <CalendarIcon className="size-4 mr-2" /> View sessions
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onToggleVisibility}>
-                {isPublic ? <Lock className="size-4 mr-2" /> : <Globe className="size-4 mr-2" />}
-                Switch to {isPublic ? "private" : "public"}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onDelete} className="text-coral focus:text-coral">
-                <Trash2 className="size-4 mr-2" /> Delete class
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Footer — price (what students see) + tutor actions */}
+        <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-2" onClick={(e) => e.stopPropagation()}>
+          <div>
+            <div className="text-base font-bold text-ink">TTD ${l.rateTtd}</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">per session</div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Link
+              to="/tutor/lessons/$id" params={{ id: l.id }}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-ink text-white text-xs font-semibold hover:bg-ink/90 transition"
+            >
+              <Eye className="size-3.5" /> Open
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  aria-label="More options"
+                  className="inline-flex items-center justify-center size-9 rounded-lg border border-border bg-background text-muted-foreground hover:text-ink hover:border-ink transition"
+                >
+                  <MoreVertical className="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={() => navigate({ to: "/tutor/lessons/$id", params: { id: l.id } })}>
+                  <SettingsIcon className="size-4 mr-2" /> Open settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate({ to: "/tutor/lessons/$id", params: { id: l.id } })}>
+                  <CalendarIcon className="size-4 mr-2" /> View sessions
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onToggleVisibility}>
+                  {isPublic ? <Lock className="size-4 mr-2" /> : <Globe className="size-4 mr-2" />}
+                  Switch to {isPublic ? "private" : "public"}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onDelete} className="text-coral focus:text-coral">
+                  <Trash2 className="size-4 mr-2" /> Delete class
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Stat({ label, value, tint }: { label: string; value: string; tint?: "brand" }) {
-  return (
-    <div className="py-2.5">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</div>
-      <div className={cn("text-sm font-bold tabular-nums", tint === "brand" ? "text-brand-deep" : "text-ink")}>{value}</div>
     </div>
   );
 }

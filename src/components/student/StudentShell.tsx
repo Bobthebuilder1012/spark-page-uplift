@@ -15,6 +15,7 @@ import {
   LogOut,
   ChevronUp,
   Plus,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentStoreProvider, useStudentStore, ALL_LESSONS } from "@/lib/student-store";
@@ -28,6 +29,7 @@ const nav: NavItem[] = [
   { to: "/student/classes", label: "Classes", icon: Search, tint: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/30" },
   { to: "/student/lessons", label: "My Classes", icon: GraduationCap, tint: "bg-sky-500/20 text-sky-300 ring-1 ring-sky-400/30" },
   { to: "/student/bookings", label: "My Bookings", icon: CalendarDays, tint: "bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30" },
+  { to: "/student/messages", label: "Messages", icon: MessageSquare, tint: "bg-fuchsia-500/20 text-fuchsia-300 ring-1 ring-fuchsia-400/30" },
   { to: "/student/tools", label: "Tools", icon: BookOpen, tint: "bg-violet-500/20 text-violet-300 ring-1 ring-violet-400/30" },
 ];
 

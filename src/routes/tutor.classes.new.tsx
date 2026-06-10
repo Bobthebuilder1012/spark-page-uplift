@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, Check, Sparkles, Plus, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeft, Check, Sparkles, Plus, X, Upload, Globe, Lock, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tutor/classes/new")({
@@ -33,7 +33,16 @@ function NewClassBuilder() {
   const [cadence, setCadence] = useState("Weekly");
   const [seats, setSeats] = useState(20);
   const [requestToJoin, setRequestToJoin] = useState(false);
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const [saved, setSaved] = useState(false);
+
+  const onPickBanner = (file?: File) => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setBannerUrl(url);
+  };
 
   const updateList = (set: typeof setOutcomes, idx: number, value: string) =>
     set((list) => list.map((v, i) => (i === idx ? value : v)));
@@ -89,11 +98,46 @@ function NewClassBuilder() {
                 </Field>
               </div>
             </div>
+
+            {/* Banner image upload */}
+            <div className="mt-4">
+              <Field label="Banner image (optional — overrides colour)">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="inline-flex items-center gap-2 rounded-xl border border-dashed border-border bg-muted/40 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-muted"
+                  >
+                    <Upload className="size-4" /> {bannerUrl ? "Replace image" : "Upload image"}
+                  </button>
+                  {bannerUrl && (
+                    <button type="button" onClick={() => setBannerUrl(null)} className="text-xs text-muted-foreground hover:text-coral inline-flex items-center gap-1">
+                      <X className="size-3.5" /> Remove
+                    </button>
+                  )}
+                  <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><ImageIcon className="size-3.5" /> 1600×600 recommended</span>
+                  <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => onPickBanner(e.target.files?.[0])} />
+                </div>
+              </Field>
+            </div>
+
             {/* Live preview */}
             <div className="mt-4 rounded-2xl overflow-hidden border border-border">
-              <div className="relative h-28 grid place-items-center text-white" style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${hue}), oklch(0.55 0.16 ${hue}))` }}>
-                <span className="absolute right-3 bottom-1 text-[5rem] leading-none opacity-30 font-black">{emoji || subject[0] || "?"}</span>
-                <div className="absolute top-3 left-3 text-[10px] font-bold uppercase rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5">{level}</div>
+              <div
+                className="relative h-32 grid place-items-center text-white bg-cover bg-center"
+                style={bannerUrl
+                  ? { backgroundImage: `url(${bannerUrl})` }
+                  : { background: `linear-gradient(135deg, oklch(0.85 0.1 ${hue}), oklch(0.55 0.16 ${hue}))` }}
+              >
+                {!bannerUrl && (
+                  <span className="absolute right-3 bottom-1 text-[5rem] leading-none opacity-30 font-black">{emoji || subject[0] || "?"}</span>
+                )}
+                <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5">{level}</span>
+                  <span className="text-[10px] font-bold uppercase rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 inline-flex items-center gap-1">
+                    {visibility === "public" ? <Globe className="size-3" /> : <Lock className="size-3" />} {visibility}
+                  </span>
+                </div>
               </div>
               <div className="p-4 bg-background">
                 <div className="text-sm font-bold text-ink">{title || "Class title goes here"}</div>
@@ -135,14 +179,38 @@ function NewClassBuilder() {
             </p>
           </Section>
 
-          <Section title="Access">
-            <label className="flex items-start gap-3 p-3 rounded-xl border border-border cursor-pointer hover:bg-muted/40">
-              <input type="checkbox" checked={requestToJoin} onChange={(e) => setRequestToJoin(e.target.checked)} className="mt-0.5 accent-brand size-4" />
+          <Section title="Access" hint="Who can find this class, and how they get in.">
+            <div className="space-y-3">
               <div>
-                <div className="text-sm font-semibold text-ink">Require approval to join</div>
-                <div className="text-xs text-muted-foreground">Students send a join request first. You approve or decline from the Join requests inbox.</div>
+                <div className="text-xs font-semibold text-ink mb-2">Visibility</div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {([
+                    { v: "public" as const, icon: Globe, title: "Public", body: "Listed in Explore and can be shared with anyone." },
+                    { v: "private" as const, icon: Lock, title: "Private", body: "Hidden from Explore. Only students with the link can view." },
+                  ]).map((opt) => {
+                    const Icon = opt.icon;
+                    const active = visibility === opt.v;
+                    return (
+                      <label key={opt.v} className={cn("flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition", active ? "border-brand bg-brand-soft/40" : "border-border hover:bg-muted/40")}>
+                        <input type="radio" name="vis" checked={active} onChange={() => setVisibility(opt.v)} className="mt-0.5 accent-brand size-4" />
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-ink inline-flex items-center gap-1.5"><Icon className="size-3.5" /> {opt.title}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">{opt.body}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
-            </label>
+
+              <label className="flex items-start gap-3 p-3 rounded-xl border border-border cursor-pointer hover:bg-muted/40">
+                <input type="checkbox" checked={requestToJoin} onChange={(e) => setRequestToJoin(e.target.checked)} className="mt-0.5 accent-brand size-4" />
+                <div>
+                  <div className="text-sm font-semibold text-ink">Require approval to join</div>
+                  <div className="text-xs text-muted-foreground">Students send a join request first. You approve or decline from the Join requests inbox.</div>
+                </div>
+              </label>
+            </div>
           </Section>
         </div>
 
