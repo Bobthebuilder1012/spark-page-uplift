@@ -248,32 +248,32 @@ function ShellInner() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
+        <header className="sticky top-0 z-30 bg-ink lg:bg-background/90 backdrop-blur border-b border-border lg:border-border">
           <div className="flex items-center gap-3 px-4 lg:px-6 h-14">
             <Link to="/" className="lg:hidden"><Logo size={24} /></Link>
 
             <form onSubmit={onSearch} className="flex-1 max-w-xl">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/60 lg:text-muted-foreground" />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search tutors, subjects, topics…"
-                  className="w-full pl-9 pr-4 py-2 rounded-full bg-muted border border-transparent focus:bg-background focus:border-brand focus:outline-none text-sm"
+                  className="w-full pl-9 pr-4 py-2 rounded-full bg-white/10 lg:bg-muted text-white lg:text-foreground placeholder:text-white/50 lg:placeholder:text-muted-foreground border border-transparent focus:bg-background focus:text-foreground focus:border-brand focus:outline-none text-sm"
                 />
               </div>
             </form>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 text-white/80 lg:text-muted-foreground">
               <RatingCenterPill />
-              <button onClick={() => setCalOpen(true)} className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Calendar">
+              <button onClick={() => setCalOpen(true)} className="size-9 grid place-items-center rounded-full hover:bg-white/10 lg:hover:bg-muted" title="Calendar">
                 <CalendarDays className="size-4" />
               </button>
-              <Link to="/student/notifications" className="relative size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Notifications">
+              <Link to="/student/notifications" className="relative size-9 grid place-items-center rounded-full hover:bg-white/10 lg:hover:bg-muted" title="Notifications">
                 <Bell className="size-4" />
                 <span className="absolute top-2 right-2 size-2 rounded-full bg-coral" />
               </Link>
-              <Link to="/student/settings" className="size-9 grid place-items-center rounded-full hover:bg-muted text-muted-foreground" title="Settings">
+              <Link to="/student/settings" className="size-9 grid place-items-center rounded-full hover:bg-white/10 lg:hover:bg-muted" title="Settings">
                 <Settings className="size-4" />
               </Link>
             </div>
