@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronLeft, ChevronRight, Star, Heart, Share2, MessageSquare, Play, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Star, Heart, Share2, MessageSquare, Play, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil, Users, Clock } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { getClassesByTutorId } from "@/lib/classes-catalog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id/")({
