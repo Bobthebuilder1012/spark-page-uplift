@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   Search, Star, Heart, BadgeCheck, ChevronDown, ChevronLeft, ChevronRight,
-  Play, Users, Sparkles, TrendingUp, Clock, GraduationCap, MessageSquare, X,
+  Play, Users, Sparkles, TrendingUp, Clock, GraduationCap, X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as SliderPrimitive from "@radix-ui/react-slider";
@@ -10,7 +10,9 @@ import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ClassesShell } from "@/components/classes/ClassesShell";
+import { AvailabilityFilter, hourLabel } from "@/components/filters/AvailabilityFilter";
 import { cn } from "@/lib/utils";
+
 
 // ---------- search params ----------
 const searchSchema = z.object({
@@ -76,10 +78,6 @@ const CLASSES: ClassRow[] = [
 ];
 
 const PAGE_SIZE = 12;
-const ALL_SUBJECTS = Array.from(new Set([
-  ...TUTORS.flatMap((t) => t.subjects),
-  ...CLASSES.map((c) => c.subject),
-])).sort();
 
 // Subject groups (for tabbed subject filter)
 const SUBJECT_GROUPS = {
@@ -88,17 +86,6 @@ const SUBJECT_GROUPS = {
   CAPE: ["Pure Mathematics", "Applied Mathematics", "Physics", "Chemistry", "Biology", "Computer Science", "Accounting", "Economics", "Management of Business", "Law", "Sociology", "Caribbean Studies", "Communication Studies", "Literatures in English"],
 };
 
-const DAY_KEYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-// AM/PM time bands per screenshot reference
-const TIME_BANDS: { key: string; label: string; group: "morning" | "daytime" | "evening" }[] = [
-  { key: "6-9am",   label: "6–9 AM",   group: "morning" },
-  { key: "9-12am",  label: "9–12 AM",  group: "morning" },
-  { key: "12-3pm",  label: "12–3 PM",  group: "daytime" },
-  { key: "3-6pm",   label: "3–6 PM",   group: "daytime" },
-  { key: "6-9pm",   label: "6–9 PM",   group: "evening" },
-  { key: "9-12pm",  label: "9–12 PM",  group: "evening" },
-];
 
 // ---------- shared bits ----------
 function Avatar({ name, hue, size = 96, square = true }: { name: string; hue: number; size?: number; square?: boolean }) {
@@ -183,8 +170,9 @@ function TutorCard({ t, saved, toggleSave, onHover, onBook }: { t: Tutor; saved:
               <div className="text-[11px] sm:text-xs text-muted-foreground mt-1">60-min lesson</div>
             </div>
           </div>
-          <p className="mt-3 text-sm text-ink font-semibold line-clamp-2">✅ {t.headline}</p>
-          <p className="mt-1 text-sm text-muted-foreground line-clamp-2 hidden sm:block">💬 — {t.blurb}</p>
+          <p className="mt-3 text-sm text-ink font-semibold line-clamp-2">{t.headline}</p>
+          <p className="mt-1 text-sm text-muted-foreground line-clamp-2 hidden sm:block">{t.blurb}</p>
+
           <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
             <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground">
               <TrendingUp className="size-3.5" /> Booked {t.recentBookings} times recently
