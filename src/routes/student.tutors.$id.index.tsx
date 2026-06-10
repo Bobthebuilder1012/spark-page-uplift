@@ -180,13 +180,13 @@ function TutorDetail() {
               <h2 className="text-2xl font-bold text-ink">What my students say</h2>
               <Info className="size-4 text-muted-foreground" />
             </div>
-            <div className="flex items-center gap-3 mt-3">
-              <span className="text-4xl font-bold text-ink">{p.rating.toFixed(1)}</span>
-              <div className="size-10 rounded-full bg-amber-400 grid place-items-center">
-                <Star className="size-5 fill-ink text-ink" />
+            <div className="flex items-center gap-4 mt-4">
+              <span className="text-6xl font-bold text-ink leading-none">{p.rating.toFixed(1)}</span>
+              <div className="size-14 rounded-full bg-amber-400 grid place-items-center shadow-md">
+                <Star className="size-8 fill-amber-600 text-amber-600" />
               </div>
             </div>
-            <div className="text-sm text-muted-foreground mt-1">Based on {p.reviews} student reviews</div>
+            <div className="text-sm text-muted-foreground mt-2">Based on {p.reviews} student reviews</div>
 
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 mt-6">
               {REVIEWS.map((r) => (
