@@ -176,64 +176,96 @@ function TutorCard({ t, saved, toggleSave, onHover, onBook }: { t: Tutor; saved:
   );
 }
 
-// ---------- class card ----------
+// ---------- class card (Coursera-style vertical) ----------
 function ClassRowCard({ c, saved, toggleSave, onHover, onEnroll }: { c: ClassRow; saved: boolean; toggleSave: () => void; onHover: () => void; onEnroll: () => void }) {
+  const seatsLeft = Math.max(0, c.seatsTotal - c.seatsTaken);
   return (
-    <div onMouseEnter={onHover} className="rounded-3xl border border-border bg-background p-4 sm:p-5 hover:border-brand/40 hover:shadow-card transition-all">
-      <div className="flex gap-4 sm:gap-5">
-        <div className="flex flex-col items-center gap-3">
-          <Link to="/classes/$id" params={{ id: c.id }}>
-            <Avatar name={c.name} hue={c.hue} size={96} />
-          </Link>
-          <button onClick={toggleSave} className="size-9 rounded-full border border-border grid place-items-center hover:bg-muted">
-            <Heart className={cn("size-4", saved ? "fill-coral text-coral" : "text-muted-foreground")} />
+    <div
+      onMouseEnter={onHover}
+      className="group flex flex-col rounded-3xl border border-border bg-background overflow-hidden hover:border-brand/50 hover:shadow-card transition-all"
+    >
+      {/* Branded banner */}
+      <Link to="/classes/$id" params={{ id: c.id }} className="block">
+        <div
+          className="relative h-36 sm:h-40 grid place-items-center text-white overflow-hidden"
+          style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${c.hue}), oklch(0.55 0.16 ${c.hue}))` }}
+        >
+          <span className="absolute right-4 bottom-2 text-[7rem] leading-none opacity-30 select-none font-black">{c.emoji ?? c.subject[0]}</span>
+          <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 text-[10px] font-bold">{c.level}</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 text-[10px] font-bold">
+              <Users className="size-3" /> Group
+            </span>
+            {c.popular && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-ink text-white px-2.5 py-0.5 text-[10px] font-bold">
+                <Sparkles className="size-3" /> Popular
+              </span>
+            )}
+          </div>
+          {c.promoLabel && (
+            <span className="absolute bottom-3 left-3 rounded-full bg-coral text-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+              {c.promoLabel}
+            </span>
+          )}
+          <button
+            onClick={(e) => { e.preventDefault(); toggleSave(); }}
+            className="absolute top-3 right-3 size-9 rounded-full bg-background/90 backdrop-blur grid place-items-center hover:bg-background"
+          >
+            <Heart className={cn("size-4", saved ? "fill-coral text-coral" : "text-ink")} />
           </button>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <Link to="/classes/$id" params={{ id: c.id }} className="hover:underline">
-                <h3 className="text-lg sm:text-xl font-bold text-ink truncate">{c.name}</h3>
-              </Link>
-              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <span className="inline-flex items-center gap-1 text-sm font-bold text-ink">
-                  <Star className="size-4 fill-amber-400 text-amber-400" />
-                  {c.rating.toFixed(2)}
-                </span>
-                <span className="text-xs text-muted-foreground">({c.ratingCount} ratings)</span>
-                <span className="text-xs text-muted-foreground">· {c.subject}</span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-ink">{c.level}</span>
-              </div>
-              <div className="flex items-center gap-2 mt-2 text-xs">
-                <span className="text-muted-foreground">with</span>
-                <span className="font-semibold text-ink">{c.tutorName}</span>
-                {c.verified && <BadgeCheck className="size-3.5 text-brand-deep" />}
-                {c.popular && <span className="inline-flex items-center gap-1 font-semibold text-brand-deep"><Sparkles className="size-3" /> Popular</span>}
-              </div>
+      </Link>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col p-5">
+        <Link to="/student/tutors/$id" params={{ id: c.tutorId }} className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-ink transition">
+          <span
+            className="grid size-6 place-items-center rounded-full text-[9px] font-bold"
+            style={{ background: `oklch(0.85 0.1 ${c.tutorHue})`, color: `oklch(0.28 0.07 ${c.tutorHue})` }}
+          >
+            {c.tutorName.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((s) => s[0]).slice(0, 2).join("")}
+          </span>
+          <span className="font-semibold text-ink hover:underline">{c.tutorName}</span>
+          {c.tutorVerified && <BadgeCheck className="size-3.5 text-brand-deep" />}
+        </Link>
+
+        <Link to="/classes/$id" params={{ id: c.id }}>
+          <h3 className="mt-2 text-base sm:text-lg font-bold text-ink leading-snug line-clamp-2 group-hover:text-brand-deep transition">
+            {c.title}
+          </h3>
+        </Link>
+        <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">{c.tagline}</p>
+
+        <div className="mt-3 flex items-center gap-3 text-xs text-ink">
+          <span className="inline-flex items-center gap-1 font-bold">
+            <Star className="size-3.5 fill-amber-400 text-amber-400" /> {c.rating.toFixed(1)}
+            <span className="font-normal text-muted-foreground">({c.ratingCount})</span>
+          </span>
+          <span className="text-muted-foreground">·</span>
+          <span className="text-muted-foreground">{c.subject}</span>
+        </div>
+
+        <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><Clock className="size-3" /> {c.duration}</span>
+          <span className="inline-flex items-center gap-1"><Users className="size-3" /> {c.seatsTaken} enrolled</span>
+          {seatsLeft > 0 && seatsLeft <= 4 && (
+            <span className="font-semibold text-coral">Only {seatsLeft} left</span>
+          )}
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-3">
+          <div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-bold text-ink">TTD ${c.priceTTD}</span>
+              {c.originalPriceTTD && (
+                <span className="text-xs text-muted-foreground line-through">${c.originalPriceTTD}</span>
+              )}
             </div>
-            <div className="text-right shrink-0">
-              <div className="text-2xl sm:text-3xl font-bold text-ink leading-none">TT${c.priceTTD}</div>
-              <div className="text-[11px] text-muted-foreground mt-1">per month</div>
-            </div>
+            <div className="text-[10px] text-muted-foreground">per month</div>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{c.description}</p>
-          <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
-            <div>
-              <div className="font-bold text-ink inline-flex items-center gap-1.5"><Clock className="size-3.5" /> Live</div>
-              <div className="text-muted-foreground">{c.schedule}</div>
-            </div>
-            <div><div className="font-bold text-ink">{c.enrolled}</div><div className="text-muted-foreground">Enrolled</div></div>
-            <div><div className="font-bold text-ink">{c.seatsLeft}</div><div className="text-muted-foreground">Seats left</div></div>
-          </div>
-          <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
-            <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <TrendingUp className="size-3.5" /> {c.recentJoins} joined this week
-            </div>
-            <div className="flex items-center gap-2 ml-auto">
-              <Link to="/classes/$id" params={{ id: c.id }} className="rounded-full border border-border px-4 py-2.5 text-sm font-semibold text-ink hover:bg-muted">Details</Link>
-              <button onClick={onEnroll} className="rounded-full bg-brand text-white px-5 py-2.5 text-sm font-bold hover:bg-brand-deep">Enroll</button>
-            </div>
-          </div>
+          <button onClick={onEnroll} className="rounded-full bg-brand text-white px-4 py-2 text-sm font-bold hover:bg-brand-deep">
+            {seatsLeft === 0 ? "Waitlist" : "Join Class"}
+          </button>
         </div>
       </div>
     </div>
