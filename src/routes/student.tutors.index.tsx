@@ -340,8 +340,8 @@ function ExplorePage() {
           <span className="text-xs text-muted-foreground">Active filters:</span>
           {subject && <Chip onRemove={() => update({ subject: "", page: 1 })}>{subject}</Chip>}
           {(priceMin > 0 || priceMax < 200) && <Chip onRemove={() => update({ priceMin: 0, priceMax: 200, page: 1 })}>{priceLabel}</Chip>}
-          {selectedDays.map((d) => <Chip key={d} onRemove={() => update({ days: selectedDays.filter((x) => x !== d).join(","), page: 1 })}>{d}</Chip>)}
-          {selectedTimes.map((t) => <Chip key={t} onRemove={() => update({ times: selectedTimes.filter((x) => x !== t).join(","), page: 1 })}>{t}</Chip>)}
+          {selectedDays.map((d: string) => <Chip key={d} onRemove={() => update({ days: selectedDays.filter((x: string) => x !== d).join(","), page: 1 })}>{d}</Chip>)}
+          {selectedTimes.map((t: string) => <Chip key={t} onRemove={() => update({ times: selectedTimes.filter((x: string) => x !== t).join(","), page: 1 })}>{t}</Chip>)}
           <button onClick={() => update({ subject: "", priceMin: 0, priceMax: 200, days: "", times: "", page: 1 })} className="text-xs font-semibold text-brand-deep hover:underline">Clear all</button>
         </div>
       )}
