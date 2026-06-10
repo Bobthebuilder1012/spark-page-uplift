@@ -33,7 +33,16 @@ function NewClassBuilder() {
   const [cadence, setCadence] = useState("Weekly");
   const [seats, setSeats] = useState(20);
   const [requestToJoin, setRequestToJoin] = useState(false);
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const [saved, setSaved] = useState(false);
+
+  const onPickBanner = (file?: File) => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setBannerUrl(url);
+  };
 
   const updateList = (set: typeof setOutcomes, idx: number, value: string) =>
     set((list) => list.map((v, i) => (i === idx ? value : v)));
