@@ -10,8 +10,8 @@ export const Route = createFileRoute("/classes/$id")({
   component: ClassDetailPage,
 });
 
-const TABS = ["About", "Stream", "Ratings"] as const;
-type Tab = (typeof TABS)[number];
+const ALL_TABS = ["About", "Stream", "Ratings"] as const;
+type Tab = (typeof ALL_TABS)[number];
 
 const CLASS = {
   id: "c1",
@@ -96,6 +96,7 @@ const BREAKDOWN = [
 
 function ClassDetailPage() {
   const [tab, setTab] = useState<Tab>("About");
+  const visibleTabs = ALL_TABS.filter((t) => t !== "Stream" || CLASS.enrolled);
 
   return (
     <ClassesShell>
@@ -122,7 +123,7 @@ function ClassDetailPage() {
 
           <div className="mt-8 border-b border-[#1F1F1F]">
             <div className="flex gap-1">
-              {TABS.map((t) => (
+              {visibleTabs.map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}

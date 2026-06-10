@@ -30,6 +30,7 @@ export function Nav() {
         </a>
         <nav className="hidden items-center gap-8 text-sm font-medium text-white/70 md:flex">
           <a href="#how" className="hover:text-white transition-colors">How it works</a>
+          <Link to="/classes" className="hover:text-white transition-colors">Explore</Link>
           <a href="#testimonials" className="hover:text-white transition-colors">Reviews</a>
           <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
         </nav>
