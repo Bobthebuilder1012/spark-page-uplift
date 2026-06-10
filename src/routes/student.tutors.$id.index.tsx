@@ -429,6 +429,10 @@ function TutorDetail() {
         </aside>
       </div>
 
+      <TutorClassesSection tutorId={id} tutorName={p.name} />
+
+
+
       {/* Mobile floating book bar */}
       <div className="lg:hidden fixed bottom-16 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between">
         <div>
