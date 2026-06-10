@@ -97,25 +97,40 @@ function ClassHubPage() {
 function Header({ lesson, enrolledCount, atCapacity, isOneOnOne }: { lesson: TutorLesson; enrolledCount: number; atCapacity: boolean; isOneOnOne: boolean }) {
   const m = LESSON_KIND_META[lesson.kind];
   const promo = lesson.promotion;
+  const hue = (Array.from(lesson.subject + lesson.title).reduce((a, c) => a + c.charCodeAt(0), 0) * 7) % 360;
+  const mark = (lesson.subject?.[0] ?? "?").toUpperCase();
   return (
-    <div className={cn("relative h-44 lg:h-52 bg-gradient-to-br", lesson.thumbnailGradient ?? "from-brand to-emerald-400")}>
-      <Link to="/tutor/lessons" className="absolute top-4 left-4 inline-flex items-center gap-1 text-xs font-semibold text-white/95 bg-black/30 hover:bg-black/40 px-3 py-1.5 rounded-full backdrop-blur">
+    <div
+      className="relative h-52 lg:h-64 overflow-hidden"
+      style={{ background: `linear-gradient(135deg, oklch(0.88 0.09 ${hue}), oklch(0.55 0.16 ${hue}))` }}
+    >
+      {/* Emoji / subject mark watermark — mirrors student class hero */}
+      <div className="absolute inset-y-0 right-0 hidden md:flex items-center justify-end pr-8 opacity-25 select-none pointer-events-none">
+        <div className="text-[14rem] leading-none font-black text-white">{mark}</div>
+      </div>
+
+      <Link to="/tutor/lessons" className="absolute top-4 left-4 inline-flex items-center gap-1 text-xs font-semibold text-white bg-black/30 hover:bg-black/40 px-3 py-1.5 rounded-full backdrop-blur">
         <ArrowLeft className="size-3.5" /> All Classes
       </Link>
+
       <div className="absolute inset-x-0 bottom-0">
         <div className="px-4 lg:px-8 max-w-7xl mx-auto pb-5 text-white flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/90 text-ink")}>{m.short}</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+              <span className="rounded-full bg-white/20 backdrop-blur px-3 py-1">{lesson.level}</span>
+              <span className="rounded-full bg-white/20 backdrop-blur px-3 py-1">{lesson.subject}</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/20 backdrop-blur px-3 py-1">
+                <Users className="size-3" /> {m.short}
+              </span>
               {lesson.visibility && (
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white border border-white/30 inline-flex items-center gap-1">
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/20 backdrop-blur px-3 py-1">
                   {lesson.visibility === "private" ? <Lock className="size-3" /> : <Globe className="size-3" />} {lesson.visibility}
                 </span>
               )}
-              {atCapacity && !isOneOnOne && <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-500 text-white">At capacity</span>}
+              {atCapacity && !isOneOnOne && <span className="rounded-full bg-coral text-white px-3 py-1">At capacity</span>}
             </div>
-            <h1 className="mt-2 text-2xl lg:text-3xl font-bold truncate">{lesson.title}</h1>
-            <div className="mt-1 text-sm text-white/85">{lesson.subject} · {lesson.level} · {lesson.recurrenceRule ?? "One-off"}</div>
+            <h1 className="mt-3 text-2xl lg:text-3xl font-bold truncate">{lesson.title}</h1>
+            <div className="mt-1 text-sm text-white/85">{lesson.recurrenceRule ?? "One-off"}</div>
           </div>
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-white/95 text-ink px-4 py-2 text-right">
