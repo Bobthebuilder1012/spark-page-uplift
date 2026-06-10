@@ -1,14 +1,20 @@
 // Shared catalog of group classes — consumed by explore, class detail, and tutor profile.
 
+export type ClassBadge = {
+  key: "popular" | "new" | "almost-full" | "early-bird" | "promo";
+  label: string;
+  tone: "ink" | "coral" | "brand" | "sky";
+};
+
 export type ClassListing = {
   id: string;
   title: string;
   subject: string;
   level: string;            // CSEC · CAPE · SEA · etc.
-  tagline: string;          // short blurb for cards
-  description: string;      // long description for detail
-  whatYouLearn: string[];   // bullets
-  whatsIncluded: string[];  // bullets
+  tagline: string;
+  description: string;
+  whatYouLearn: string[];
+  whatsIncluded: string[];
   tutorId: string;
   tutorName: string;
   tutorHue: number;
@@ -17,20 +23,51 @@ export type ClassListing = {
   ratingCount: number;
   priceTTD: number;
   originalPriceTTD?: number;
-  promoLabel?: string;      // e.g. "EARLY-BIRD 20% OFF"
+  promoLabel?: string;      // tutor-set promo (e.g. "EARLY-BIRD 17% OFF")
   schedule: string;
-  duration: string;         // "90 min"
-  cadence: string;          // "Every Tuesday"
+  duration: string;
+  cadence: string;
   seatsTotal: number;
   seatsTaken: number;
   recentJoins: number;
-  popular?: boolean;
-  hue: number;              // brand hue
-  // Optional emoji as a soft brand mark on the banner
+  hue: number;
   emoji?: string;
   nextBilling: string;
-  startsLabel: string;      // "Ongoing — join anytime" / "Starts 1 Sept"
+  startsLabel: string;
+  // New metadata (drives badges + access flow)
+  createdAt: string;        // ISO date — used for "New cohort" badge
+  requestToJoin?: boolean;  // tutor toggle — student joins by request, not direct enrol
 };
+
+// Auto badge rules:
+// - popular        rating >= 4.7 AND ratingCount >= 20 AND seatsTaken >= 15
+// - almost-full    seatsLeft <= 4 AND seatsLeft > 0
+// - new            createdAt within last 45 days
+// - early-bird     originalPriceTTD set AND priceTTD < originalPriceTTD
+// - promo          tutor-set promoLabel
+export function getClassBadges(c: ClassListing): ClassBadge[] {
+  const out: ClassBadge[] = [];
+  const seatsLeft = c.seatsTotal - c.seatsTaken;
+  const ageDays = (Date.now() - new Date(c.createdAt).getTime()) / 86_400_000;
+
+  if (c.rating >= 4.7 && c.ratingCount >= 20 && c.seatsTaken >= 15) {
+    out.push({ key: "popular", label: "Popular", tone: "ink" });
+  }
+  if (seatsLeft > 0 && seatsLeft <= 4) {
+    out.push({ key: "almost-full", label: `Only ${seatsLeft} seat${seatsLeft === 1 ? "" : "s"} left`, tone: "coral" });
+  }
+  if (ageDays <= 45) {
+    out.push({ key: "new", label: "New cohort", tone: "sky" });
+  }
+  if (c.originalPriceTTD && c.priceTTD < c.originalPriceTTD) {
+    out.push({ key: "early-bird", label: c.promoLabel ?? "Early-bird", tone: "brand" });
+  } else if (c.promoLabel) {
+    out.push({ key: "promo", label: c.promoLabel, tone: "brand" });
+  }
+  return out;
+}
+
+const daysAgo = (d: number) => new Date(Date.now() - d * 86_400_000).toISOString();
 
 export const CLASSES_CATALOG: ClassListing[] = [
   {
@@ -59,10 +96,11 @@ export const CLASSES_CATALOG: ClassListing[] = [
     originalPriceTTD: 420, promoLabel: "EARLY-BIRD 17% OFF",
     schedule: "Tuesdays · 4:00–5:30 PM AST",
     duration: "90 min", cadence: "Weekly",
-    seatsTotal: 22, seatsTaken: 18, recentJoins: 7, popular: true,
+    seatsTotal: 22, seatsTaken: 18, recentJoins: 7,
     hue: 145, emoji: "∑",
     nextBilling: "Aug 1, 2026",
     startsLabel: "Ongoing — join anytime",
+    createdAt: daysAgo(120),
   },
   {
     id: "c2",
@@ -91,6 +129,8 @@ export const CLASSES_CATALOG: ClassListing[] = [
     hue: 20, emoji: "✎",
     nextBilling: "Aug 1, 2026",
     startsLabel: "Ongoing — join anytime",
+    createdAt: daysAgo(60),
+    requestToJoin: true,
   },
   {
     id: "c3",
@@ -116,10 +156,11 @@ export const CLASSES_CATALOG: ClassListing[] = [
     rating: 4.9, ratingCount: 41, priceTTD: 400,
     schedule: "Wednesdays · 5:00–6:30 PM AST",
     duration: "90 min", cadence: "Weekly",
-    seatsTotal: 24, seatsTaken: 22, recentJoins: 9, popular: true,
-    hue: 280, emoji: "🧬",
+    seatsTotal: 24, seatsTaken: 22, recentJoins: 9,
+    hue: 280, emoji: "B",
     nextBilling: "Aug 1, 2026",
     startsLabel: "Ongoing — join anytime",
+    createdAt: daysAgo(220),
   },
   {
     id: "c4",
@@ -148,6 +189,7 @@ export const CLASSES_CATALOG: ClassListing[] = [
     hue: 165, emoji: "⚗",
     nextBilling: "—",
     startsLabel: "Next cohort: 1 Sept 2026",
+    createdAt: daysAgo(20),
   },
   {
     id: "c5",
@@ -176,6 +218,7 @@ export const CLASSES_CATALOG: ClassListing[] = [
     hue: 220, emoji: "⚛",
     nextBilling: "Aug 1, 2026",
     startsLabel: "Ongoing — join anytime",
+    createdAt: daysAgo(90),
   },
   {
     id: "c6",
@@ -204,6 +247,7 @@ export const CLASSES_CATALOG: ClassListing[] = [
     hue: 145, emoji: "△",
     nextBilling: "Aug 1, 2026",
     startsLabel: "Ongoing — join anytime",
+    createdAt: daysAgo(150),
   },
   {
     id: "c7",
@@ -229,10 +273,11 @@ export const CLASSES_CATALOG: ClassListing[] = [
     originalPriceTTD: 300, promoLabel: "FAMILY SPECIAL",
     schedule: "Saturdays · 9:00–10:00 AM AST",
     duration: "60 min", cadence: "Weekly",
-    seatsTotal: 24, seatsTaken: 21, recentJoins: 11, popular: true,
-    hue: 35, emoji: "✦",
+    seatsTotal: 24, seatsTaken: 21, recentJoins: 11,
+    hue: 35, emoji: "★",
     nextBilling: "Aug 1, 2026",
     startsLabel: "Ongoing — join anytime",
+    createdAt: daysAgo(300),
   },
   {
     id: "c8",
@@ -261,6 +306,8 @@ export const CLASSES_CATALOG: ClassListing[] = [
     hue: 145, emoji: "∫",
     nextBilling: "—",
     startsLabel: "Next cohort: 1 Sept 2026",
+    createdAt: daysAgo(35),
+    requestToJoin: true,
   },
 ];
 
