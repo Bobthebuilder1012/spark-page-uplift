@@ -3,7 +3,7 @@ import { useEffect, useState, type ComponentType } from "react";
 import {
   LayoutDashboard, BookOpen, CalendarDays, Users, Wallet,
   Sparkles, Settings, Bell, Search, LogOut, ChevronUp, PanelLeftClose, PanelLeftOpen, Lock,
-  Calendar as CalendarIcon, Star, Rocket,
+  Calendar as CalendarIcon, Star, Rocket, MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/landing/Logo";
@@ -16,6 +16,7 @@ const nav: NavItem[] = [
   { to: "/tutor/lessons", label: "My Classes", icon: BookOpen, gated: true },
   { to: "/tutor/sessions", label: "Sessions", icon: CalendarDays },
   { to: "/tutor/students", label: "My Students", icon: Users },
+  { to: "/tutor/messages", label: "Messages", icon: MessageSquare },
   { to: "/tutor/wallet", label: "My Wallet", icon: Wallet },
   { to: "/tutor/reviews", label: "Reviews", icon: Star },
   { to: "/tutor/growth", label: "My Business", icon: Rocket, gated: true },
