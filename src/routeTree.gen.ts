@@ -50,6 +50,7 @@ import { Route as StudentCalendarRouteImport } from './routes/student.calendar'
 import { Route as StudentBookingsRouteImport } from './routes/student.bookings'
 import { Route as ParentSettingsRouteImport } from './routes/parent.settings'
 import { Route as ParentNotificationsRouteImport } from './routes/parent.notifications'
+import { Route as ParentMessagesRouteImport } from './routes/parent.messages'
 import { Route as ParentBillingRouteImport } from './routes/parent.billing'
 import { Route as ClassesManageRouteImport } from './routes/classes.manage'
 import { Route as ClassesIdRouteImport } from './routes/classes.$id'
@@ -279,6 +280,11 @@ const ParentNotificationsRoute = ParentNotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => ParentRoute,
 } as any)
+const ParentMessagesRoute = ParentMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => ParentRoute,
+} as any)
 const ParentBillingRoute = ParentBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -414,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/classes/$id': typeof ClassesIdRoute
   '/classes/manage': typeof ClassesManageRoute
   '/parent/billing': typeof ParentBillingRoute
+  '/parent/messages': typeof ParentMessagesRoute
   '/parent/notifications': typeof ParentNotificationsRoute
   '/parent/settings': typeof ParentSettingsRoute
   '/student/bookings': typeof StudentBookingsRoute
@@ -477,6 +484,7 @@ export interface FileRoutesByTo {
   '/classes/$id': typeof ClassesIdRoute
   '/classes/manage': typeof ClassesManageRoute
   '/parent/billing': typeof ParentBillingRoute
+  '/parent/messages': typeof ParentMessagesRoute
   '/parent/notifications': typeof ParentNotificationsRoute
   '/parent/settings': typeof ParentSettingsRoute
   '/student/bookings': typeof StudentBookingsRoute
@@ -544,6 +552,7 @@ export interface FileRoutesById {
   '/classes/$id': typeof ClassesIdRoute
   '/classes/manage': typeof ClassesManageRoute
   '/parent/billing': typeof ParentBillingRoute
+  '/parent/messages': typeof ParentMessagesRoute
   '/parent/notifications': typeof ParentNotificationsRoute
   '/parent/settings': typeof ParentSettingsRoute
   '/student/bookings': typeof StudentBookingsRoute
@@ -612,6 +621,7 @@ export interface FileRouteTypes {
     | '/classes/$id'
     | '/classes/manage'
     | '/parent/billing'
+    | '/parent/messages'
     | '/parent/notifications'
     | '/parent/settings'
     | '/student/bookings'
@@ -675,6 +685,7 @@ export interface FileRouteTypes {
     | '/classes/$id'
     | '/classes/manage'
     | '/parent/billing'
+    | '/parent/messages'
     | '/parent/notifications'
     | '/parent/settings'
     | '/student/bookings'
@@ -741,6 +752,7 @@ export interface FileRouteTypes {
     | '/classes/$id'
     | '/classes/manage'
     | '/parent/billing'
+    | '/parent/messages'
     | '/parent/notifications'
     | '/parent/settings'
     | '/student/bookings'
@@ -1100,6 +1112,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParentNotificationsRouteImport
       parentRoute: typeof ParentRoute
     }
+    '/parent/messages': {
+      id: '/parent/messages'
+      path: '/messages'
+      fullPath: '/parent/messages'
+      preLoaderRoute: typeof ParentMessagesRouteImport
+      parentRoute: typeof ParentRoute
+    }
     '/parent/billing': {
       id: '/parent/billing'
       path: '/billing'
@@ -1266,6 +1285,7 @@ declare module '@tanstack/react-router' {
 
 interface ParentRouteChildren {
   ParentBillingRoute: typeof ParentBillingRoute
+  ParentMessagesRoute: typeof ParentMessagesRoute
   ParentNotificationsRoute: typeof ParentNotificationsRoute
   ParentSettingsRoute: typeof ParentSettingsRoute
   ParentIndexRoute: typeof ParentIndexRoute
@@ -1277,6 +1297,7 @@ interface ParentRouteChildren {
 
 const ParentRouteChildren: ParentRouteChildren = {
   ParentBillingRoute: ParentBillingRoute,
+  ParentMessagesRoute: ParentMessagesRoute,
   ParentNotificationsRoute: ParentNotificationsRoute,
   ParentSettingsRoute: ParentSettingsRoute,
   ParentIndexRoute: ParentIndexRoute,
