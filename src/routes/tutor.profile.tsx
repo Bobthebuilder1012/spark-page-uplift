@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTutor } from "@/lib/tutor-store";
-import { MapPin, ExternalLink, Video, CalendarDays, Star } from "lucide-react";
+import { MapPin, ExternalLink, Video, CalendarDays, Star, Pencil, Check, X } from "lucide-react";
 import { RatingBreakdown } from "@/components/ratings/RatingBreakdown";
 import { CommentSection } from "@/components/ratings/CommentSection";
 import { getSummary, useTutoringPreference } from "@/lib/ratings-store";
@@ -19,6 +19,9 @@ function ProfilePage() {
   const { profile, completion } = useTutor();
   const [pref] = useTutoringPreference();
   const [filter, setFilter] = useState<number | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [draftBio, setDraftBio] = useState(profile.bio);
+  const [draftQuals, setDraftQuals] = useState("UWI BSc Mathematics · 8 years teaching");
   const summary = getSummary("tutor", "ramdeen");
 
   const showClasses = pref !== "one-on-one-only";
@@ -29,11 +32,27 @@ function ProfilePage() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-ink">Profile</h1>
-          <p className="text-sm text-muted-foreground mt-1">This is the public profile students see.</p>
+          <p className="text-sm text-muted-foreground mt-1">This is exactly what students see on your public profile.</p>
         </div>
-        <Link to="/tutor/get-listed" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-brand-deep hover:underline">
-          Get listed checklist <ExternalLink className="size-3.5" />
-        </Link>
+        <div className="flex items-center gap-2">
+          {!editing ? (
+            <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-ink text-white text-sm font-semibold hover:bg-ink/90">
+              <Pencil className="size-4" /> Edit profile
+            </button>
+          ) : (
+            <>
+              <button onClick={() => setEditing(false)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-sm font-semibold text-ink hover:bg-muted">
+                <X className="size-4" /> Cancel
+              </button>
+              <button onClick={() => setEditing(false)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold hover:bg-brand-deep">
+                <Check className="size-4" /> Save changes
+              </button>
+            </>
+          )}
+          <Link to="/tutor/get-listed" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-brand-deep hover:underline">
+            Get listed <ExternalLink className="size-3.5" />
+          </Link>
+        </div>
       </header>
 
       {/* Hero card */}
