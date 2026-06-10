@@ -397,15 +397,13 @@ function ExplorePage() {
   return (
     <ClassesShell>
       <div className="space-y-5">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-ink">Explore tutors & classes</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              1:1 lessons and live group classes with verified Caribbean tutors.
-            </p>
-          </div>
-          <div className="text-4xl">🎓</div>
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-ink">Explore tutors & classes</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            1:1 lessons and live group classes with verified Caribbean tutors.
+          </p>
         </div>
+
 
         {/* Tabs */}
         <div className="inline-flex p-1 rounded-2xl bg-muted">

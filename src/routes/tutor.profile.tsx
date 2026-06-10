@@ -78,7 +78,7 @@ function ProfilePage() {
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-ink truncate">{c.name}</div>
                   <div className="text-xs text-muted-foreground truncate">{c.level} · {c.schedule}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">⭐ {c.rating} · {c.ratings} ratings</div>
+                  <div className="text-xs text-muted-foreground mt-0.5 inline-flex items-center gap-1"><Star className="size-3 fill-amber-400 text-amber-400" /> {c.rating} · {c.ratings} ratings</div>
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-sm font-bold text-ink">TT${c.price}/mo</div>
