@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { AvailabilityFilter, hourLabel } from "@/components/filters/AvailabilityFilter";
+
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
@@ -172,8 +174,9 @@ function TutorCard({ t, onHover, saved, toggleSave, onBook }: { t: Tutor; onHove
             </div>
           </div>
 
-          <p className="mt-3 text-sm text-ink font-semibold line-clamp-2">✅ {t.headline}</p>
-          <p className="mt-1 text-sm text-muted-foreground line-clamp-2 hidden sm:block">💬 — {t.blurb}</p>
+          <p className="mt-3 text-sm text-ink font-semibold line-clamp-2">{t.headline}</p>
+          <p className="mt-1 text-sm text-muted-foreground line-clamp-2 hidden sm:block">{t.blurb}</p>
+
 
           <div className="mt-3 flex items-center gap-4 sm:gap-5 text-xs">
             <div>
@@ -287,13 +290,11 @@ function ExplorePage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-5">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-ink">Find a tutor that helps you grow</h1>
-          <p className="text-sm text-muted-foreground mt-1">1:1 lessons with verified Caribbean tutors. Try a trial first.</p>
-        </div>
-        <div className="text-4xl">📈</div>
+      <div>
+        <h1 className="text-2xl lg:text-3xl font-bold text-ink">Find a tutor that helps you grow</h1>
+        <p className="text-sm text-muted-foreground mt-1">1:1 lessons with verified Caribbean tutors. Try a trial first.</p>
       </div>
+
 
       <div className="inline-flex p-1 rounded-2xl bg-muted">
         <Link to="/classes" className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition", tab === "lessons" ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink")}>
@@ -339,7 +340,8 @@ function ExplorePage() {
           {subject && <Chip onRemove={() => update({ subject: "", page: 1 })}>{subject}</Chip>}
           {(priceMin > 0 || priceMax < 200) && <Chip onRemove={() => update({ priceMin: 0, priceMax: 200, page: 1 })}>{priceLabel}</Chip>}
           {selectedDays.map((d: string) => <Chip key={d} onRemove={() => update({ days: selectedDays.filter((x: string) => x !== d).join(","), page: 1 })}>{d}</Chip>)}
-          {selectedTimes.map((t: string) => <Chip key={t} onRemove={() => update({ times: selectedTimes.filter((x: string) => x !== t).join(","), page: 1 })}>{t}</Chip>)}
+          {selectedTimes.map((t: string) => <Chip key={t} onRemove={() => update({ times: selectedTimes.filter((x: string) => x !== t).join(","), page: 1 })}>{hourLabel(t)}</Chip>)}
+
           <button onClick={() => update({ subject: "", priceMin: 0, priceMax: 200, days: "", times: "", page: 1 })} className="text-xs font-semibold text-brand-deep hover:underline">Clear all</button>
         </div>
       )}
@@ -460,42 +462,3 @@ function SubjectFilter({ value, onApply }: { value: string; onApply: (s: string)
   );
 }
 
-function AvailabilityFilter({ days, times, onApply }: { days: string[]; times: string[]; onApply: (d: string[], t: string[]) => void }) {
-  const [d, setD] = useState(days);
-  const [t, setT] = useState(times);
-  const toggle = (arr: string[], v: string, set: (a: string[]) => void) =>
-    set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
-  const section = (label: string, group: "morning" | "daytime" | "evening") => (
-    <div>
-      <div className="text-[11px] font-semibold text-muted-foreground mb-1.5">{label}</div>
-      <div className="grid grid-cols-3 gap-1.5">
-        {TIME_BANDS.filter((b) => b.group === group).map((b) => (
-          <button key={b.key} onClick={() => toggle(t, b.key, setT)}
-            className={cn("px-2 py-2 rounded-lg border text-xs font-semibold", t.includes(b.key) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>
-            {b.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-  return (
-    <div className="space-y-3">
-      <div className="text-xs font-bold uppercase tracking-wider text-ink">Times</div>
-      {section("Morning", "morning")}
-      {section("Daytime", "daytime")}
-      {section("Evening and night", "evening")}
-      <div className="pt-1">
-        <div className="text-xs font-bold uppercase tracking-wider text-ink mb-1.5">Days</div>
-        <div className="grid grid-cols-4 gap-1.5">
-          {DAY_KEYS.map((day) => (
-            <button key={day} onClick={() => toggle(d, day, setD)}
-              className={cn("py-2 rounded-lg border text-xs font-semibold", d.includes(day) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>
-              {day}
-            </button>
-          ))}
-        </div>
-      </div>
-      <button onClick={() => onApply(d, t)} className="w-full rounded-full bg-brand text-white py-2 text-sm font-bold hover:bg-brand-deep">Apply</button>
-    </div>
-  );
-}
