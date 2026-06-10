@@ -11,6 +11,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ClassesShell } from "@/components/classes/ClassesShell";
 import { AvailabilityFilter, hourLabel } from "@/components/filters/AvailabilityFilter";
+import { CLASSES_CATALOG, type ClassListing } from "@/lib/classes-catalog";
 import { cn } from "@/lib/utils";
 
 
@@ -58,24 +59,9 @@ const TUTORS: Tutor[] = [
   { id: "thompson", name: "Ms. Thompson", flag: "🇹🇹", country: "Trinidad", subjects: ["English Language Arts", "Creative Writing"], level: "SEA", rating: 4.95, reviews: 92, pricePerLesson: 18, hue: 340, verified: true, superTutor: true, headline: "SEA ELA & Creative Writing — confidence-building sessions", blurb: "Help SEA students enjoy writing and feel calm in the exam room.", activeStudents: 64, lessonsTaught: "4,100", topPercent: "Top 10%", recentBookings: 14 },
 ];
 
-type ClassRow = {
-  id: string; name: string; subject: string; description: string;
-  tutorName: string; verified: boolean; rating: number; ratingCount: number;
-  priceTTD: number; level: string; schedule: string;
-  seatsLeft: number; enrolled: number; recentJoins: number;
-  popular?: boolean; hue: number;
-};
-
-const CLASSES: ClassRow[] = [
-  { id: "c1", name: "CSEC Mathematics — Algebra & Functions", subject: "Mathematics", level: "CSEC", description: "Weekly group class covering algebra and functions with worked past-paper questions.", tutorName: "Asha Persad", verified: true, rating: 4.8, ratingCount: 24, priceTTD: 350, schedule: "Tue · 4:00 PM (90 min)", seatsLeft: 4, enrolled: 18, recentJoins: 7, popular: true, hue: 145 },
-  { id: "c2", name: "English A — Paper 2 Essay Workshop", subject: "English", level: "CSEC", description: "Structured essay-writing focused on Paper 2 — planning, argumentation and revision.", tutorName: "Marcus Hill", verified: true, rating: 4.7, ratingCount: 18, priceTTD: 300, schedule: "Thu · 6:00 PM (75 min)", seatsLeft: 6, enrolled: 14, recentJoins: 4, hue: 20 },
-  { id: "c3", name: "CSEC Biology — Cells, Genetics & Systems", subject: "Biology", level: "CSEC", description: "Live lessons through every CSEC Biology unit with diagrams and weekly quizzes.", tutorName: "Dr. Renee Joseph", verified: true, rating: 4.9, ratingCount: 41, priceTTD: 400, schedule: "Wed · 5:00 PM (90 min)", seatsLeft: 2, enrolled: 22, recentJoins: 9, popular: true, hue: 280 },
-  { id: "c4", name: "Chemistry Crash Course — Acids, Bases & Salts", subject: "Chemistry", level: "CSEC", description: "Exam-priority topics with live demos and structured practice sets.", tutorName: "Ravi Singh", verified: true, rating: 4.6, ratingCount: 12, priceTTD: 375, schedule: "Sat · 10:00 AM (60 min)", seatsLeft: 9, enrolled: 8, recentJoins: 3, hue: 165 },
-  { id: "c5", name: "CSEC Physics — Mechanics Mastery", subject: "Physics", level: "CSEC", description: "Break mechanics into bite-size problems, with weekly check-ins and homework reviews.", tutorName: "Kieran Pierre", verified: true, rating: 4.5, ratingCount: 9, priceTTD: 350, schedule: "Mon · 5:30 PM (75 min)", seatsLeft: 12, enrolled: 6, recentJoins: 2, hue: 220 },
-  { id: "c6", name: "Mathematics — Geometry & Trigonometry", subject: "Mathematics", level: "CSEC", description: "Geometry and trig with visual proofs and timed practice.", tutorName: "Asha Persad", verified: true, rating: 4.8, ratingCount: 33, priceTTD: 350, schedule: "Fri · 4:00 PM (90 min)", seatsLeft: 5, enrolled: 19, recentJoins: 6, hue: 145 },
-  { id: "c7", name: "SEA Prep — English Comprehension Bootcamp", subject: "SEA Prep", level: "SEA", description: "Comprehension, vocab and exam writing for SEA students.", tutorName: "Ms. Thompson", verified: true, rating: 4.95, ratingCount: 52, priceTTD: 250, schedule: "Sat · 9:00 AM (60 min)", seatsLeft: 3, enrolled: 21, recentJoins: 11, popular: true, hue: 35 },
-  { id: "c8", name: "CAPE Pure Maths — Calculus Sprint", subject: "Mathematics", level: "CAPE", description: "Six-week sprint focused on Unit 1 calculus with past-paper drills.", tutorName: "Ms. Persad", verified: true, rating: 4.92, ratingCount: 28, priceTTD: 500, schedule: "Sun · 5:00 PM (90 min)", seatsLeft: 6, enrolled: 14, recentJoins: 5, hue: 240 },
-];
+// Group classes pulled from the shared catalog so explore, detail and tutor profiles stay in sync.
+type ClassRow = ClassListing;
+const CLASSES: ClassRow[] = CLASSES_CATALOG;
 
 const PAGE_SIZE = 12;
 
@@ -190,64 +176,96 @@ function TutorCard({ t, saved, toggleSave, onHover, onBook }: { t: Tutor; saved:
   );
 }
 
-// ---------- class card ----------
+// ---------- class card (Coursera-style vertical) ----------
 function ClassRowCard({ c, saved, toggleSave, onHover, onEnroll }: { c: ClassRow; saved: boolean; toggleSave: () => void; onHover: () => void; onEnroll: () => void }) {
+  const seatsLeft = Math.max(0, c.seatsTotal - c.seatsTaken);
   return (
-    <div onMouseEnter={onHover} className="rounded-3xl border border-border bg-background p-4 sm:p-5 hover:border-brand/40 hover:shadow-card transition-all">
-      <div className="flex gap-4 sm:gap-5">
-        <div className="flex flex-col items-center gap-3">
-          <Link to="/classes/$id" params={{ id: c.id }}>
-            <Avatar name={c.name} hue={c.hue} size={96} />
-          </Link>
-          <button onClick={toggleSave} className="size-9 rounded-full border border-border grid place-items-center hover:bg-muted">
-            <Heart className={cn("size-4", saved ? "fill-coral text-coral" : "text-muted-foreground")} />
+    <div
+      onMouseEnter={onHover}
+      className="group flex flex-col rounded-3xl border border-border bg-background overflow-hidden hover:border-brand/50 hover:shadow-card transition-all"
+    >
+      {/* Branded banner */}
+      <Link to="/classes/$id" params={{ id: c.id }} className="block">
+        <div
+          className="relative h-36 sm:h-40 grid place-items-center text-white overflow-hidden"
+          style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${c.hue}), oklch(0.55 0.16 ${c.hue}))` }}
+        >
+          <span className="absolute right-4 bottom-2 text-[7rem] leading-none opacity-30 select-none font-black">{c.emoji ?? c.subject[0]}</span>
+          <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 text-[10px] font-bold">{c.level}</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 text-[10px] font-bold">
+              <Users className="size-3" /> Group
+            </span>
+            {c.popular && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-ink text-white px-2.5 py-0.5 text-[10px] font-bold">
+                <Sparkles className="size-3" /> Popular
+              </span>
+            )}
+          </div>
+          {c.promoLabel && (
+            <span className="absolute bottom-3 left-3 rounded-full bg-coral text-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+              {c.promoLabel}
+            </span>
+          )}
+          <button
+            onClick={(e) => { e.preventDefault(); toggleSave(); }}
+            className="absolute top-3 right-3 size-9 rounded-full bg-background/90 backdrop-blur grid place-items-center hover:bg-background"
+          >
+            <Heart className={cn("size-4", saved ? "fill-coral text-coral" : "text-ink")} />
           </button>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <Link to="/classes/$id" params={{ id: c.id }} className="hover:underline">
-                <h3 className="text-lg sm:text-xl font-bold text-ink truncate">{c.name}</h3>
-              </Link>
-              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <span className="inline-flex items-center gap-1 text-sm font-bold text-ink">
-                  <Star className="size-4 fill-amber-400 text-amber-400" />
-                  {c.rating.toFixed(2)}
-                </span>
-                <span className="text-xs text-muted-foreground">({c.ratingCount} ratings)</span>
-                <span className="text-xs text-muted-foreground">· {c.subject}</span>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-ink">{c.level}</span>
-              </div>
-              <div className="flex items-center gap-2 mt-2 text-xs">
-                <span className="text-muted-foreground">with</span>
-                <span className="font-semibold text-ink">{c.tutorName}</span>
-                {c.verified && <BadgeCheck className="size-3.5 text-brand-deep" />}
-                {c.popular && <span className="inline-flex items-center gap-1 font-semibold text-brand-deep"><Sparkles className="size-3" /> Popular</span>}
-              </div>
+      </Link>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col p-5">
+        <Link to="/student/tutors/$id" params={{ id: c.tutorId }} className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-ink transition">
+          <span
+            className="grid size-6 place-items-center rounded-full text-[9px] font-bold"
+            style={{ background: `oklch(0.85 0.1 ${c.tutorHue})`, color: `oklch(0.28 0.07 ${c.tutorHue})` }}
+          >
+            {c.tutorName.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((s) => s[0]).slice(0, 2).join("")}
+          </span>
+          <span className="font-semibold text-ink hover:underline">{c.tutorName}</span>
+          {c.tutorVerified && <BadgeCheck className="size-3.5 text-brand-deep" />}
+        </Link>
+
+        <Link to="/classes/$id" params={{ id: c.id }}>
+          <h3 className="mt-2 text-base sm:text-lg font-bold text-ink leading-snug line-clamp-2 group-hover:text-brand-deep transition">
+            {c.title}
+          </h3>
+        </Link>
+        <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">{c.tagline}</p>
+
+        <div className="mt-3 flex items-center gap-3 text-xs text-ink">
+          <span className="inline-flex items-center gap-1 font-bold">
+            <Star className="size-3.5 fill-amber-400 text-amber-400" /> {c.rating.toFixed(1)}
+            <span className="font-normal text-muted-foreground">({c.ratingCount})</span>
+          </span>
+          <span className="text-muted-foreground">·</span>
+          <span className="text-muted-foreground">{c.subject}</span>
+        </div>
+
+        <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><Clock className="size-3" /> {c.duration}</span>
+          <span className="inline-flex items-center gap-1"><Users className="size-3" /> {c.seatsTaken} enrolled</span>
+          {seatsLeft > 0 && seatsLeft <= 4 && (
+            <span className="font-semibold text-coral">Only {seatsLeft} left</span>
+          )}
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-3">
+          <div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-bold text-ink">TTD ${c.priceTTD}</span>
+              {c.originalPriceTTD && (
+                <span className="text-xs text-muted-foreground line-through">${c.originalPriceTTD}</span>
+              )}
             </div>
-            <div className="text-right shrink-0">
-              <div className="text-2xl sm:text-3xl font-bold text-ink leading-none">TT${c.priceTTD}</div>
-              <div className="text-[11px] text-muted-foreground mt-1">per month</div>
-            </div>
+            <div className="text-[10px] text-muted-foreground">per month</div>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground line-clamp-2">{c.description}</p>
-          <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
-            <div>
-              <div className="font-bold text-ink inline-flex items-center gap-1.5"><Clock className="size-3.5" /> Live</div>
-              <div className="text-muted-foreground">{c.schedule}</div>
-            </div>
-            <div><div className="font-bold text-ink">{c.enrolled}</div><div className="text-muted-foreground">Enrolled</div></div>
-            <div><div className="font-bold text-ink">{c.seatsLeft}</div><div className="text-muted-foreground">Seats left</div></div>
-          </div>
-          <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
-            <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <TrendingUp className="size-3.5" /> {c.recentJoins} joined this week
-            </div>
-            <div className="flex items-center gap-2 ml-auto">
-              <Link to="/classes/$id" params={{ id: c.id }} className="rounded-full border border-border px-4 py-2.5 text-sm font-semibold text-ink hover:bg-muted">Details</Link>
-              <button onClick={onEnroll} className="rounded-full bg-brand text-white px-5 py-2.5 text-sm font-bold hover:bg-brand-deep">Enroll</button>
-            </div>
-          </div>
+          <button onClick={onEnroll} className="rounded-full bg-brand text-white px-4 py-2 text-sm font-bold hover:bg-brand-deep">
+            {seatsLeft === 0 ? "Waitlist" : "Join Class"}
+          </button>
         </div>
       </div>
     </div>
@@ -333,7 +351,7 @@ function ClassPreview({ c }: { c: ClassRow | null }) {
           </div>
           <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur px-3 py-1 text-[11px] font-bold text-white"><Users className="size-3" /> Group class</div>
           <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-            <div className="text-white font-bold text-lg line-clamp-2">{c.name}</div>
+            <div className="text-white font-bold text-lg line-clamp-2">{c.title}</div>
             <div className="text-white/85 text-xs">{c.schedule}</div>
           </div>
         </div>
@@ -370,7 +388,7 @@ function ExplorePage() {
   }), [ql, subject, priceMin, priceMax]);
 
   const filteredC = useMemo(() => CLASSES.filter((c) => {
-    if (ql && !(c.name.toLowerCase().includes(ql) || c.tutorName.toLowerCase().includes(ql) || c.description.toLowerCase().includes(ql))) return false;
+    if (ql && !(c.title.toLowerCase().includes(ql) || c.tutorName.toLowerCase().includes(ql) || c.tagline.toLowerCase().includes(ql))) return false;
     if (subject && !c.subject.toLowerCase().includes(subject.toLowerCase())) return false;
     return true;
   }), [ql, subject]);
@@ -460,8 +478,8 @@ function ExplorePage() {
           {items.length > PAGE_SIZE && <> · Page {currentPage} of {totalPages}</>}
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_320px] gap-5 items-start">
-          <div className="space-y-4">
+        <div className={cn("grid gap-5 items-start", tab === "tutors" && "lg:grid-cols-[1fr_320px]")}>
+          <div className={cn(tab === "tutors" ? "space-y-4" : "grid sm:grid-cols-2 xl:grid-cols-3 gap-5")}>
             {tab === "tutors"
               ? pageItems.map((t) => (
                   <TutorCard key={(t as Tutor).id} t={t as Tutor}
@@ -502,9 +520,11 @@ function ExplorePage() {
               </div>
             )}
           </div>
-          <div className="hidden lg:block sticky top-24">
-            {tab === "tutors" ? <TutorPreview tutor={hoveredTutor} /> : <ClassPreview c={hoveredClass} />}
-          </div>
+          {tab === "tutors" && (
+            <div className="hidden lg:block sticky top-24">
+              <TutorPreview tutor={hoveredTutor} />
+            </div>
+          )}
         </div>
       </div>
     </ClassesShell>

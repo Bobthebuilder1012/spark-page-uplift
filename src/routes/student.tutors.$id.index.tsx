@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronLeft, ChevronRight, Star, Heart, Share2, MessageSquare, Play, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Star, Heart, Share2, MessageSquare, Play, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil, Users, Clock } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { getClassesByTutorId } from "@/lib/classes-catalog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id/")({
@@ -428,6 +429,10 @@ function TutorDetail() {
         </aside>
       </div>
 
+      <TutorClassesSection tutorId={id} tutorName={p.name} />
+
+
+
       {/* Mobile floating book bar */}
       <div className="lg:hidden fixed bottom-16 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between">
         <div>
@@ -442,5 +447,59 @@ function TutorDetail() {
         </button>
       </div>
     </div>
+  );
+}
+
+function TutorClassesSection({ tutorId, tutorName }: { tutorId: string; tutorName: string }) {
+  const classes = getClassesByTutorId(tutorId);
+  if (classes.length === 0) return null;
+  return (
+    <section className="max-w-6xl mx-auto mt-12">
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-ink">Group classes by {tutorName}</h2>
+          <p className="text-sm text-muted-foreground mt-1">Recurring live classes you can join alongside other students.</p>
+        </div>
+      </div>
+      <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {classes.map((c) => (
+          <Link key={c.id} to="/classes/$id" params={{ id: c.id }}
+            className="group flex flex-col rounded-3xl border border-border bg-background overflow-hidden hover:border-brand/50 hover:shadow-card transition-all"
+          >
+            <div
+              className="relative h-32 grid place-items-center text-white overflow-hidden"
+              style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${c.hue}), oklch(0.55 0.16 ${c.hue}))` }}
+            >
+              <span className="absolute right-3 bottom-1 text-[6rem] leading-none opacity-30 select-none font-black">{c.emoji ?? c.subject[0]}</span>
+              <span className="absolute top-3 left-3 rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 text-[10px] font-bold">{c.level}</span>
+              {c.promoLabel && (
+                <span className="absolute bottom-3 left-3 rounded-full bg-coral text-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                  {c.promoLabel}
+                </span>
+              )}
+            </div>
+            <div className="flex-1 flex flex-col p-5">
+              <h3 className="text-base font-bold text-ink leading-snug line-clamp-2 group-hover:text-brand-deep transition">{c.title}</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">{c.tagline}</p>
+              <div className="mt-3 flex items-center gap-3 text-xs text-ink">
+                <span className="inline-flex items-center gap-1 font-bold">
+                  <Star className="size-3.5 fill-amber-400 text-amber-400" /> {c.rating.toFixed(1)}
+                  <span className="font-normal text-muted-foreground">({c.ratingCount})</span>
+                </span>
+                <span className="text-muted-foreground inline-flex items-center gap-1"><Clock className="size-3" /> {c.duration}</span>
+                <span className="text-muted-foreground inline-flex items-center gap-1"><Users className="size-3" /> {c.seatsTaken}</span>
+              </div>
+              <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-base font-bold text-ink">TTD ${c.priceTTD}</span>
+                  {c.originalPriceTTD && <span className="text-xs text-muted-foreground line-through">${c.originalPriceTTD}</span>}
+                </div>
+                <span className="text-xs font-semibold text-brand-deep group-hover:underline">View class →</span>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
