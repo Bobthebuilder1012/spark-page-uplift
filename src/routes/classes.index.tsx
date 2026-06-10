@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   Search, Star, Heart, BadgeCheck, ChevronDown, ChevronLeft, ChevronRight,
-  Play, Users, Sparkles, TrendingUp, Clock, GraduationCap, MessageSquare, X,
+  Play, Users, Sparkles, TrendingUp, Clock, GraduationCap, X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as SliderPrimitive from "@radix-ui/react-slider";
@@ -10,7 +10,9 @@ import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ClassesShell } from "@/components/classes/ClassesShell";
+import { AvailabilityFilter, hourLabel } from "@/components/filters/AvailabilityFilter";
 import { cn } from "@/lib/utils";
+
 
 // ---------- search params ----------
 const searchSchema = z.object({
@@ -76,10 +78,6 @@ const CLASSES: ClassRow[] = [
 ];
 
 const PAGE_SIZE = 12;
-const ALL_SUBJECTS = Array.from(new Set([
-  ...TUTORS.flatMap((t) => t.subjects),
-  ...CLASSES.map((c) => c.subject),
-])).sort();
 
 // Subject groups (for tabbed subject filter)
 const SUBJECT_GROUPS = {
@@ -88,17 +86,6 @@ const SUBJECT_GROUPS = {
   CAPE: ["Pure Mathematics", "Applied Mathematics", "Physics", "Chemistry", "Biology", "Computer Science", "Accounting", "Economics", "Management of Business", "Law", "Sociology", "Caribbean Studies", "Communication Studies", "Literatures in English"],
 };
 
-const DAY_KEYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-// AM/PM time bands per screenshot reference
-const TIME_BANDS: { key: string; label: string; group: "morning" | "daytime" | "evening" }[] = [
-  { key: "6-9am",   label: "6–9 AM",   group: "morning" },
-  { key: "9-12am",  label: "9–12 AM",  group: "morning" },
-  { key: "12-3pm",  label: "12–3 PM",  group: "daytime" },
-  { key: "3-6pm",   label: "3–6 PM",   group: "daytime" },
-  { key: "6-9pm",   label: "6–9 PM",   group: "evening" },
-  { key: "9-12pm",  label: "9–12 PM",  group: "evening" },
-];
 
 // ---------- shared bits ----------
 function Avatar({ name, hue, size = 96, square = true }: { name: string; hue: number; size?: number; square?: boolean }) {
@@ -183,15 +170,16 @@ function TutorCard({ t, saved, toggleSave, onHover, onBook }: { t: Tutor; saved:
               <div className="text-[11px] sm:text-xs text-muted-foreground mt-1">60-min lesson</div>
             </div>
           </div>
-          <p className="mt-3 text-sm text-ink font-semibold line-clamp-2">✅ {t.headline}</p>
-          <p className="mt-1 text-sm text-muted-foreground line-clamp-2 hidden sm:block">💬 — {t.blurb}</p>
+          <p className="mt-3 text-sm text-ink font-semibold line-clamp-2">{t.headline}</p>
+          <p className="mt-1 text-sm text-muted-foreground line-clamp-2 hidden sm:block">{t.blurb}</p>
+
           <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
             <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground">
               <TrendingUp className="size-3.5" /> Booked {t.recentBookings} times recently
             </div>
             <div className="flex items-center gap-2 ml-auto">
-              <button className="hidden sm:grid size-10 rounded-xl border border-border place-items-center hover:bg-muted"><MessageSquare className="size-4" /></button>
               <button onClick={onBook} className="rounded-full bg-brand text-white px-4 sm:px-5 py-2.5 text-sm font-bold hover:bg-brand-deep">
+
                 Book trial lesson
               </button>
             </div>
@@ -293,47 +281,6 @@ function SubjectFilter({ value, onApply }: { value: string; onApply: (s: string)
   );
 }
 
-// ---------- availability filter (AM/PM bands) ----------
-function AvailabilityFilter({ days, times, onApply }: { days: string[]; times: string[]; onApply: (d: string[], t: string[]) => void }) {
-  const [d, setD] = useState(days);
-  const [t, setT] = useState(times);
-  const toggle = (arr: string[], v: string, set: (a: string[]) => void) =>
-    set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
-
-  const section = (label: string, group: "morning" | "daytime" | "evening") => (
-    <div>
-      <div className="text-[11px] font-semibold text-muted-foreground mb-1.5">{label}</div>
-      <div className="grid grid-cols-3 gap-1.5">
-        {TIME_BANDS.filter((b) => b.group === group).map((b) => (
-          <button key={b.key} onClick={() => toggle(t, b.key, setT)}
-            className={cn("px-2 py-2 rounded-lg border text-xs font-semibold", t.includes(b.key) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>
-            {b.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-  return (
-    <div className="space-y-3">
-      <div className="text-xs font-bold uppercase tracking-wider text-ink">Times</div>
-      {section("Daytime", "daytime")}
-      {section("Evening and night", "evening")}
-      {section("Morning", "morning")}
-      <div className="pt-1">
-        <div className="text-xs font-bold uppercase tracking-wider text-ink mb-1.5">Days</div>
-        <div className="grid grid-cols-4 gap-1.5">
-          {DAY_KEYS.map((day) => (
-            <button key={day} onClick={() => toggle(d, day, setD)}
-              className={cn("py-2 rounded-lg border text-xs font-semibold", d.includes(day) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>
-              {day}
-            </button>
-          ))}
-        </div>
-      </div>
-      <button onClick={() => onApply(d, t)} className="w-full rounded-full bg-brand text-white py-2 text-sm font-bold hover:bg-brand-deep">Apply</button>
-    </div>
-  );
-}
 
 function PriceFilter({ min, max, onApply }: { min: number; max: number; onApply: (lo: number, hi: number) => void }) {
   const [v, setV] = useState<[number, number]>([min, max]);
@@ -450,15 +397,13 @@ function ExplorePage() {
   return (
     <ClassesShell>
       <div className="space-y-5">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-ink">Explore tutors & classes</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              1:1 lessons and live group classes with verified Caribbean tutors.
-            </p>
-          </div>
-          <div className="text-4xl">🎓</div>
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-ink">Explore tutors & classes</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            1:1 lessons and live group classes with verified Caribbean tutors.
+          </p>
         </div>
+
 
         {/* Tabs */}
         <div className="inline-flex p-1 rounded-2xl bg-muted">
@@ -505,7 +450,7 @@ function ExplorePage() {
             {subject && <Chip onRemove={() => update({ subject: "", page: 1 })}>{subject}</Chip>}
             {(priceMin > 0 || priceMax < 200) && <Chip onRemove={() => update({ priceMin: 0, priceMax: 200, page: 1 })}>{priceLabel}</Chip>}
             {selectedDays.map((d: string) => <Chip key={d} onRemove={() => update({ days: selectedDays.filter((x: string) => x !== d).join(","), page: 1 })}>{d}</Chip>)}
-            {selectedTimes.map((t: string) => <Chip key={t} onRemove={() => update({ times: selectedTimes.filter((x: string) => x !== t).join(","), page: 1 })}>{TIME_BANDS.find((b) => b.key === t)?.label || t}</Chip>)}
+            {selectedTimes.map((t: string) => <Chip key={t} onRemove={() => update({ times: selectedTimes.filter((x: string) => x !== t).join(","), page: 1 })}>{hourLabel(t)}</Chip>)}
             <button onClick={() => update({ subject: "", priceMin: 0, priceMax: 200, days: "", times: "", page: 1 })} className="text-xs font-semibold text-brand-deep hover:underline">Clear all</button>
           </div>
         )}
