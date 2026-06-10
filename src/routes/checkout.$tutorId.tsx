@@ -20,7 +20,7 @@ import { Logo } from "@/components/landing/Logo";
 import { cn } from "@/lib/utils";
 
 const search = z.object({
-  duration: fallback(z.coerce.number(), 50).default(50),
+  duration: fallback(z.coerce.number(), 60).default(60),
   slot: fallback(z.string(), "18:00").default("18:00"),
   date: fallback(z.string(), new Date().toISOString()).default(new Date().toISOString()),
 });
