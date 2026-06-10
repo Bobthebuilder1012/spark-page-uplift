@@ -78,7 +78,6 @@ const BASE_TUTORS: Tutor[] = [
 
 const PAGE_SIZE = 12;
 const ALL_COUNTRIES = Array.from(new Set(BASE_TUTORS.map((t) => t.country))).sort();
-const DAY_KEYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const SUBJECT_GROUPS = {
   SEA: ["Mathematics", "English Language Arts", "Creative Writing", "Science", "Social Studies", "Comprehension", "Grammar", "Spelling"],
@@ -86,14 +85,6 @@ const SUBJECT_GROUPS = {
   CAPE: ["Pure Mathematics", "Applied Mathematics", "Physics", "Chemistry", "Biology", "Computer Science", "Information Technology", "Accounting", "Economics", "Management of Business", "Law", "Sociology", "Caribbean Studies", "Communication Studies", "History", "Geography", "Literatures in English", "Spanish", "French", "Environmental Science", "Agricultural Science", "Digital Media", "Performing Arts", "Visual Arts", "Tourism", "Entrepreneurship"],
 } as const;
 
-const TIME_BANDS: { key: string; label: string; group: "morning" | "daytime" | "evening" }[] = [
-  { key: "6-9am",  label: "6–9 AM",  group: "morning" },
-  { key: "9-12am", label: "9–12 AM", group: "morning" },
-  { key: "12-3pm", label: "12–3 PM", group: "daytime" },
-  { key: "3-6pm",  label: "3–6 PM",  group: "daytime" },
-  { key: "6-9pm",  label: "6–9 PM",  group: "evening" },
-  { key: "9-12pm", label: "9–12 PM", group: "evening" },
-];
 
 function TutorAvatarSquare({ name, hue, size = 132 }: { name: string; hue: number; size?: number }) {
   const initials = name.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
