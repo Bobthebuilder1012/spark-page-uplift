@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, Check, Sparkles, Plus, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeft, Check, Sparkles, Plus, X, Upload, Globe, Lock, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tutor/classes/new")({
