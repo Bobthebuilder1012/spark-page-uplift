@@ -88,9 +88,16 @@ function RatingTile({ icon: Icon, label, value }: { icon: any; label: string; va
 
 function TutorDetail() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const p = PROFILES[id] ?? PROFILES.ramdeen;
   const [saved, setSaved] = useState(false);
-  const [booking, setBooking] = useState(false);
+  const book = () => {
+    if (!isAuthed()) {
+      navigate({ to: "/signup", search: { next: `/student/tutors/${id}/book` } as any });
+    } else {
+      navigate({ to: "/student/tutors/$id/book", params: { id } });
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-5">
