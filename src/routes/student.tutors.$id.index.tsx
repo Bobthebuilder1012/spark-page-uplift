@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Star, Heart, Share2, MessageSquare, Play, BadgeCheck, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Star, Heart, Share2, MessageSquare, Play, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id/")({
@@ -33,7 +33,7 @@ const PROFILES: Record<string, Profile> = {
     speaks: [{ lang: "English", level: "Native" }, { lang: "Hindi", level: "B1" }],
     pricePerLesson: 35, hue: 145, rating: 4.9, reviews: 128, lessons: 14207,
     headline: "Expert Maths & Physics Tutor with 10+ Years' Experience | CSEC, CAPE, GCSE, A-Level, IB HL/SL, Cambridge, & More",
-    bio: "Welcome to my profile! I'm Ramdeen, your dedicated guide to academic excellence and personal growth. With 10 years of experience, I am here to empower you to master Maths and Physics with confidence.",
+    bio: "Welcome to my profile. I'm Ramdeen, your dedicated guide to academic excellence and personal growth. With 10 years of experience, I help you master Maths and Physics with confidence.",
     highlights: [{ label: "Patient", color: "bg-coral-soft text-ink" }, { label: "Structured", color: "bg-lavender text-ink" }, { label: "Goal-Focused", color: "bg-sky text-ink" }],
     ratings: { reassurance: 4.9, clarity: 4.8, progress: 4.8, preparation: 4.8 }, ratingsCount: 71, recentBookings: 13,
   },
@@ -45,11 +45,24 @@ const PROFILES: Record<string, Profile> = {
 };
 
 const REVIEWS = [
-  { id: "r1", name: "Ayza S.", hue: 280, date: "June 7, 2026", rating: 5, text: "I have been studying physics with this tutor for almost a year now and I can say that they are amazing! Helps me achieve top grades by explaining the…" },
+  { id: "r1", name: "Ayza S.", hue: 280, date: "June 7, 2026", rating: 5, text: "I have been studying physics with this tutor for almost a year now and they are amazing. Helps me achieve top grades by explaining the…" },
   { id: "r2", name: "Remya", hue: 165, date: "June 6, 2026", rating: 5, text: "She is very friendly and would explain the topics according to the student's pace of choice." },
-  { id: "r3", name: "Abraham", hue: 220, date: "June 5, 2026", rating: 5, text: "It is my pleasure to recognize this tutor for her outstanding service. She consistently demonstrates exceptional dedication, patience, and genuine care f…" },
-  { id: "r4", name: "Tricia N.", hue: 35, date: "June 2, 2026", rating: 5, text: "Great teacher explains really well. She's patient and knowledgable. I really enjoy the lessons with her." },
+  { id: "r3", name: "Abraham", hue: 220, date: "June 5, 2026", rating: 5, text: "It is my pleasure to recognize this tutor for her outstanding service. She consistently demonstrates exceptional dedication, patience and care…" },
+  { id: "r4", name: "Tricia N.", hue: 35, date: "June 2, 2026", rating: 5, text: "Great teacher explains really well. She's patient and knowledgeable. I really enjoy the lessons with her." },
 ];
+
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function slotsForDay(seed: number): string[] {
+  const slots: string[] = [];
+  let s = seed;
+  const rand = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  for (let h = 8; h <= 21; h++) {
+    if (rand() > 0.45) slots.push(`${String(h).padStart(2, "0")}:00`);
+    if (rand() > 0.65) slots.push(`${String(h).padStart(2, "0")}:30`);
+  }
+  return slots;
+}
 
 function Avatar({ name, hue, size = 40, square = false }: { name: string; hue: number; size?: number; square?: boolean }) {
   const initials = name.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -67,7 +80,7 @@ function Stars({ n }: { n: number }) {
   return (
     <div className="inline-flex">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={cn("size-3.5", i < n ? "fill-ink text-ink" : "text-muted-foreground/30")} />
+        <Star key={i} className={cn("size-3.5", i < n ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30")} />
       ))}
     </div>
   );
@@ -90,8 +103,44 @@ function TutorDetail() {
   const navigate = useNavigate();
   const p = PROFILES[id] ?? PROFILES.ramdeen;
   const [saved, setSaved] = useState(false);
-  const book = () => {
-    navigate({ to: "/student/tutors/$id/book", params: { id } });
+  const [duration, setDuration] = useState<30 | 60>(30);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [selected, setSelected] = useState<{ dayIdx: number; time: string } | null>(null);
+  const scheduleRef = useRef<HTMLDivElement>(null);
+
+  const monday = useMemo(() => {
+    const t = new Date();
+    const m = new Date(t);
+    m.setDate(t.getDate() - ((t.getDay() + 6) % 7) + weekOffset * 7);
+    m.setHours(0, 0, 0, 0);
+    return m;
+  }, [weekOffset]);
+
+  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  }), [monday]);
+
+  const slotsByDay = useMemo(
+    () => days.map((d) => slotsForDay(d.getDate() + d.getMonth() * 31 + (id.length * 7))),
+    [days, id],
+  );
+
+  const month = days[0].toLocaleString("en-US", { month: "short" });
+  const endMonth = days[6].toLocaleString("en-US", { month: "short" });
+  const rangeLabel = `${month} ${days[0].getDate()} – ${endMonth === month ? "" : endMonth + " "}${days[6].getDate()}`;
+
+  const scrollToSchedule = () => scheduleRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const onContinue = () => {
+    if (!selected) return;
+    const date = days[selected.dayIdx].toISOString();
+    navigate({
+      to: "/checkout/$tutorId",
+      params: { tutorId: id },
+      search: { duration, slot: selected.time, date } as any,
+    });
   };
 
   return (
@@ -129,10 +178,8 @@ function TutorDetail() {
             </div>
           </div>
 
-          {/* Headline */}
           <p className="text-base text-ink leading-relaxed">{p.headline}</p>
 
-          {/* Highlights */}
           <div>
             <div className="inline-flex items-center gap-2 text-sm font-bold text-ink">
               <Sparkles className="size-4 text-brand-deep" /> {p.name.split(" ").pop()}'s highlights
@@ -146,7 +193,6 @@ function TutorDetail() {
             </div>
           </div>
 
-          {/* More about me */}
           <section>
             <h2 className="text-2xl font-bold text-ink">More about me</h2>
             <p className="mt-3 text-sm text-ink leading-relaxed">
@@ -164,7 +210,6 @@ function TutorDetail() {
             </div>
           </section>
 
-          {/* Lesson rating */}
           <section>
             <h2 className="text-2xl font-bold text-ink">Lesson rating</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
@@ -176,7 +221,6 @@ function TutorDetail() {
             <div className="mt-3 text-xs text-muted-foreground">Based on {p.ratingsCount} anonymous student reviews</div>
           </section>
 
-          {/* What my students say */}
           <section>
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold text-ink">What my students say</h2>
@@ -207,6 +251,101 @@ function TutorDetail() {
               ))}
             </div>
           </section>
+
+          {/* Schedule (booking) */}
+          <section ref={scheduleRef} id="book" className="scroll-mt-20 space-y-4">
+            <header>
+              <h2 className="text-2xl font-bold text-ink">Book a lesson</h2>
+              <p className="text-sm text-muted-foreground mt-1">Pick a time for your first lesson. Times shown in your local timezone.</p>
+            </header>
+
+            {/* Duration toggle */}
+            <div className="grid grid-cols-2 rounded-2xl bg-muted p-1 max-w-sm">
+              {[30, 60].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDuration(d as 30 | 60)}
+                  className={cn(
+                    "py-3 rounded-xl text-sm font-bold transition",
+                    duration === d ? "bg-background text-ink shadow-sm" : "text-muted-foreground",
+                  )}
+                >
+                  {d} min trial
+                </button>
+              ))}
+            </div>
+
+            {/* Week navigator */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="inline-flex items-center gap-2">
+                <button onClick={() => setWeekOffset((o) => o - 1)} className="size-9 rounded-xl border border-border grid place-items-center hover:bg-muted">
+                  <ChevronLeft className="size-4" />
+                </button>
+                <button onClick={() => setWeekOffset((o) => o + 1)} className="size-9 rounded-xl border border-border grid place-items-center hover:bg-muted">
+                  <ChevronRight className="size-4" />
+                </button>
+                <span className="ml-1 text-sm font-semibold text-ink">{rangeLabel}</span>
+              </div>
+              <div className="hidden sm:block text-[11px] text-muted-foreground rounded-lg border border-border px-2.5 py-1.5">
+                GMT -4:00
+              </div>
+            </div>
+
+            {/* Day headers + slots */}
+            <div className="rounded-3xl border border-border overflow-hidden">
+              <div className="grid grid-cols-7 border-b border-border bg-muted/40">
+                {days.map((d, i) => {
+                  const hasSlots = slotsByDay[i].length > 0;
+                  return (
+                    <div key={i} className={cn("py-3 text-center", hasSlots && "border-b-2 border-brand")}>
+                      <div className="text-[10px] sm:text-xs font-bold uppercase text-muted-foreground">{DAY_LABELS[i]}</div>
+                      <div className="text-base sm:text-lg font-bold text-ink mt-0.5">{d.getDate()}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="grid grid-cols-7 divide-x divide-border min-h-[360px]">
+                {slotsByDay.map((slots, dayIdx) => (
+                  <div key={dayIdx} className="p-1.5 space-y-1">
+                    {slots.length === 0 ? (
+                      <div className="text-center text-xs text-muted-foreground/60 py-6">—</div>
+                    ) : (
+                      slots.map((time) => {
+                        const isSelected = selected?.dayIdx === dayIdx && selected?.time === time;
+                        return (
+                          <button
+                            key={time}
+                            onClick={() => setSelected({ dayIdx, time })}
+                            className={cn(
+                              "w-full py-1.5 text-[11px] sm:text-sm font-semibold rounded-md transition",
+                              isSelected
+                                ? "bg-brand text-white"
+                                : "text-ink hover:bg-brand-soft",
+                            )}
+                          >
+                            {time}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={onContinue}
+              disabled={!selected}
+              className={cn(
+                "lg:hidden w-full py-3.5 rounded-2xl font-bold text-base transition",
+                selected ? "bg-brand text-white hover:bg-brand-deep" : "bg-muted text-muted-foreground cursor-not-allowed",
+              )}
+            >
+              {selected
+                ? `Continue · ${days[selected.dayIdx].toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} ${selected.time}`
+                : "Pick a time to continue"}
+            </button>
+          </section>
         </div>
 
         {/* RIGHT — sticky booking card */}
@@ -220,7 +359,7 @@ function TutorDetail() {
             <div className="grid grid-cols-2 gap-4 pb-2 border-b border-border">
               <div>
                 <div className="inline-flex items-center gap-1">
-                  <Star className="size-4 fill-ink text-ink" />
+                  <Star className="size-4 fill-amber-400 text-amber-400" />
                   <span className="text-xl font-bold text-ink">{p.rating.toFixed(1)}</span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5">{p.reviews} reviews</div>
@@ -231,19 +370,32 @@ function TutorDetail() {
               </div>
             </div>
 
-            <button
-              onClick={book}
-              className="w-full py-3.5 rounded-2xl bg-brand text-white font-bold hover:bg-brand-deep transition"
-            >
-              Book trial lesson
-            </button>
-            <Link
-              to="/student/tutors/$id/book"
-              params={{ id }}
-              className="block w-full text-center py-3 rounded-2xl border border-border text-ink font-semibold hover:bg-muted transition"
-            >
-              View full schedule
-            </Link>
+            <div className="rounded-2xl bg-muted/60 p-3 text-sm">
+              <div className="text-xs text-muted-foreground">Your selection</div>
+              {selected ? (
+                <div className="font-semibold text-ink mt-1">
+                  {days[selected.dayIdx].toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })} · {selected.time} · {duration} min
+                </div>
+              ) : (
+                <div className="text-muted-foreground mt-1">Pick a time from the schedule below</div>
+              )}
+            </div>
+
+            {selected ? (
+              <button
+                onClick={onContinue}
+                className="w-full py-3.5 rounded-2xl bg-brand text-white font-bold hover:bg-brand-deep transition"
+              >
+                Continue to checkout
+              </button>
+            ) : (
+              <button
+                onClick={scrollToSchedule}
+                className="w-full py-3.5 rounded-2xl bg-brand text-white font-bold hover:bg-brand-deep transition"
+              >
+                Book trial lesson
+              </button>
+            )}
 
             <div className="grid grid-cols-3 gap-2">
               <button className="rounded-xl border border-border py-3 grid place-items-center hover:bg-muted">
@@ -280,10 +432,13 @@ function TutorDetail() {
       <div className="lg:hidden fixed bottom-16 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between">
         <div>
           <div className="text-lg font-bold text-ink">${p.pricePerLesson}</div>
-          <div className="text-[11px] text-muted-foreground">60-min lesson</div>
+          <div className="text-[11px] text-muted-foreground">{duration}-min lesson</div>
         </div>
-        <button onClick={book} className="rounded-full bg-brand text-white px-6 py-2.5 text-sm font-bold">
-          Book trial lesson
+        <button
+          onClick={selected ? onContinue : scrollToSchedule}
+          className="rounded-full bg-brand text-white px-6 py-2.5 text-sm font-bold"
+        >
+          {selected ? "Continue" : "Book trial lesson"}
         </button>
       </div>
     </div>
