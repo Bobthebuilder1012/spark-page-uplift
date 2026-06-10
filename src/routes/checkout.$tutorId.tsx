@@ -160,13 +160,11 @@ function CheckoutPage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 rounded-2xl border border-border p-3 flex items-center gap-3">
-                <div className="text-2xl">📈</div>
-                <div>
-                  <div className="text-sm font-bold text-ink">Perfect for exam prep</div>
-                  <div className="text-xs text-muted-foreground">Highly rated by learners like you</div>
-                </div>
+              <div className="mt-4 rounded-2xl border border-border p-3">
+                <div className="text-sm font-bold text-ink">Perfect for exam prep</div>
+                <div className="text-xs text-muted-foreground">Highly rated by learners like you</div>
               </div>
+
             </section>
 
             {/* Trial details */}

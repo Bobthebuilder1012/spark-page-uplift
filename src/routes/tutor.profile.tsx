@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTutor } from "@/lib/tutor-store";
-import { MapPin, ExternalLink, Video, CalendarDays } from "lucide-react";
+import { MapPin, ExternalLink, Video, CalendarDays, Star } from "lucide-react";
 import { RatingBreakdown } from "@/components/ratings/RatingBreakdown";
 import { CommentSection } from "@/components/ratings/CommentSection";
 import { getSummary, useTutoringPreference } from "@/lib/ratings-store";
