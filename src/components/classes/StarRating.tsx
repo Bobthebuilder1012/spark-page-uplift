@@ -24,20 +24,20 @@ export function StarRating({
               style={{ width: size, height: size }}
               className={
                 filled || half
-                  ? "fill-[#32CC6F] text-[#32CC6F]"
-                  : "text-white/25"
+                  ? "fill-amber-400 text-amber-400"
+                  : "text-muted-foreground/30"
               }
             />
           );
         })}
       </div>
       {showNumber && (
-        <span className="text-sm font-semibold text-white tabular-nums">
+        <span className="text-sm font-semibold text-ink tabular-nums">
           {value.toFixed(1)}
         </span>
       )}
       {typeof count === "number" && (
-        <span className="text-xs text-[#A0A0A0]">({count} ratings)</span>
+        <span className="text-xs text-muted-foreground">({count} ratings)</span>
       )}
     </div>
   );
