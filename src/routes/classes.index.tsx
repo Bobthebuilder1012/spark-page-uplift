@@ -351,7 +351,7 @@ function ClassPreview({ c }: { c: ClassRow | null }) {
           </div>
           <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur px-3 py-1 text-[11px] font-bold text-white"><Users className="size-3" /> Group class</div>
           <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-            <div className="text-white font-bold text-lg line-clamp-2">{c.name}</div>
+            <div className="text-white font-bold text-lg line-clamp-2">{c.title}</div>
             <div className="text-white/85 text-xs">{c.schedule}</div>
           </div>
         </div>
@@ -388,7 +388,7 @@ function ExplorePage() {
   }), [ql, subject, priceMin, priceMax]);
 
   const filteredC = useMemo(() => CLASSES.filter((c) => {
-    if (ql && !(c.name.toLowerCase().includes(ql) || c.tutorName.toLowerCase().includes(ql) || c.description.toLowerCase().includes(ql))) return false;
+    if (ql && !(c.title.toLowerCase().includes(ql) || c.tutorName.toLowerCase().includes(ql) || c.tagline.toLowerCase().includes(ql))) return false;
     if (subject && !c.subject.toLowerCase().includes(subject.toLowerCase())) return false;
     return true;
   }), [ql, subject]);
