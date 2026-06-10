@@ -2,7 +2,7 @@ import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-route
 import { useEffect, useState, type ComponentType } from "react";
 import {
   LayoutDashboard, Users, Receipt, Search, Settings, Bell, LogOut, ChevronUp,
-  PanelLeftClose, PanelLeftOpen, GraduationCap,
+  PanelLeftClose, PanelLeftOpen, GraduationCap, MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/landing/Logo";
@@ -14,6 +14,7 @@ const nav: NavItem[] = [
   { to: "/parent", label: "Home", icon: LayoutDashboard, exact: true, tint: "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/30" },
   { to: "/parent/children", label: "Children", icon: Users, tint: "bg-amber-500/20 text-amber-300 ring-1 ring-amber-400/30" },
   { to: "/parent/classes", label: "Find Classes", icon: GraduationCap, tint: "bg-rose-500/20 text-rose-300 ring-1 ring-rose-400/30" },
+  { to: "/parent/messages", label: "Messages", icon: MessageSquare, tint: "bg-fuchsia-500/20 text-fuchsia-300 ring-1 ring-fuchsia-400/30" },
   { to: "/parent/billing", label: "Billing", icon: Receipt, tint: "bg-sky-500/20 text-sky-300 ring-1 ring-sky-400/30" },
 ];
 
