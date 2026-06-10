@@ -11,7 +11,8 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ClassesShell } from "@/components/classes/ClassesShell";
 import { AvailabilityFilter, hourLabel } from "@/components/filters/AvailabilityFilter";
-import { CLASSES_CATALOG, type ClassListing } from "@/lib/classes-catalog";
+import { CLASSES_CATALOG, getClassBadges, type ClassListing, type ClassBadge } from "@/lib/classes-catalog";
+import { useFavoriteTutors } from "@/lib/social-store";
 import { cn } from "@/lib/utils";
 
 
@@ -177,8 +178,9 @@ function TutorCard({ t, saved, toggleSave, onHover, onBook }: { t: Tutor; saved:
 }
 
 // ---------- class card (Coursera-style vertical) ----------
-function ClassRowCard({ c, saved, toggleSave, onHover, onEnroll }: { c: ClassRow; saved: boolean; toggleSave: () => void; onHover: () => void; onEnroll: () => void }) {
+function ClassRowCard({ c, onHover, onEnroll }: { c: ClassRow; onHover: () => void; onEnroll: () => void }) {
   const seatsLeft = Math.max(0, c.seatsTotal - c.seatsTaken);
+  const badges = getClassBadges(c);
   return (
     <div
       onMouseEnter={onHover}
@@ -191,28 +193,24 @@ function ClassRowCard({ c, saved, toggleSave, onHover, onEnroll }: { c: ClassRow
           style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${c.hue}), oklch(0.55 0.16 ${c.hue}))` }}
         >
           <span className="absolute right-4 bottom-2 text-[7rem] leading-none opacity-30 select-none font-black">{c.emoji ?? c.subject[0]}</span>
-          <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+          <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5 max-w-[80%]">
             <span className="rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 text-[10px] font-bold">{c.level}</span>
             <span className="inline-flex items-center gap-1 rounded-full bg-white/25 backdrop-blur px-2.5 py-0.5 text-[10px] font-bold">
               <Users className="size-3" /> Group
             </span>
-            {c.popular && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-ink text-white px-2.5 py-0.5 text-[10px] font-bold">
-                <Sparkles className="size-3" /> Popular
+            {badges.slice(0, 2).map((b: ClassBadge) => (
+              <span key={b.key} className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                b.tone === "ink" && "bg-ink text-white",
+                b.tone === "coral" && "bg-coral text-white",
+                b.tone === "brand" && "bg-white text-brand-deep",
+                b.tone === "sky" && "bg-white/90 text-ink",
+              )}>
+                {b.key === "popular" && <Sparkles className="size-3" />}
+                {b.label}
               </span>
-            )}
+            ))}
           </div>
-          {c.promoLabel && (
-            <span className="absolute bottom-3 left-3 rounded-full bg-coral text-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-              {c.promoLabel}
-            </span>
-          )}
-          <button
-            onClick={(e) => { e.preventDefault(); toggleSave(); }}
-            className="absolute top-3 right-3 size-9 rounded-full bg-background/90 backdrop-blur grid place-items-center hover:bg-background"
-          >
-            <Heart className={cn("size-4", saved ? "fill-coral text-coral" : "text-ink")} />
-          </button>
         </div>
       </Link>
 
@@ -369,8 +367,7 @@ function ExplorePage() {
   const update = (patch: any) => navigate({ to: "/classes", search: { ...search, ...patch } as any });
 
   const [query, setQuery] = useState(q || "");
-  const [savedT, setSavedT] = useState<Set<string>>(new Set());
-  const [savedC, setSavedC] = useState<Set<string>>(new Set());
+  const favTutors = useFavoriteTutors();
   const [hoveredT, setHoveredT] = useState<string | null>(TUTORS[0].id);
   const [hoveredC, setHoveredC] = useState<string | null>(CLASSES[0].id);
 
@@ -483,15 +480,13 @@ function ExplorePage() {
             {tab === "tutors"
               ? pageItems.map((t) => (
                   <TutorCard key={(t as Tutor).id} t={t as Tutor}
-                    saved={savedT.has((t as Tutor).id)}
-                    toggleSave={() => setSavedT((s) => { const n = new Set(s); n.has((t as Tutor).id) ? n.delete((t as Tutor).id) : n.add((t as Tutor).id); return n; })}
+                    saved={favTutors.has((t as Tutor).id)}
+                    toggleSave={() => favTutors.toggle((t as Tutor).id)}
                     onHover={() => setHoveredT((t as Tutor).id)}
                     onBook={() => onBookTutor(t as Tutor)} />
                 ))
               : pageItems.map((c) => (
                   <ClassRowCard key={(c as ClassRow).id} c={c as ClassRow}
-                    saved={savedC.has((c as ClassRow).id)}
-                    toggleSave={() => setSavedC((s) => { const n = new Set(s); n.has((c as ClassRow).id) ? n.delete((c as ClassRow).id) : n.add((c as ClassRow).id); return n; })}
                     onHover={() => setHoveredC((c as ClassRow).id)}
                     onEnroll={() => onEnroll(c as ClassRow)} />
                 ))}

@@ -85,10 +85,14 @@ function LessonsPage() {
           <h1 className="text-3xl lg:text-4xl font-bold text-ink mt-1 tracking-tight">My Classes</h1>
           <p className="text-sm text-muted-foreground mt-1.5">Create, manage and grow every class you run on iTutor.</p>
         </div>
-        <Link to="/tutor/lessons/new"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-white text-sm font-semibold hover:bg-ink/90 shadow-sm self-start sm:self-auto">
-          <Plus className="size-4" /> Create a class
-        </Link>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link to="/tutor/classes/requests" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-background text-sm font-semibold text-ink hover:bg-muted">
+            Join requests
+          </Link>
+          <Link to="/tutor/classes/new" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-white text-sm font-semibold hover:bg-ink/90 shadow-sm">
+            <Plus className="size-4" /> Create a class
+          </Link>
+        </div>
       </header>
 
       {/* Quick stats */}

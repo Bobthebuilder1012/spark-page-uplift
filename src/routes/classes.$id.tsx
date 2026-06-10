@@ -1,21 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   ArrowLeft, BadgeCheck, Send, Check, Star, Users, Clock, CalendarDays,
-  Sparkles, ChevronRight, Share2, Heart, MessageSquare,
+  Sparkles, ChevronRight, Share2, MessageSquare, PlayCircle, FileText,
+  ClipboardCheck, BookOpen, Video, TrendingUp,
 } from "lucide-react";
 import { ClassesShell } from "@/components/classes/ClassesShell";
 import { StarRating } from "@/components/classes/StarRating";
-import { getClassById, getClassesByTutorId, type ClassListing } from "@/lib/classes-catalog";
+import { getClassById, getClassesByTutorId, getClassBadges, type ClassListing, type ClassBadge } from "@/lib/classes-catalog";
+import { useEnrolledClasses, usePendingClassRequests, shareLink } from "@/lib/social-store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/classes/$id")({
   head: () => ({ meta: [{ title: "Class — iTutor" }] }),
   component: ClassDetailPage,
 });
-
-const ALL_TABS = ["About", "Stream", "Reviews"] as const;
-type Tab = (typeof ALL_TABS)[number];
 
 const POSTS = [
   { id: "p1", author: "Tutor", role: "Tutor" as const, time: "2h ago", type: "Announcement" as const, body: "Reminder: tomorrow's session will focus on solving simultaneous equations. Please review the warm-up sheet I posted last week.", replies: 2 },
@@ -36,23 +35,52 @@ const REVIEWS = [
 ];
 
 const BREAKDOWN = [
-  { stars: 5, pct: 78 },
-  { stars: 4, pct: 16 },
-  { stars: 3, pct: 4 },
-  { stars: 2, pct: 1 },
-  { stars: 1, pct: 1 },
+  { stars: 5, pct: 78 }, { stars: 4, pct: 16 }, { stars: 3, pct: 4 }, { stars: 2, pct: 1 }, { stars: 1, pct: 1 },
+];
+
+const ASSIGNMENTS = [
+  { id: "a1", title: "Past paper · Algebra 2024", due: "Due Fri 6:00 PM", status: "todo" as const },
+  { id: "a2", title: "Warm-up worksheet — Functions", due: "Due Mon", status: "todo" as const },
+  { id: "a3", title: "Diagnostic quiz", due: "Submitted", status: "done" as const },
+];
+const MATERIALS = [
+  { id: "m1", title: "Module 3 notes (PDF)", kind: "pdf" as const, size: "1.4 MB" },
+  { id: "m2", title: "Recording — Week 4 session", kind: "video" as const, size: "47 min" },
+  { id: "m3", title: "Formula sheet", kind: "pdf" as const, size: "240 KB" },
+];
+const PEOPLE = [
+  { name: "Aliyah Mohammed", hue: 145 }, { name: "Tariq Bharath", hue: 220 },
+  { name: "Maya Khan", hue: 35 }, { name: "Ella Joseph", hue: 280 },
+  { name: "Jordan Williams", hue: 165 }, { name: "Priya Singh", hue: 20 },
 ];
 
 function Initials({ name }: { name: string }) {
   return <>{name.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((s) => s[0]).slice(0, 2).join("")}</>;
 }
 
+function BadgePill({ b }: { b: ClassBadge }) {
+  const tone: Record<ClassBadge["tone"], string> = {
+    ink: "bg-ink text-white",
+    coral: "bg-coral text-white",
+    brand: "bg-brand-soft text-brand-deep",
+    sky: "bg-sky text-ink",
+  };
+  return (
+    <span className={cn("inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider", tone[b.tone])}>
+      {b.key === "popular" && <Sparkles className="size-3" />}
+      {b.label}
+    </span>
+  );
+}
+
 function ClassDetailPage() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const c = getClassById(id);
-  const [tab, setTab] = useState<Tab>("About");
-  const [enrolled, setEnrolled] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const enrolled = useEnrolledClasses();
+  const requests = usePendingClassRequests();
+  const [tab, setTab] = useState<"about" | "home" | "stream" | "reviews">("about");
+  const [toast, setToast] = useState<string | null>(null);
 
   if (!c) {
     return (
@@ -67,10 +95,38 @@ function ClassDetailPage() {
     );
   }
 
-  const visibleTabs = ALL_TABS.filter((t) => t !== "Stream" || enrolled);
+  const isEnrolled = enrolled.has(c.id);
+  const isRequested = requests.has(c.id);
+  const badges = getClassBadges(c);
   const moreClasses = getClassesByTutorId(c.tutorId, c.id);
   const seatsLeft = Math.max(0, c.seatsTotal - c.seatsTaken);
-  const onJoin = () => { setEnrolled(true); setTab("Stream"); };
+
+  // Tabs: pre-enroll = About / Reviews. Post-enroll = Home / Stream / Reviews.
+  const tabs = isEnrolled
+    ? (["home", "stream", "reviews"] as const)
+    : (["about", "reviews"] as const);
+
+  // If just enrolled and tab still says about, jump to home.
+  if (isEnrolled && tab === "about") setTimeout(() => setTab("home"), 0);
+  if (!isEnrolled && (tab === "home" || tab === "stream")) setTimeout(() => setTab("about"), 0);
+
+  const primaryAction = () => {
+    if (isEnrolled) return;
+    if (c.requestToJoin) {
+      requests.add(c.id);
+      setToast("Request sent — the tutor will be in touch.");
+      setTimeout(() => setToast(null), 2400);
+    } else {
+      navigate({ to: "/checkout/class/$id", params: { id: c.id } });
+    }
+  };
+
+  const onShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const result = await shareLink(url, c.title);
+    setToast(result === "shared" ? "Shared" : "Link copied to clipboard");
+    setTimeout(() => setToast(null), 1800);
+  };
 
   return (
     <ClassesShell>
@@ -93,11 +149,7 @@ function ClassDetailPage() {
             <span className="inline-flex items-center gap-1 rounded-full bg-white/20 backdrop-blur px-3 py-1">
               <Users className="size-3" /> Live group class
             </span>
-            {c.popular && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-ink text-white px-3 py-1">
-                <Sparkles className="size-3" /> Popular
-              </span>
-            )}
+            {badges.map((b) => <BadgePill key={b.key} b={b} />)}
           </div>
           <h1 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">{c.title}</h1>
           <p className="mt-3 text-sm sm:text-base text-white/85 max-w-2xl">{c.tagline}</p>
@@ -109,10 +161,7 @@ function ClassDetailPage() {
             <span className="inline-flex items-center gap-1.5">
               <Users className="size-4" /> {c.seatsTaken} enrolled
             </span>
-            <Link
-              to="/student/tutors/$id" params={{ id: c.tutorId }}
-              className="inline-flex items-center gap-2 hover:underline"
-            >
+            <Link to="/student/tutors/$id" params={{ id: c.tutorId }} className="inline-flex items-center gap-2 hover:underline">
               <span className="grid size-7 place-items-center rounded-full bg-white/25 text-[10px] font-bold">
                 <Initials name={c.tutorName} />
               </span>
@@ -137,16 +186,12 @@ function ClassDetailPage() {
           {/* Tabs */}
           <div className="border-b border-border">
             <div className="flex gap-1">
-              {visibleTabs.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={cn(
-                    "relative px-4 py-3 text-sm font-semibold transition",
-                    tab === t ? "text-ink" : "text-muted-foreground hover:text-ink",
-                  )}
-                >
-                  {t}
+              {tabs.map((t) => (
+                <button key={t} onClick={() => setTab(t)} className={cn(
+                  "relative px-4 py-3 text-sm font-semibold capitalize transition",
+                  tab === t ? "text-ink" : "text-muted-foreground hover:text-ink",
+                )}>
+                  {t === "home" ? "Class home" : t}
                   {tab === t && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-brand" />}
                 </button>
               ))}
@@ -154,16 +199,15 @@ function ClassDetailPage() {
           </div>
 
           <div className="pt-6">
-            {tab === "About" && <AboutTab c={c} />}
-            {tab === "Stream" && <StreamTab />}
-            {tab === "Reviews" && <ReviewsTab rating={c.rating} count={c.ratingCount} />}
+            {tab === "about" && <AboutTab c={c} />}
+            {tab === "home" && <ClassHomeTab c={c} />}
+            {tab === "stream" && <StreamTab />}
+            {tab === "reviews" && <ReviewsTab rating={c.rating} count={c.ratingCount} />}
           </div>
 
-          {/* Instructor section */}
-          {tab === "About" && <InstructorSection c={c} />}
+          {tab === "about" && <InstructorSection c={c} />}
 
-          {/* More classes by this tutor */}
-          {tab === "About" && moreClasses.length > 0 && (
+          {tab === "about" && moreClasses.length > 0 && (
             <section className="mt-12">
               <div className="flex items-end justify-between gap-3">
                 <h2 className="text-2xl font-bold text-ink">More classes by {c.tutorName}</h2>
@@ -181,9 +225,9 @@ function ClassDetailPage() {
         {/* Sticky enrollment card */}
         <aside className="lg:sticky lg:top-24 self-start space-y-3">
           <div className="rounded-2xl border border-border bg-background p-6 space-y-5 shadow-card">
-            {c.promoLabel && (
+            {badges.find((b) => b.key === "early-bird" || b.key === "promo") && (
               <div className="inline-flex items-center gap-1.5 rounded-full bg-coral-soft text-ink px-3 py-1 text-[11px] font-bold uppercase tracking-wider">
-                <Sparkles className="size-3" /> {c.promoLabel}
+                <Sparkles className="size-3" /> {badges.find((b) => b.key === "early-bird" || b.key === "promo")!.label}
               </div>
             )}
             <div>
@@ -196,22 +240,27 @@ function ClassDetailPage() {
               <div className="text-xs text-muted-foreground mt-0.5">per month · {c.startsLabel}</div>
             </div>
 
-            {enrolled ? (
+            {isEnrolled ? (
               <span className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand-soft px-4 py-2.5 text-sm font-semibold text-brand-deep">
                 <Check className="size-4" /> You're enrolled
               </span>
+            ) : isRequested ? (
+              <span className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-peach px-4 py-2.5 text-sm font-semibold text-ink">
+                <Clock className="size-4" /> Request pending
+              </span>
             ) : (
-              <button onClick={onJoin} className="w-full rounded-full bg-brand px-4 py-3 text-sm font-bold text-white hover:bg-brand-deep transition">
-                {seatsLeft === 0 ? "Join waitlist" : "Join Class"}
+              <button onClick={primaryAction} className="w-full rounded-full bg-brand px-4 py-3 text-sm font-bold text-white hover:bg-brand-deep transition">
+                {seatsLeft === 0 ? "Join waitlist" : c.requestToJoin ? "Request to join" : `Enrol · TTD $${c.priceTTD}/mo`}
               </button>
             )}
 
-            <div className="grid grid-cols-3 gap-2">
-              <button className="rounded-xl border border-border py-2.5 grid place-items-center hover:bg-muted"><MessageSquare className="size-4" /></button>
-              <button onClick={() => setSaved((s) => !s)} className="rounded-xl border border-border py-2.5 grid place-items-center hover:bg-muted">
-                <Heart className={cn("size-4", saved && "fill-coral text-coral")} />
+            <div className="grid grid-cols-2 gap-2">
+              <Link to="/student/messages" className="rounded-xl border border-border py-2.5 grid place-items-center gap-1.5 hover:bg-muted text-xs font-semibold text-ink">
+                <MessageSquare className="size-4" /> Message
+              </Link>
+              <button onClick={onShare} className="rounded-xl border border-border py-2.5 grid place-items-center gap-1.5 hover:bg-muted text-xs font-semibold text-ink">
+                <Share2 className="size-4" /> Share
               </button>
-              <button className="rounded-xl border border-border py-2.5 grid place-items-center hover:bg-muted"><Share2 className="size-4" /></button>
             </div>
 
             <ul className="space-y-2 pt-2 border-t border-border">
@@ -225,6 +274,13 @@ function ClassDetailPage() {
           </div>
         </aside>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-full bg-ink text-white px-5 py-2.5 text-sm font-semibold shadow-pop">
+          {toast}
+        </div>
+      )}
     </ClassesShell>
   );
 }
@@ -242,6 +298,133 @@ function StatTile({ label, value, sub, icon: Icon }: { label: string; value: str
   );
 }
 
+// ---------- POST-JOIN COURSERA-STYLE HOME ----------
+function ClassHomeTab({ c }: { c: ClassListing }) {
+  const progress = 38; // mock — would come from backend
+  const completed = 3; const total = 8;
+
+  return (
+    <div className="space-y-6">
+      {/* Next session hero */}
+      <div className="rounded-3xl border border-border overflow-hidden">
+        <div
+          className="relative p-6 sm:p-8 text-white"
+          style={{ background: `linear-gradient(135deg, oklch(0.5 0.16 ${c.hue}), oklch(0.32 0.1 ${c.hue}))` }}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider text-white/80">Next live session</div>
+              <div className="mt-1 text-2xl sm:text-3xl font-bold">Tomorrow · 4:00 PM AST</div>
+              <div className="mt-1 text-sm text-white/85">Module 4 — Solving simultaneous equations</div>
+            </div>
+            <button className="inline-flex items-center gap-2 rounded-full bg-white text-ink px-5 py-3 text-sm font-bold hover:bg-white/90">
+              <Video className="size-4" /> Join lesson
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress + quick stats */}
+      <div className="grid sm:grid-cols-3 gap-3">
+        <div className="sm:col-span-2 rounded-2xl border border-border bg-background p-5">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-bold text-ink">Course progress</div>
+            <div className="text-xs text-muted-foreground">{completed} of {total} modules complete</div>
+          </div>
+          <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-brand transition-all" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="mt-2 text-xs text-muted-foreground">{progress}% complete · keep it up!</div>
+        </div>
+        <div className="rounded-2xl border border-border bg-background p-5">
+          <TrendingUp className="size-5 text-brand-deep" />
+          <div className="mt-2 text-2xl font-bold text-ink">94%</div>
+          <div className="text-xs text-muted-foreground">Your attendance</div>
+        </div>
+      </div>
+
+      {/* Assignments + materials */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <section className="rounded-2xl border border-border bg-background p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-ink inline-flex items-center gap-2"><ClipboardCheck className="size-4" /> Assignments</h3>
+            <span className="text-xs text-muted-foreground">{ASSIGNMENTS.filter((a) => a.status === "todo").length} due</span>
+          </div>
+          <ul className="mt-3 space-y-2">
+            {ASSIGNMENTS.map((a) => (
+              <li key={a.id} className="flex items-center gap-3 rounded-xl border border-border p-3 hover:bg-muted/40">
+                <span className={cn("grid size-7 place-items-center rounded-full shrink-0", a.status === "done" ? "bg-brand text-white" : "border border-border text-muted-foreground")}>
+                  {a.status === "done" ? <Check className="size-3.5" /> : <FileText className="size-3.5" />}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-ink truncate">{a.title}</div>
+                  <div className="text-[11px] text-muted-foreground">{a.due}</div>
+                </div>
+                <button className="text-xs font-semibold text-brand-deep hover:underline">{a.status === "done" ? "View" : "Open"}</button>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="rounded-2xl border border-border bg-background p-5">
+          <h3 className="text-sm font-bold text-ink inline-flex items-center gap-2"><BookOpen className="size-4" /> Materials</h3>
+          <ul className="mt-3 space-y-2">
+            {MATERIALS.map((m) => (
+              <li key={m.id} className="flex items-center gap-3 rounded-xl border border-border p-3 hover:bg-muted/40">
+                <span className="grid size-9 place-items-center rounded-lg bg-muted text-ink shrink-0">
+                  {m.kind === "video" ? <PlayCircle className="size-4" /> : <FileText className="size-4" />}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-ink truncate">{m.title}</div>
+                  <div className="text-[11px] text-muted-foreground">{m.size}</div>
+                </div>
+                <button className="text-xs font-semibold text-brand-deep hover:underline">Open</button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      {/* Classmates */}
+      <section className="rounded-2xl border border-border bg-background p-5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-ink inline-flex items-center gap-2"><Users className="size-4" /> Classmates</h3>
+          <span className="text-xs text-muted-foreground">{c.seatsTaken} enrolled</span>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-3">
+          {PEOPLE.map((p) => (
+            <div key={p.name} className="flex items-center gap-2 rounded-full border border-border bg-background pl-1 pr-3 py-1">
+              <span className="grid size-7 place-items-center rounded-full text-[10px] font-bold" style={{ background: `oklch(0.88 0.09 ${p.hue})`, color: `oklch(0.3 0.08 ${p.hue})` }}>
+                <Initials name={p.name} />
+              </span>
+              <span className="text-xs font-medium text-ink">{p.name.split(" ")[0]}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Stream preview */}
+      <section className="rounded-2xl border border-border bg-background p-5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-ink">Latest in the stream</h3>
+          <button className="text-xs font-semibold text-brand-deep hover:underline">View all</button>
+        </div>
+        <div className="mt-3 space-y-3">
+          {POSTS.slice(0, 2).map((p) => (
+            <div key={p.id} className="rounded-xl border border-border p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-semibold text-ink">{p.author} · {p.time}</div>
+                <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider", POST_COLORS[p.type])}>{p.type}</span>
+              </div>
+              <p className="mt-2 text-sm text-ink">{p.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function AboutTab({ c }: { c: ClassListing }) {
   return (
     <div className="space-y-8">
@@ -249,7 +432,6 @@ function AboutTab({ c }: { c: ClassListing }) {
         <h2 className="text-lg font-bold text-ink">About this class</h2>
         <p className="mt-3 text-sm leading-relaxed text-ink">{c.description}</p>
       </section>
-
       <section>
         <h2 className="text-lg font-bold text-ink">What you'll learn</h2>
         <ul className="mt-4 grid sm:grid-cols-2 gap-x-6 gap-y-3">
@@ -261,7 +443,6 @@ function AboutTab({ c }: { c: ClassListing }) {
           ))}
         </ul>
       </section>
-
       <section>
         <h2 className="text-lg font-bold text-ink">What's included</h2>
         <ul className="mt-4 space-y-2">
@@ -281,14 +462,8 @@ function InstructorSection({ c }: { c: ClassListing }) {
   return (
     <section className="mt-10">
       <h2 className="text-lg font-bold text-ink">Instructor</h2>
-      <Link
-        to="/student/tutors/$id" params={{ id: c.tutorId }}
-        className="mt-4 flex items-start gap-4 rounded-2xl border border-border bg-background p-5 hover:border-brand/50 transition shadow-card"
-      >
-        <div
-          className="grid size-16 place-items-center rounded-2xl text-xl font-bold shrink-0"
-          style={{ background: `oklch(0.85 0.1 ${c.tutorHue})`, color: `oklch(0.28 0.07 ${c.tutorHue})` }}
-        >
+      <Link to="/student/tutors/$id" params={{ id: c.tutorId }} className="mt-4 flex items-start gap-4 rounded-2xl border border-border bg-background p-5 hover:border-brand/50 transition shadow-card">
+        <div className="grid size-16 place-items-center rounded-2xl text-xl font-bold shrink-0" style={{ background: `oklch(0.85 0.1 ${c.tutorHue})`, color: `oklch(0.28 0.07 ${c.tutorHue})` }}>
           <Initials name={c.tutorName} />
         </div>
         <div className="flex-1 min-w-0">
@@ -313,17 +488,15 @@ function InstructorSection({ c }: { c: ClassListing }) {
 }
 
 function MiniClassCard({ c }: { c: ClassListing }) {
+  const badges = getClassBadges(c).slice(0, 1);
   return (
-    <Link
-      to="/classes/$id" params={{ id: c.id }}
-      className="group rounded-2xl border border-border bg-background overflow-hidden hover:border-brand/50 transition shadow-card"
-    >
-      <div
-        className="relative h-24 grid place-items-center text-white"
-        style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${c.hue}), oklch(0.55 0.16 ${c.hue}))` }}
-      >
+    <Link to="/classes/$id" params={{ id: c.id }} className="group rounded-2xl border border-border bg-background overflow-hidden hover:border-brand/50 transition shadow-card">
+      <div className="relative h-24 grid place-items-center text-white" style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${c.hue}), oklch(0.55 0.16 ${c.hue}))` }}>
         <span className="text-5xl opacity-50">{c.emoji ?? c.subject[0]}</span>
         <span className="absolute top-2 left-2 rounded-full bg-white/25 backdrop-blur px-2 py-0.5 text-[10px] font-bold">{c.level}</span>
+        {badges.map((b) => (
+          <span key={b.key} className="absolute top-2 right-2 rounded-full bg-ink/80 backdrop-blur text-white px-2 py-0.5 text-[10px] font-bold">{b.label}</span>
+        ))}
       </div>
       <div className="p-4">
         <div className="text-sm font-bold text-ink line-clamp-2 group-hover:text-brand-deep transition">{c.title}</div>
@@ -381,10 +554,7 @@ function PostCard({ post }: { post: typeof POSTS[number] }) {
           </div>
           <div className="flex items-center gap-2">
             <div className="size-7 rounded-full bg-muted" />
-            <input
-              type="text" placeholder="Write a reply…"
-              className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-sm text-ink placeholder:text-muted-foreground focus:outline-none focus:border-brand"
-            />
+            <input type="text" placeholder="Write a reply…" className="flex-1 rounded-full border border-border bg-background px-4 py-2 text-sm text-ink placeholder:text-muted-foreground focus:outline-none focus:border-brand" />
             <button className="grid size-9 place-items-center rounded-full bg-brand text-white">
               <Send className="size-4" />
             </button>
@@ -444,12 +614,6 @@ function ReviewsTab({ rating, count }: { rating: number; count: number }) {
             )}
           </div>
         ))}
-      </div>
-
-      <div className="text-center">
-        <button className="rounded-full border border-border bg-background px-5 py-2.5 text-sm font-medium text-ink hover:bg-muted">
-          Load more
-        </button>
       </div>
     </div>
   );
