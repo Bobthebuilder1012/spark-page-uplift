@@ -29,7 +29,7 @@ function Initials({ name, hue }: { name: string; hue: number }) {
 }
 
 export function BookTrialModal({ open, onClose, tutorId, tutorName, tutorHue }: Props) {
-  const [duration, setDuration] = useState<25 | 50>(50);
+  const [duration, setDuration] = useState<30 | 60>(60);
   const [weekOffset, setWeekOffset] = useState(0);
   const [dayIdx, setDayIdx] = useState(1);
   const [slot, setSlot] = useState<string | null>(null);
@@ -94,10 +94,10 @@ export function BookTrialModal({ open, onClose, tutorId, tutorName, tutorHue }: 
         <div className="p-5 space-y-5">
           {/* Duration toggle */}
           <div className="grid grid-cols-2 rounded-2xl bg-muted p-1">
-            {[25, 50].map((d) => (
+            {[30, 60].map((d) => (
               <button
                 key={d}
-                onClick={() => setDuration(d as 25 | 50)}
+                onClick={() => setDuration(d as 30 | 60)}
                 className={cn(
                   "py-2.5 rounded-xl text-sm font-semibold transition",
                   duration === d ? "bg-background text-ink shadow-sm" : "text-muted-foreground",

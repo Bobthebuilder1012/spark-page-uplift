@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Star, Heart, Share2, MessageSquare, Play, BadgeCheck, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { BookTrialModal } from "@/components/booking/BookTrialModal";
+import { isAuthed } from "@/lib/auth";
 
 export const Route = createFileRoute("/student/tutors/$id/")({
   head: () => ({ meta: [{ title: "Tutor profile — iTutor" }] }),
@@ -88,9 +88,16 @@ function RatingTile({ icon: Icon, label, value }: { icon: any; label: string; va
 
 function TutorDetail() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const p = PROFILES[id] ?? PROFILES.ramdeen;
   const [saved, setSaved] = useState(false);
-  const [booking, setBooking] = useState(false);
+  const book = () => {
+    if (!isAuthed()) {
+      navigate({ to: "/signup", search: { next: `/student/tutors/${id}/book` } as any });
+    } else {
+      navigate({ to: "/student/tutors/$id/book", params: { id } });
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-5">
@@ -180,13 +187,13 @@ function TutorDetail() {
               <h2 className="text-2xl font-bold text-ink">What my students say</h2>
               <Info className="size-4 text-muted-foreground" />
             </div>
-            <div className="flex items-center gap-3 mt-3">
-              <span className="text-4xl font-bold text-ink">{p.rating.toFixed(1)}</span>
-              <div className="size-10 rounded-full bg-amber-400 grid place-items-center">
-                <Star className="size-5 fill-ink text-ink" />
+            <div className="flex items-center gap-4 mt-4">
+              <span className="text-6xl font-bold text-ink leading-none">{p.rating.toFixed(1)}</span>
+              <div className="size-14 rounded-full bg-amber-400 grid place-items-center shadow-md">
+                <Star className="size-8 fill-amber-600 text-amber-600" />
               </div>
             </div>
-            <div className="text-sm text-muted-foreground mt-1">Based on {p.reviews} student reviews</div>
+            <div className="text-sm text-muted-foreground mt-2">Based on {p.reviews} student reviews</div>
 
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 mt-6">
               {REVIEWS.map((r) => (
@@ -212,7 +219,7 @@ function TutorDetail() {
           <div className="rounded-3xl border border-border bg-background p-5 shadow-card space-y-4">
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold text-ink">${p.pricePerLesson}</span>
-              <span className="text-sm text-muted-foreground">50-min lesson</span>
+              <span className="text-sm text-muted-foreground">60-min lesson</span>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pb-2 border-b border-border">
@@ -230,7 +237,7 @@ function TutorDetail() {
             </div>
 
             <button
-              onClick={() => setBooking(true)}
+              onClick={book}
               className="w-full py-3.5 rounded-2xl bg-brand text-white font-bold hover:bg-brand-deep transition"
             >
               Book trial lesson
@@ -278,16 +285,12 @@ function TutorDetail() {
       <div className="lg:hidden fixed bottom-16 inset-x-0 z-30 bg-background/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between">
         <div>
           <div className="text-lg font-bold text-ink">${p.pricePerLesson}</div>
-          <div className="text-[11px] text-muted-foreground">50-min lesson</div>
+          <div className="text-[11px] text-muted-foreground">60-min lesson</div>
         </div>
-        <button onClick={() => setBooking(true)} className="rounded-full bg-brand text-white px-6 py-2.5 text-sm font-bold">
+        <button onClick={book} className="rounded-full bg-brand text-white px-6 py-2.5 text-sm font-bold">
           Book trial lesson
         </button>
       </div>
-
-      {booking && (
-        <BookTrialModal open onClose={() => setBooking(false)} tutorId={id} tutorName={p.name} tutorHue={p.hue} />
-      )}
     </div>
   );
 }

@@ -20,7 +20,7 @@ import { Logo } from "@/components/landing/Logo";
 import { cn } from "@/lib/utils";
 
 const search = z.object({
-  duration: fallback(z.coerce.number(), 50).default(50),
+  duration: fallback(z.coerce.number(), 60).default(60),
   slot: fallback(z.string(), "18:00").default("18:00"),
   date: fallback(z.string(), new Date().toISOString()).default(new Date().toISOString()),
 });
@@ -73,11 +73,11 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const tutor = TUTORS[tutorId] ?? TUTORS.ramdeen;
 
-  const [duration, setDuration] = useState<25 | 50>((durQ === 25 ? 25 : 50) as 25 | 50);
+  const [duration, setDuration] = useState<30 | 60>((durQ === 30 ? 30 : 60) as 30 | 60);
   const [pay, setPay] = useState<"card" | "apple" | "google">("card");
   const [paid, setPaid] = useState(false);
 
-  const lessonPrice = duration === 25 ? Math.round(tutor.pricePerLesson * 0.6) : tutor.pricePerLesson;
+  const lessonPrice = duration === 30 ? Math.round(tutor.pricePerLesson * 0.6) : tutor.pricePerLesson;
   const fee = 0.3;
   const total = (lessonPrice + fee).toFixed(2);
 
@@ -191,16 +191,16 @@ function CheckoutPage() {
             <section className="rounded-3xl border border-border bg-background p-5 shadow-card">
               <div className="font-bold text-ink mb-3">Checkout info</div>
               <div className="grid grid-cols-2 rounded-xl bg-muted p-1 mb-4">
-                {[25, 50].map((d) => (
+                {[30, 60].map((d) => (
                   <button
                     key={d}
-                    onClick={() => setDuration(d as 25 | 50)}
+                    onClick={() => setDuration(d as 30 | 60)}
                     className={cn(
                       "py-2 rounded-lg text-sm font-semibold transition",
                       duration === d ? "bg-background text-ink shadow-sm" : "text-muted-foreground",
                     )}
                   >
-                    {d} mins · ${d === 25 ? Math.round(tutor.pricePerLesson * 0.6) : tutor.pricePerLesson}
+                    {d} mins · ${d === 30 ? Math.round(tutor.pricePerLesson * 0.6) : tutor.pricePerLesson}
                   </button>
                 ))}
               </div>
