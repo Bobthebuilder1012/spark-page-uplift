@@ -179,14 +179,38 @@ function NewClassBuilder() {
             </p>
           </Section>
 
-          <Section title="Access">
-            <label className="flex items-start gap-3 p-3 rounded-xl border border-border cursor-pointer hover:bg-muted/40">
-              <input type="checkbox" checked={requestToJoin} onChange={(e) => setRequestToJoin(e.target.checked)} className="mt-0.5 accent-brand size-4" />
+          <Section title="Access" hint="Who can find this class, and how they get in.">
+            <div className="space-y-3">
               <div>
-                <div className="text-sm font-semibold text-ink">Require approval to join</div>
-                <div className="text-xs text-muted-foreground">Students send a join request first. You approve or decline from the Join requests inbox.</div>
+                <div className="text-xs font-semibold text-ink mb-2">Visibility</div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {([
+                    { v: "public" as const, icon: Globe, title: "Public", body: "Listed in Explore and can be shared with anyone." },
+                    { v: "private" as const, icon: Lock, title: "Private", body: "Hidden from Explore. Only students with the link can view." },
+                  ]).map((opt) => {
+                    const Icon = opt.icon;
+                    const active = visibility === opt.v;
+                    return (
+                      <label key={opt.v} className={cn("flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition", active ? "border-brand bg-brand-soft/40" : "border-border hover:bg-muted/40")}>
+                        <input type="radio" name="vis" checked={active} onChange={() => setVisibility(opt.v)} className="mt-0.5 accent-brand size-4" />
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-ink inline-flex items-center gap-1.5"><Icon className="size-3.5" /> {opt.title}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">{opt.body}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
-            </label>
+
+              <label className="flex items-start gap-3 p-3 rounded-xl border border-border cursor-pointer hover:bg-muted/40">
+                <input type="checkbox" checked={requestToJoin} onChange={(e) => setRequestToJoin(e.target.checked)} className="mt-0.5 accent-brand size-4" />
+                <div>
+                  <div className="text-sm font-semibold text-ink">Require approval to join</div>
+                  <div className="text-xs text-muted-foreground">Students send a join request first. You approve or decline from the Join requests inbox.</div>
+                </div>
+              </label>
+            </div>
           </Section>
         </div>
 
