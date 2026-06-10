@@ -52,7 +52,7 @@ function BookingPage() {
   const navigate = useNavigate();
   const p = TUTORS[id] ?? TUTORS.ramdeen;
 
-  const [duration, setDuration] = useState<30 | 60>(50);
+  const [duration, setDuration] = useState<30 | 60>(60);
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState<{ dayIdx: number; time: string } | null>(null);
 

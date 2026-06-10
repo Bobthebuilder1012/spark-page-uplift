@@ -29,7 +29,7 @@ function Initials({ name, hue }: { name: string; hue: number }) {
 }
 
 export function BookTrialModal({ open, onClose, tutorId, tutorName, tutorHue }: Props) {
-  const [duration, setDuration] = useState<30 | 60>(50);
+  const [duration, setDuration] = useState<30 | 60>(60);
   const [weekOffset, setWeekOffset] = useState(0);
   const [dayIdx, setDayIdx] = useState(1);
   const [slot, setSlot] = useState<string | null>(null);
