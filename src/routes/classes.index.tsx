@@ -478,8 +478,8 @@ function ExplorePage() {
           {items.length > PAGE_SIZE && <> · Page {currentPage} of {totalPages}</>}
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_320px] gap-5 items-start">
-          <div className="space-y-4">
+        <div className={cn("grid gap-5 items-start", tab === "tutors" && "lg:grid-cols-[1fr_320px]")}>
+          <div className={cn(tab === "tutors" ? "space-y-4" : "grid sm:grid-cols-2 xl:grid-cols-3 gap-5")}>
             {tab === "tutors"
               ? pageItems.map((t) => (
                   <TutorCard key={(t as Tutor).id} t={t as Tutor}
@@ -520,9 +520,11 @@ function ExplorePage() {
               </div>
             )}
           </div>
-          <div className="hidden lg:block sticky top-24">
-            {tab === "tutors" ? <TutorPreview tutor={hoveredTutor} /> : <ClassPreview c={hoveredClass} />}
-          </div>
+          {tab === "tutors" && (
+            <div className="hidden lg:block sticky top-24">
+              <TutorPreview tutor={hoveredTutor} />
+            </div>
+          )}
         </div>
       </div>
     </ClassesShell>
