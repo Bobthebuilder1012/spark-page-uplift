@@ -1,16 +1,23 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, Star, Heart, Users, GraduationCap, BadgeCheck, TrendingUp, Sparkles, ChevronDown, ChevronLeft, ChevronRight, Play, MessageSquare } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Search, Star, Heart, Users, GraduationCap, BadgeCheck, TrendingUp, Sparkles, ChevronDown, ChevronLeft, ChevronRight, Play, MessageSquare, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import * as SliderPrimitive from "@radix-ui/react-slider";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
-import { BookTrialModal } from "@/components/booking/BookTrialModal";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { isAuthed } from "@/lib/auth";
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
   tab: fallback(z.enum(["lessons", "tutors"]), "tutors").default("tutors"),
   page: fallback(z.number(), 1).default(1),
+  subject: fallback(z.string(), "").default(""),
+  priceMin: fallback(z.number(), 0).default(0),
+  priceMax: fallback(z.number(), 200).default(200),
+  days: fallback(z.string(), "").default(""),
+  times: fallback(z.string(), "").default(""),
 });
 
 export const Route = createFileRoute("/student/tutors/")({
@@ -69,6 +76,15 @@ const BASE_TUTORS: Tutor[] = [
 ];
 
 const PAGE_SIZE = 12;
+const ALL_SUBJECTS = Array.from(new Set(BASE_TUTORS.flatMap((t) => t.subjects))).sort();
+const ALL_COUNTRIES = Array.from(new Set(BASE_TUTORS.map((t) => t.country))).sort();
+const DAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const TIME_KEYS = [
+  { key: "morning", label: "Morning" },
+  { key: "afternoon", label: "Afternoon" },
+  { key: "evening", label: "Evening" },
+  { key: "night", label: "Night" },
+];
 
 function TutorAvatarSquare({ name, hue, size = 132 }: { name: string; hue: number; size?: number }) {
   const initials = name.replace(/^(Mr\.|Ms\.|Mrs\.|Dr\.)\s*/i, "").split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -83,30 +99,32 @@ function TutorAvatarSquare({ name, hue, size = 132 }: { name: string; hue: numbe
   );
 }
 
-function FilterField({ label, value, hasValue }: { label: string; value: string; hasValue?: boolean }) {
+function FilterField({ label, value, hasValue, children }: { label: string; value: string; hasValue?: boolean; children: React.ReactNode }) {
   return (
-    <button className={cn("text-left rounded-2xl border border-border bg-background px-4 py-2.5 hover:border-ink/40 transition flex items-center justify-between gap-2", hasValue && "border-ink")}>
-      <div className="min-w-0 flex-1">
-        <div className="text-[11px] text-muted-foreground">{label}</div>
-        <div className="text-sm font-semibold text-ink truncate">{value}</div>
-      </div>
-      <ChevronDown className="size-4 text-muted-foreground shrink-0" />
-    </button>
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className={cn("w-full text-left rounded-2xl border border-border bg-background px-4 py-2.5 hover:border-ink/40 transition flex items-center justify-between gap-2", hasValue && "border-ink")}>
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] text-muted-foreground">{label}</div>
+            <div className="text-sm font-semibold text-ink truncate">{value}</div>
+          </div>
+          <ChevronDown className="size-4 text-muted-foreground shrink-0" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-4" align="start">{children}</PopoverContent>
+    </Popover>
   );
 }
 
-function TutorCard({ t, onBook, onHover, saved, toggleSave }: { t: Tutor; onBook: () => void; onHover: () => void; saved: boolean; toggleSave: () => void }) {
+function TutorCard({ t, onHover, saved, toggleSave, onBook }: { t: Tutor; onHover: () => void; saved: boolean; toggleSave: () => void; onBook: () => void }) {
   return (
-    <div
-      onMouseEnter={onHover}
-      className="rounded-3xl border border-border bg-background p-5 hover:border-brand/40 hover:shadow-card transition-all"
-    >
-      <div className="flex gap-5">
+    <div onMouseEnter={onHover} className="rounded-3xl border border-border bg-background p-4 sm:p-5 hover:border-brand/40 hover:shadow-card transition-all">
+      <div className="flex gap-4 sm:gap-5">
         <div className="flex flex-col items-center gap-3">
           <Link to="/student/tutors/$id" params={{ id: t.id }}>
-            <TutorAvatarSquare name={t.name} hue={t.hue} />
+            <TutorAvatarSquare name={t.name} hue={t.hue} size={96} />
           </Link>
-          <button onClick={toggleSave} className="size-10 rounded-full border border-border grid place-items-center hover:bg-muted">
+          <button onClick={toggleSave} className="size-9 rounded-full border border-border grid place-items-center hover:bg-muted">
             <Heart className={cn("size-4", saved ? "fill-coral text-coral" : "text-muted-foreground")} />
           </button>
         </div>
@@ -115,17 +133,17 @@ function TutorCard({ t, onBook, onHover, saved, toggleSave }: { t: Tutor; onBook
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <Link to="/student/tutors/$id" params={{ id: t.id }} className="inline-flex items-center gap-1.5 hover:underline">
-                <h3 className="text-xl font-bold text-ink truncate">{t.name}</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-ink truncate">{t.name}</h3>
                 {t.verified && <BadgeCheck className="size-4 text-brand-deep shrink-0" />}
                 <span className="text-base">{t.flag}</span>
               </Link>
-              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 <span className="inline-flex items-center gap-1 text-sm font-bold text-ink">
-                  <Star className="size-4 fill-ink text-ink" />
+                  <Star className="size-4 fill-amber-400 text-amber-400" />
                   {t.rating.toFixed(2)}
                 </span>
-                <span className="text-sm text-muted-foreground">({t.reviews} reviews)</span>
-                <span className="text-sm text-muted-foreground">· {t.subjects.join(", ")}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">({t.reviews} reviews)</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">· {t.subjects.join(", ")}</span>
               </div>
               <div className="flex items-center gap-3 mt-2 text-xs flex-wrap">
                 {t.superTutor && (
@@ -134,7 +152,7 @@ function TutorCard({ t, onBook, onHover, saved, toggleSave }: { t: Tutor; onBook
                   </span>
                 )}
                 {t.professional && (
-                  <span className="inline-flex items-center gap-1 font-semibold text-ink">
+                  <span className="hidden sm:inline-flex items-center gap-1 font-semibold text-ink">
                     <BadgeCheck className="size-3.5 text-brand-deep" /> Professional
                   </span>
                 )}
@@ -142,15 +160,15 @@ function TutorCard({ t, onBook, onHover, saved, toggleSave }: { t: Tutor; onBook
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-3xl font-bold text-ink leading-none">${t.pricePerLesson}</div>
-              <div className="text-xs text-muted-foreground mt-1">50-min lesson</div>
+              <div className="text-2xl sm:text-3xl font-bold text-ink leading-none">${t.pricePerLesson}</div>
+              <div className="text-[11px] sm:text-xs text-muted-foreground mt-1">60-min lesson</div>
             </div>
           </div>
 
-          <p className="mt-3 text-sm text-ink font-semibold">✅ {t.headline}</p>
-          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">💬 — {t.blurb}</p>
+          <p className="mt-3 text-sm text-ink font-semibold line-clamp-2">✅ {t.headline}</p>
+          <p className="mt-1 text-sm text-muted-foreground line-clamp-2 hidden sm:block">💬 — {t.blurb}</p>
 
-          <div className="mt-3 flex items-center gap-5 text-xs">
+          <div className="mt-3 flex items-center gap-4 sm:gap-5 text-xs">
             <div>
               <div className="font-bold text-ink">{t.activeStudents}</div>
               <div className="text-muted-foreground">Active students</div>
@@ -158,25 +176,23 @@ function TutorCard({ t, onBook, onHover, saved, toggleSave }: { t: Tutor; onBook
             <div>
               <div className="font-bold text-ink inline-flex items-center gap-1.5">
                 {t.lessonsTaught}
-                {t.topPercent && (
-                  <span className="rounded-full bg-trust-bg text-trust-text px-2 py-0.5 text-[10px] font-bold">{t.topPercent}</span>
-                )}
+                {t.topPercent && (<span className="rounded-full bg-trust-bg text-trust-text px-2 py-0.5 text-[10px] font-bold">{t.topPercent}</span>)}
               </div>
               <div className="text-muted-foreground">Lessons taught</div>
             </div>
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
-            <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <TrendingUp className="size-3.5" /> Very popular. Booked {t.recentBookings} times recently
+            <div className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <TrendingUp className="size-3.5" /> Booked {t.recentBookings} times recently
             </div>
-            <div className="flex items-center gap-2">
-              <button className="size-10 rounded-xl border border-border grid place-items-center hover:bg-muted" title="Message">
+            <div className="flex items-center gap-2 ml-auto">
+              <button className="hidden sm:grid size-10 rounded-xl border border-border place-items-center hover:bg-muted" title="Message">
                 <MessageSquare className="size-4" />
               </button>
               <button
                 onClick={onBook}
-                className="rounded-full bg-brand text-white px-5 py-2.5 text-sm font-bold hover:bg-brand-deep transition"
+                className="rounded-full bg-brand text-white px-4 sm:px-5 py-2.5 text-sm font-bold hover:bg-brand-deep transition"
               >
                 Book trial lesson
               </button>
@@ -198,18 +214,8 @@ function VideoPreviewPanel({ tutor }: { tutor: Tutor | null }) {
   }
   return (
     <AnimatePresence mode="wait">
-      <motion.div
-        key={tutor.id}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.18 }}
-        className="space-y-3"
-      >
-        <div
-          className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-border"
-          style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${tutor.hue}), oklch(0.65 0.15 ${tutor.hue}))` }}
-        >
+      <motion.div key={tutor.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="space-y-3">
+        <div className="relative aspect-[4/5] rounded-3xl overflow-hidden border border-border" style={{ background: `linear-gradient(135deg, oklch(0.85 0.1 ${tutor.hue}), oklch(0.65 0.15 ${tutor.hue}))` }}>
           <div className="absolute inset-0 grid place-items-center">
             <button className="size-16 rounded-full bg-brand text-white grid place-items-center shadow-pop hover:scale-105 transition">
               <Play className="size-7 fill-white ml-1" />
@@ -220,44 +226,61 @@ function VideoPreviewPanel({ tutor }: { tutor: Tutor | null }) {
             <div className="text-white/85 text-xs">{tutor.subjects.join(" · ")}</div>
           </div>
         </div>
-        <Link to="/student/tutors/$id/book" params={{ id: tutor.id }} className="block w-full text-center rounded-full border border-border bg-background py-3 text-sm font-semibold text-ink hover:bg-muted">
-          View full schedule
-        </Link>
-        <Link to="/student/tutors/$id" params={{ id: tutor.id }} className="block w-full text-center rounded-full border border-border bg-background py-3 text-sm font-semibold text-ink hover:bg-muted">
-          See {tutor.name.split(" ").pop()}'s profile
-        </Link>
+        <Link to="/student/tutors/$id/book" params={{ id: tutor.id }} className="block w-full text-center rounded-full border border-border bg-background py-3 text-sm font-semibold text-ink hover:bg-muted">View full schedule</Link>
+        <Link to="/student/tutors/$id" params={{ id: tutor.id }} className="block w-full text-center rounded-full border border-border bg-background py-3 text-sm font-semibold text-ink hover:bg-muted">See {tutor.name.split(" ").pop()}'s profile</Link>
       </motion.div>
     </AnimatePresence>
   );
 }
 
 function ExplorePage() {
-  const { q, tab, page } = Route.useSearch();
-  const navigate = Route.useNavigate();
+  const search = Route.useSearch();
+  const { q, tab, page, subject, priceMin, priceMax, days, times } = search;
+  const navigate = useNavigate();
+  const update = (patch: any) => navigate({ to: "/student/tutors", search: { ...search, ...patch } as any });
+
   const [query, setQuery] = useState(q || "");
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [hovered, setHovered] = useState<string | null>(BASE_TUTORS[0].id);
-  const [bookingTutor, setBookingTutor] = useState<Tutor | null>(null);
 
   useEffect(() => { setQuery(q || ""); }, [q]);
 
   const ql = query.trim().toLowerCase();
-  const filtered = useMemo(() => BASE_TUTORS.filter((t) => {
-    if (!ql) return true;
-    return t.name.toLowerCase().includes(ql) || t.subjects.join(" ").toLowerCase().includes(ql) || t.headline.toLowerCase().includes(ql);
-  }), [ql]);
+  const selectedDays = days ? days.split(",").filter(Boolean) : [];
+  const selectedTimes = times ? times.split(",").filter(Boolean) : [];
+
+  const filtered = useMemo(() => {
+    const f = BASE_TUTORS.filter((t) => {
+      if (ql) {
+        const match = t.name.toLowerCase().includes(ql) || t.subjects.join(" ").toLowerCase().includes(ql) || t.headline.toLowerCase().includes(ql);
+        if (!match) return false;
+      }
+      if (subject && !t.subjects.some((s) => s.toLowerCase().includes(subject.toLowerCase()))) return false;
+      if (t.pricePerLesson < priceMin || (priceMax < 200 && t.pricePerLesson > priceMax)) return false;
+      return true;
+    });
+    return f;
+  }, [ql, subject, priceMin, priceMax]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(Math.max(1, page), totalPages);
   const pageTutors = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
   const hoveredTutor = pageTutors.find((t) => t.id === hovered) ?? pageTutors[0] ?? null;
 
-  const setTab = (next: "lessons" | "tutors") =>
-    navigate({ search: (prev: any) => ({ ...prev, tab: next, page: 1 }) });
+  const onBook = (t: Tutor) => {
+    if (!isAuthed()) {
+      navigate({ to: "/signup", search: { next: `/student/tutors/${t.id}/book` } as any });
+      return;
+    }
+    navigate({ to: "/student/tutors/$id/book", params: { id: t.id } });
+  };
 
-  const goPage = (p: number) =>
-    navigate({ search: (prev: any) => ({ ...prev, page: p }) });
+  const subjLabel = subject || "Any subject";
+  const priceLabel = priceMin === 0 && priceMax >= 200 ? "$0 – $200+" : `$${priceMin} – $${priceMax}${priceMax >= 200 ? "+" : ""}`;
+  const availLabel = selectedDays.length || selectedTimes.length ? `${selectedDays.length || "Any"}d · ${selectedTimes.length || "Any"}t` : "Any time";
+
+  const noResults = filtered.length === 0 && !ql;
+  const fallbackTutors = noResults ? BASE_TUTORS.slice(0, PAGE_SIZE) : [];
 
   return (
     <div className="max-w-7xl mx-auto space-y-5">
@@ -270,34 +293,68 @@ function ExplorePage() {
       </div>
 
       <div className="inline-flex p-1 rounded-2xl bg-muted">
-        <button onClick={() => setTab("lessons")} className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition", tab === "lessons" ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink")}>
+        <Link to="/classes" className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition", tab === "lessons" ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink")}>
           <Users className="size-4" /> Group Lessons
-        </button>
-        <button onClick={() => setTab("tutors")} className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition", tab === "tutors" ? "bg-background text-ink shadow-sm" : "text-muted-foreground hover:text-ink")}>
+        </Link>
+        <button className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition bg-background text-ink shadow-sm")}>
           <GraduationCap className="size-4" /> 1:1 Tutors
         </button>
       </div>
 
-      {/* Primary filter row */}
+      {/* Filter row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        <FilterField label="I want to learn" value="Any subject" />
-        <FilterField label="Price per lesson" value="$0 – $200+" />
-        <FilterField label="Country of birth" value="Any country" />
-        <FilterField label="I'm available" value="Any time" />
+        <FilterField label="I want to learn" value={subjLabel} hasValue={!!subject}>
+          <div className="max-h-64 overflow-y-auto">
+            <button onClick={() => update({ subject: "", page: 1 })} className={cn("w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted", !subject && "bg-brand-soft font-semibold")}>Any subject</button>
+            {ALL_SUBJECTS.map((s) => (
+              <button key={s} onClick={() => update({ subject: s, page: 1 })} className={cn("w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted", subject === s && "bg-brand-soft font-semibold")}>{s}</button>
+            ))}
+          </div>
+        </FilterField>
+
+        <FilterField label="Price per lesson" value={priceLabel} hasValue={priceMin > 0 || priceMax < 200}>
+          <PriceFilter min={priceMin} max={priceMax} onApply={(lo, hi) => update({ priceMin: lo, priceMax: hi, page: 1 })} />
+        </FilterField>
+
+        <FilterField label="Country" value="Any country">
+          <div className="text-xs text-muted-foreground mb-2">Tutors are based in:</div>
+          <div className="flex flex-wrap gap-1.5">
+            {ALL_COUNTRIES.map((c) => (
+              <span key={c} className="text-xs px-2.5 py-1 rounded-full bg-muted">{c}</span>
+            ))}
+          </div>
+        </FilterField>
+
+        <FilterField label="I'm available" value={availLabel} hasValue={selectedDays.length > 0 || selectedTimes.length > 0}>
+          <AvailabilityFilter
+            days={selectedDays}
+            times={selectedTimes}
+            onApply={(d, t) => update({ days: d.join(","), times: t.join(","), page: 1 })}
+          />
+        </FilterField>
       </div>
 
-      {/* Sort + search */}
+      {/* Active chips */}
+      {(subject || selectedDays.length > 0 || selectedTimes.length > 0 || priceMin > 0 || priceMax < 200) && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-muted-foreground">Active filters:</span>
+          {subject && <Chip onRemove={() => update({ subject: "", page: 1 })}>{subject}</Chip>}
+          {(priceMin > 0 || priceMax < 200) && <Chip onRemove={() => update({ priceMin: 0, priceMax: 200, page: 1 })}>{priceLabel}</Chip>}
+          {selectedDays.map((d) => <Chip key={d} onRemove={() => update({ days: selectedDays.filter((x) => x !== d).join(","), page: 1 })}>{d}</Chip>)}
+          {selectedTimes.map((t) => <Chip key={t} onRemove={() => update({ times: selectedTimes.filter((x) => x !== t).join(","), page: 1 })}>{t}</Chip>)}
+          <button onClick={() => update({ subject: "", priceMin: 0, priceMax: 200, days: "", times: "", page: 1 })} className="text-xs font-semibold text-brand-deep hover:underline">Clear all</button>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex-1 min-w-[200px]" />
-        <button className="rounded-full border border-border px-4 py-2 text-sm font-medium text-ink inline-flex items-center gap-2 hover:border-ink/40">
-          Sort: Our top picks
-          <ChevronDown className="size-3.5 text-muted-foreground" />
-        </button>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onBlur={() => update({ q: query, page: 1 })}
+            onKeyDown={(e) => e.key === "Enter" && update({ q: query, page: 1 })}
             placeholder="Search by name or keyword"
             className="pl-9 pr-4 py-2 rounded-full border border-border bg-background text-sm outline-none focus:border-brand min-w-[220px]"
           />
@@ -305,58 +362,33 @@ function ExplorePage() {
       </div>
 
       <div className="text-sm text-muted-foreground">
-        {filtered.length} tutor{filtered.length === 1 ? "" : "s"} {ql && <>matching "<span className="text-ink font-medium">{query}</span>"</>}
-        {filtered.length > PAGE_SIZE && <> · Page {currentPage} of {totalPages}</>}
+        {noResults
+          ? <>No exact matches — showing tutors that best fit your criteria.</>
+          : <>{filtered.length} tutor{filtered.length === 1 ? "" : "s"}{ql && <> matching "<span className="text-ink font-medium">{query}</span>"</>}{filtered.length > PAGE_SIZE && <> · Page {currentPage} of {totalPages}</>}</>}
       </div>
 
-      {/* Grid: cards left, sticky video right */}
       <div className="grid lg:grid-cols-[1fr_320px] gap-5 items-start">
         <div className="space-y-4">
-          {pageTutors.map((t) => (
+          {(noResults ? fallbackTutors : pageTutors).map((t) => (
             <TutorCard
               key={t.id}
               t={t}
               saved={saved.has(t.id)}
               toggleSave={() => setSaved((s) => { const n = new Set(s); n.has(t.id) ? n.delete(t.id) : n.add(t.id); return n; })}
               onHover={() => setHovered(t.id)}
-              onBook={() => setBookingTutor(t)}
+              onBook={() => onBook(t)}
             />
           ))}
-          {pageTutors.length === 0 && (
-            <div className="rounded-3xl border border-dashed border-border p-12 text-center text-muted-foreground">
-              No tutors match these filters.
-            </div>
-          )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
+          {!noResults && totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 pt-4">
-              <button
-                onClick={() => goPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="size-10 rounded-full border border-border grid place-items-center hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
-              >
+              <button onClick={() => update({ page: currentPage - 1 })} disabled={currentPage === 1} className="size-10 rounded-full border border-border grid place-items-center hover:bg-muted disabled:opacity-40">
                 <ChevronLeft className="size-4" />
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => goPage(p)}
-                  className={cn(
-                    "min-w-10 h-10 px-3 rounded-full text-sm font-bold transition",
-                    p === currentPage
-                      ? "bg-ink text-white"
-                      : "border border-border text-ink hover:bg-muted",
-                  )}
-                >
-                  {p}
-                </button>
+                <button key={p} onClick={() => update({ page: p })} className={cn("min-w-10 h-10 px-3 rounded-full text-sm font-bold transition", p === currentPage ? "bg-ink text-white" : "border border-border text-ink hover:bg-muted")}>{p}</button>
               ))}
-              <button
-                onClick={() => goPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="size-10 rounded-full border border-border grid place-items-center hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
-              >
+              <button onClick={() => update({ page: currentPage + 1 })} disabled={currentPage === totalPages} className="size-10 rounded-full border border-border grid place-items-center hover:bg-muted disabled:opacity-40">
                 <ChevronRight className="size-4" />
               </button>
             </div>
@@ -366,16 +398,68 @@ function ExplorePage() {
           <VideoPreviewPanel tutor={hoveredTutor} />
         </div>
       </div>
+    </div>
+  );
+}
 
-      {bookingTutor && (
-        <BookTrialModal
-          open
-          onClose={() => setBookingTutor(null)}
-          tutorId={bookingTutor.id}
-          tutorName={bookingTutor.name}
-          tutorHue={bookingTutor.hue}
-        />
-      )}
+function Chip({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-brand-soft text-trust-text text-xs font-semibold px-3 py-1">
+      {children}
+      <button onClick={onRemove} className="hover:text-ink"><X className="size-3" /></button>
+    </span>
+  );
+}
+
+function PriceFilter({ min, max, onApply }: { min: number; max: number; onApply: (lo: number, hi: number) => void }) {
+  const [v, setV] = useState<[number, number]>([min, max]);
+  return (
+    <div className="space-y-4">
+      <div className="text-sm font-semibold text-ink">${v[0]} – ${v[1]}{v[1] >= 200 ? "+" : ""}</div>
+      <SliderPrimitive.Root
+        value={v}
+        min={0}
+        max={200}
+        step={1}
+        minStepsBetweenThumbs={1}
+        onValueChange={(n) => setV([n[0], n[1]] as [number, number])}
+        className="relative flex items-center w-full h-6 select-none touch-none"
+      >
+        <SliderPrimitive.Track className="relative h-2 w-full rounded-full bg-muted grow">
+          <SliderPrimitive.Range className="absolute h-full bg-ink rounded-full" />
+        </SliderPrimitive.Track>
+        <SliderPrimitive.Thumb className="block size-5 rounded-full bg-background border-2 border-ink shadow focus:outline-none" />
+        <SliderPrimitive.Thumb className="block size-5 rounded-full bg-background border-2 border-ink shadow focus:outline-none" />
+      </SliderPrimitive.Root>
+      <button onClick={() => onApply(v[0], v[1])} className="w-full rounded-full bg-brand text-white py-2 text-sm font-bold hover:bg-brand-deep">Apply</button>
+    </div>
+  );
+}
+
+function AvailabilityFilter({ days, times, onApply }: { days: string[]; times: string[]; onApply: (d: string[], t: string[]) => void }) {
+  const [d, setD] = useState(days);
+  const [t, setT] = useState(times);
+  const toggle = (arr: string[], v: string, set: (a: string[]) => void) =>
+    set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+  return (
+    <div className="space-y-3">
+      <div>
+        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Days</div>
+        <div className="flex flex-wrap gap-1.5">
+          {DAY_KEYS.map((day) => (
+            <button key={day} onClick={() => toggle(d, day, setD)} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border", d.includes(day) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>{day}</button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Times</div>
+        <div className="flex flex-wrap gap-1.5">
+          {TIME_KEYS.map((time) => (
+            <button key={time.key} onClick={() => toggle(t, time.key, setT)} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border capitalize", t.includes(time.key) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>{time.label}</button>
+          ))}
+        </div>
+      </div>
+      <button onClick={() => onApply(d, t)} className="w-full rounded-full bg-brand text-white py-2 text-sm font-bold hover:bg-brand-deep">Apply</button>
     </div>
   );
 }
