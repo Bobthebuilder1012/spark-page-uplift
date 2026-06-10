@@ -312,12 +312,7 @@ function ExplorePage() {
       {/* Filter row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <FilterField label="I want to learn" value={subjLabel} hasValue={!!subject}>
-          <div className="max-h-64 overflow-y-auto">
-            <button onClick={() => update({ subject: "", page: 1 })} className={cn("w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted", !subject && "bg-brand-soft font-semibold")}>Any subject</button>
-            {ALL_SUBJECTS.map((s) => (
-              <button key={s} onClick={() => update({ subject: s, page: 1 })} className={cn("w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted", subject === s && "bg-brand-soft font-semibold")}>{s}</button>
-            ))}
-          </div>
+          <SubjectFilter value={subject} onApply={(s) => update({ subject: s, page: 1 })} />
         </FilterField>
 
         <FilterField label="Price per lesson" value={priceLabel} hasValue={priceMin > 0 || priceMax < 200}>
