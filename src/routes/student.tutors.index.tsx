@@ -76,14 +76,22 @@ const BASE_TUTORS: Tutor[] = [
 ];
 
 const PAGE_SIZE = 12;
-const ALL_SUBJECTS = Array.from(new Set(BASE_TUTORS.flatMap((t) => t.subjects))).sort();
 const ALL_COUNTRIES = Array.from(new Set(BASE_TUTORS.map((t) => t.country))).sort();
-const DAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const TIME_KEYS = [
-  { key: "morning", label: "Morning" },
-  { key: "afternoon", label: "Afternoon" },
-  { key: "evening", label: "Evening" },
-  { key: "night", label: "Night" },
+const DAY_KEYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const SUBJECT_GROUPS = {
+  SEA: ["Mathematics", "English Language Arts", "Creative Writing", "Science", "Social Studies", "Comprehension", "Grammar", "Spelling"],
+  CSEC: ["Mathematics", "Additional Mathematics", "English A", "English B", "English Lit", "English", "Physics", "Chemistry", "Biology", "Integrated Science", "Human & Social Biology", "Information Technology", "EDPM", "Spanish", "French", "Geography", "History", "Principles of Business", "Principles of Accounts", "Office Administration", "Economics", "Social Studies", "Religious Education", "Visual Arts", "Music", "Physical Education", "Agricultural Science", "Food & Nutrition", "Technical Drawing"],
+  CAPE: ["Pure Mathematics", "Applied Mathematics", "Physics", "Chemistry", "Biology", "Computer Science", "Information Technology", "Accounting", "Economics", "Management of Business", "Law", "Sociology", "Caribbean Studies", "Communication Studies", "History", "Geography", "Literatures in English", "Spanish", "French", "Environmental Science", "Agricultural Science", "Digital Media", "Performing Arts", "Visual Arts", "Tourism", "Entrepreneurship"],
+} as const;
+
+const TIME_BANDS: { key: string; label: string; group: "morning" | "daytime" | "evening" }[] = [
+  { key: "6-9am",  label: "6–9 AM",  group: "morning" },
+  { key: "9-12am", label: "9–12 AM", group: "morning" },
+  { key: "12-3pm", label: "12–3 PM", group: "daytime" },
+  { key: "3-6pm",  label: "3–6 PM",  group: "daytime" },
+  { key: "6-9pm",  label: "6–9 PM",  group: "evening" },
+  { key: "9-12pm", label: "9–12 PM", group: "evening" },
 ];
 
 function TutorAvatarSquare({ name, hue, size = 132 }: { name: string; hue: number; size?: number }) {
@@ -304,12 +312,7 @@ function ExplorePage() {
       {/* Filter row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <FilterField label="I want to learn" value={subjLabel} hasValue={!!subject}>
-          <div className="max-h-64 overflow-y-auto">
-            <button onClick={() => update({ subject: "", page: 1 })} className={cn("w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted", !subject && "bg-brand-soft font-semibold")}>Any subject</button>
-            {ALL_SUBJECTS.map((s) => (
-              <button key={s} onClick={() => update({ subject: s, page: 1 })} className={cn("w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted", subject === s && "bg-brand-soft font-semibold")}>{s}</button>
-            ))}
-          </div>
+          <SubjectFilter value={subject} onApply={(s) => update({ subject: s, page: 1 })} />
         </FilterField>
 
         <FilterField label="Price per lesson" value={priceLabel} hasValue={priceMin > 0 || priceMax < 200}>
@@ -436,26 +439,64 @@ function PriceFilter({ min, max, onApply }: { min: number; max: number; onApply:
   );
 }
 
+function SubjectFilter({ value, onApply }: { value: string; onApply: (s: string) => void }) {
+  const [level, setLevel] = useState<"SEA" | "CSEC" | "CAPE">("CSEC");
+  const [q, setQ] = useState("");
+  const list = SUBJECT_GROUPS[level].filter((s) => !q || s.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div className="space-y-3 w-[300px]">
+      <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
+        {(["SEA", "CSEC", "CAPE"] as const).map((l) => (
+          <button key={l} onClick={() => setLevel(l)} className={cn("py-1.5 rounded-lg text-xs font-bold", level === l ? "bg-background text-ink shadow-sm" : "text-muted-foreground")}>{l}</button>
+        ))}
+      </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Search ${level}`} className="w-full pl-9 pr-3 py-2 rounded-lg border border-border text-sm outline-none focus:border-brand" />
+      </div>
+      <div className="max-h-56 overflow-y-auto space-y-0.5">
+        <button onClick={() => onApply("")} className={cn("w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted", !value && "bg-brand-soft font-semibold")}>Any subject</button>
+        {list.map((s) => (
+          <button key={s} onClick={() => onApply(s)} className={cn("w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted", value === s && "bg-brand-soft font-semibold")}>{s}</button>
+        ))}
+        {list.length === 0 && <div className="text-xs text-muted-foreground px-3 py-4">No matches</div>}
+      </div>
+    </div>
+  );
+}
+
 function AvailabilityFilter({ days, times, onApply }: { days: string[]; times: string[]; onApply: (d: string[], t: string[]) => void }) {
   const [d, setD] = useState(days);
   const [t, setT] = useState(times);
   const toggle = (arr: string[], v: string, set: (a: string[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+  const section = (label: string, group: "morning" | "daytime" | "evening") => (
+    <div>
+      <div className="text-[11px] font-semibold text-muted-foreground mb-1.5">{label}</div>
+      <div className="grid grid-cols-3 gap-1.5">
+        {TIME_BANDS.filter((b) => b.group === group).map((b) => (
+          <button key={b.key} onClick={() => toggle(t, b.key, setT)}
+            className={cn("px-2 py-2 rounded-lg border text-xs font-semibold", t.includes(b.key) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>
+            {b.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
   return (
     <div className="space-y-3">
-      <div>
-        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Days</div>
-        <div className="flex flex-wrap gap-1.5">
+      <div className="text-xs font-bold uppercase tracking-wider text-ink">Times</div>
+      {section("Morning", "morning")}
+      {section("Daytime", "daytime")}
+      {section("Evening and night", "evening")}
+      <div className="pt-1">
+        <div className="text-xs font-bold uppercase tracking-wider text-ink mb-1.5">Days</div>
+        <div className="grid grid-cols-4 gap-1.5">
           {DAY_KEYS.map((day) => (
-            <button key={day} onClick={() => toggle(d, day, setD)} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border", d.includes(day) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>{day}</button>
-          ))}
-        </div>
-      </div>
-      <div>
-        <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Times</div>
-        <div className="flex flex-wrap gap-1.5">
-          {TIME_KEYS.map((time) => (
-            <button key={time.key} onClick={() => toggle(t, time.key, setT)} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border capitalize", t.includes(time.key) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>{time.label}</button>
+            <button key={day} onClick={() => toggle(d, day, setD)}
+              className={cn("py-2 rounded-lg border text-xs font-semibold", d.includes(day) ? "bg-ink text-white border-ink" : "border-border text-ink hover:border-ink/40")}>
+              {day}
+            </button>
           ))}
         </div>
       </div>
