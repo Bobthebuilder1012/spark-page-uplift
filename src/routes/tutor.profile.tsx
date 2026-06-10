@@ -76,9 +76,19 @@ function ProfilePage() {
                 </span>
               ))}
             </div>
-            <p className="text-sm text-muted-foreground italic mt-3">
-              {profile.bio || "Add a bio on the Get-listed page so students can learn about your style."}
-            </p>
+            {editing ? (
+              <div className="mt-3 space-y-2">
+                <textarea value={draftBio} onChange={(e) => setDraftBio(e.target.value)} rows={3} placeholder="Tell students about your teaching style…" className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm outline-none focus:border-brand" />
+                <input value={draftQuals} onChange={(e) => setDraftQuals(e.target.value)} placeholder="Qualifications · e.g. UWI BSc Mathematics" className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm outline-none focus:border-brand" />
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground italic mt-3">
+                  {draftBio || "Add a bio so students can learn about your style."}
+                </p>
+                <p className="text-xs text-ink mt-2 font-semibold">{draftQuals}</p>
+              </>
+            )}
           </div>
         </div>
       </section>
