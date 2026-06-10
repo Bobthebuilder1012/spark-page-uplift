@@ -287,14 +287,10 @@ function TutorDetail() {
           <div className="text-lg font-bold text-ink">${p.pricePerLesson}</div>
           <div className="text-[11px] text-muted-foreground">60-min lesson</div>
         </div>
-        <button onClick={() => setBooking(true)} className="rounded-full bg-brand text-white px-6 py-2.5 text-sm font-bold">
+        <button onClick={book} className="rounded-full bg-brand text-white px-6 py-2.5 text-sm font-bold">
           Book trial lesson
         </button>
       </div>
-
-      {booking && (
-        <BookTrialModal open onClose={() => setBooking(false)} tutorId={id} tutorName={p.name} tutorHue={p.hue} />
-      )}
     </div>
   );
 }
