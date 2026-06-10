@@ -129,7 +129,7 @@ export function ParentShell() {
         </main>
 
         <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur">
-          <div className="grid grid-cols-4">
+          <div className="grid grid-cols-5">
             {nav.map((item) => {
               const active = item.exact ? path === item.to : path === item.to || path.startsWith(item.to + "/");
               const Icon = item.icon;
