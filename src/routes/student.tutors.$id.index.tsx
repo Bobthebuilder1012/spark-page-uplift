@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Star, Heart, Share2, MessageSquare, Play, BadgeCheck, Sparkles, TrendingUp, ShieldCheck, GraduationCap, Languages, Info, Smile, Target, MessageCircle, Pencil } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { BookTrialModal } from "@/components/booking/BookTrialModal";
+import { isAuthed } from "@/lib/auth";
 
 export const Route = createFileRoute("/student/tutors/$id/")({
   head: () => ({ meta: [{ title: "Tutor profile — iTutor" }] }),
