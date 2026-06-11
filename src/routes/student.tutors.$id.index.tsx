@@ -224,6 +224,8 @@ function TutorDetail() {
             </div>
           </section>
 
+          <ResumeView resume={resume} />
+
           <section>
             <h2 className="text-2xl font-bold text-ink">Lesson rating</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
