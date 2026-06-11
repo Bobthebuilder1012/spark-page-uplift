@@ -106,6 +106,7 @@ function TutorDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const p = PROFILES[id] ?? PROFILES.ramdeen;
+  const { resume } = useTutorResume(id);
   const favs = useFavoriteTutors();
   const saved = favs.has(id);
   const [toast, setToast] = useState<string | null>(null);
