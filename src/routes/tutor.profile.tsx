@@ -5,6 +5,9 @@ import { MapPin, ExternalLink, Video, CalendarDays, Star, Pencil, Check, X } fro
 import { RatingBreakdown } from "@/components/ratings/RatingBreakdown";
 import { CommentSection } from "@/components/ratings/CommentSection";
 import { getSummary, useTutoringPreference } from "@/lib/ratings-store";
+import { useTutorResume } from "@/lib/tutor-resume-store";
+import { ResumeView } from "@/components/tutor/ResumeView";
+import { ResumeEditor } from "@/components/tutor/ResumeEditor";
 
 export const Route = createFileRoute("/tutor/profile")({
   component: ProfilePage,
