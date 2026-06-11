@@ -26,6 +26,7 @@ function ProfilePage() {
   const [draftBio, setDraftBio] = useState(profile.bio);
   const [draftQuals, setDraftQuals] = useState("UWI BSc Mathematics · 8 years teaching");
   const summary = getSummary("tutor", "ramdeen");
+  const { resume, save: saveResume } = useTutorResume("ramdeen");
 
   const showClasses = pref !== "one-on-one-only";
   const show1on1 = pref !== "classes-only";
