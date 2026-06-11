@@ -3,6 +3,8 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Star, Heart, Share2, MessageSquar
 import { useMemo, useRef, useState } from "react";
 import { getClassesByTutorId } from "@/lib/classes-catalog";
 import { useFavoriteTutors, shareLink } from "@/lib/social-store";
+import { useTutorResume } from "@/lib/tutor-resume-store";
+import { ResumeView } from "@/components/tutor/ResumeView";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id/")({
