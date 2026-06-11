@@ -3,6 +3,8 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Star, Heart, Share2, MessageSquar
 import { useMemo, useRef, useState } from "react";
 import { getClassesByTutorId } from "@/lib/classes-catalog";
 import { useFavoriteTutors, shareLink } from "@/lib/social-store";
+import { useTutorResume } from "@/lib/tutor-resume-store";
+import { ResumeView } from "@/components/tutor/ResumeView";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/student/tutors/$id/")({
@@ -104,6 +106,7 @@ function TutorDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const p = PROFILES[id] ?? PROFILES.ramdeen;
+  const { resume } = useTutorResume(id);
   const favs = useFavoriteTutors();
   const saved = favs.has(id);
   const [toast, setToast] = useState<string | null>(null);
@@ -220,6 +223,8 @@ function TutorDetail() {
               </div>
             </div>
           </section>
+
+          <ResumeView resume={resume} />
 
           <section>
             <h2 className="text-2xl font-bold text-ink">Lesson rating</h2>
