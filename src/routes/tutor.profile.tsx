@@ -97,6 +97,18 @@ function ProfilePage() {
         </div>
       </section>
 
+      {/* Resume & specialties */}
+      {editing ? (
+        <ResumeEditor resume={resume} onChange={saveResume} />
+      ) : (
+        <section className="rounded-2xl border border-border bg-background p-5 sm:p-6">
+          <ResumeView resume={resume} />
+          {resume.education.length + resume.certifications.length + resume.experience.length + resume.specialties.length === 0 && (
+            <p className="text-sm text-muted-foreground italic">Click "Edit profile" to add your education, certifications, experience and specialties — students will see this on your public profile.</p>
+          )}
+        </section>
+      )}
+
       {/* Shared rating breakdown */}
       <RatingBreakdown summary={summary} activeFilter={filter} onFilterChange={setFilter} />
 
