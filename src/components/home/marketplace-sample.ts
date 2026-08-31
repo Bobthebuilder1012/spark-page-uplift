@@ -101,7 +101,7 @@ export const sampleClasses: SampleClass[] = [
     priceTTD: 600,
     per: "month",
     label: "Limited spaces",
-    accent: "var(--sky)",
+    accent: "var(--brand-soft)",
   },
   {
     id: "c3",
@@ -114,7 +114,7 @@ export const sampleClasses: SampleClass[] = [
     time: "4:00 – 5:15 PM",
     priceTTD: 380,
     per: "month",
-    accent: "var(--peach)",
+    accent: "var(--coral-soft)",
   },
   {
     id: "c4",
@@ -128,7 +128,7 @@ export const sampleClasses: SampleClass[] = [
     priceTTD: 500,
     per: "month",
     label: "Starting soon",
-    accent: "var(--lavender)",
+    accent: "var(--brand-deep)",
   },
   {
     id: "c5",
@@ -141,7 +141,7 @@ export const sampleClasses: SampleClass[] = [
     time: "2:00 – 4:00 PM",
     priceTTD: 700,
     per: "month",
-    accent: "var(--coral-soft)",
+    accent: "var(--coral)",
   },
   {
     id: "c6",
@@ -155,7 +155,7 @@ export const sampleClasses: SampleClass[] = [
     priceTTD: 420,
     per: "month",
     label: "New",
-    accent: "var(--brand-soft)",
+    accent: "var(--brand)",
   },
   {
     id: "c7",
@@ -168,7 +168,7 @@ export const sampleClasses: SampleClass[] = [
     time: "4:30 – 5:45 PM",
     priceTTD: 350,
     per: "month",
-    accent: "var(--peach)",
+    accent: "var(--coral-soft)",
   },
   {
     id: "c8",
@@ -181,7 +181,7 @@ export const sampleClasses: SampleClass[] = [
     time: "7:00 – 8:15 PM",
     priceTTD: 480,
     per: "month",
-    accent: "var(--sky)",
+    accent: "var(--brand-soft)",
   },
   {
     id: "c9",
@@ -194,7 +194,7 @@ export const sampleClasses: SampleClass[] = [
     time: "6:00 – 7:15 PM",
     priceTTD: 400,
     per: "month",
-    accent: "var(--lavender)",
+    accent: "var(--brand-deep)",
   },
   {
     id: "c10",
@@ -207,7 +207,7 @@ export const sampleClasses: SampleClass[] = [
     time: "10:00 – 11:30 AM",
     priceTTD: 430,
     per: "month",
-    accent: "var(--brand-soft)",
+    accent: "var(--brand)",
   },
   {
     id: "c11",
@@ -220,7 +220,7 @@ export const sampleClasses: SampleClass[] = [
     time: "11:00 AM – 12:30 PM",
     priceTTD: 520,
     per: "month",
-    accent: "var(--coral-soft)",
+    accent: "var(--coral)",
   },
 ];
 
