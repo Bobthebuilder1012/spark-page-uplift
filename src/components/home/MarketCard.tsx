@@ -32,15 +32,15 @@ export function ClassMarketCard({ c }: { c: SampleClass }) {
             <p className="truncate text-sm font-semibold text-ink">{t.name}</p>
             <p className="truncate text-xs text-muted-foreground">{t.location}</p>
           </div>
-          {c.label && (
-            <span className="ml-auto shrink-0">
-              <DataLabelChip label={c.label} />
-            </span>
-          )}
         </div>
 
         <div>
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {c.label && (
+            <div className="mb-2">
+              <DataLabelChip label={c.label} />
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             <span className="rounded bg-muted px-1.5 py-0.5 text-ink/70">{c.level}</span>
             <span>{c.subject}</span>
           </div>
