@@ -1,39 +1,54 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Nav } from "@/components/landing/Nav";
-import { Hero } from "@/components/landing/Hero";
-import { Stats } from "@/components/landing/Stats";
-import { Testimonials } from "@/components/landing/Testimonials";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { CtaBand } from "@/components/landing/CtaBand";
-import { Footer } from "@/components/landing/Footer";
+import { HomeNav } from "@/components/home/HomeNav";
+import { HeroSearch } from "@/components/home/HeroSearch";
+import { SubjectDiscovery } from "@/components/home/SubjectDiscovery";
+import { MarketplaceIntro } from "@/components/home/MarketplaceIntro";
+import { FeaturedTeachers } from "@/components/home/FeaturedTeachers";
+import { HowItWorksFlow } from "@/components/home/HowItWorksFlow";
+import { ClassFormats } from "@/components/home/ClassFormats";
+import { BuiltHere } from "@/components/home/BuiltHere";
+import { ForTeachers } from "@/components/home/ForTeachers";
+import { FinalDiscovery } from "@/components/home/FinalDiscovery";
+import { HomeFooter } from "@/components/home/HomeFooter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "iTutor — Caribbean's No. 1 Tutoring Platform for SEA, CSEC & CAPE" },
+      { title: "iTutor — Find Caribbean Teachers & Classes for SEA, CSEC and CAPE" },
       {
         name: "description",
         content:
-          "Connect with verified Caribbean tutors for SEA, CSEC & CAPE. Personalised 1-on-1 sessions that turn struggles into strengths.",
+          "iTutor is the marketplace where Caribbean parents and students discover teachers, compare active classes and register for the class that fits them.",
       },
-      { property: "og:title", content: "iTutor — Unlock Your Academic Potential" },
-      { property: "og:description", content: "Verified Caribbean tutors. Real results. SEA, CSEC & CAPE preparation built around you." },
+      { property: "og:title", content: "iTutor — There's a teacher for the way you learn" },
+      {
+        property: "og:description",
+        content:
+          "Discover Caribbean teachers and classes for SEA, CSEC and CAPE — all in one place.",
+      },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Index,
+  component: Home,
 });
 
-function Index() {
+function Home() {
   return (
-    <main className="min-h-screen bg-white">
-      <Nav />
-      <Hero />
-      <Stats />
-      <Testimonials />
-      <HowItWorks />
-      <CtaBand />
-      <Footer />
-    </main>
+    <div className="min-h-screen bg-background">
+      <HomeNav />
+      <main>
+        <HeroSearch />
+        <SubjectDiscovery />
+        <MarketplaceIntro />
+        <FeaturedTeachers />
+        <HowItWorksFlow />
+        <ClassFormats />
+        <BuiltHere />
+        <ForTeachers />
+        <FinalDiscovery />
+      </main>
+      <HomeFooter />
+    </div>
   );
 }
