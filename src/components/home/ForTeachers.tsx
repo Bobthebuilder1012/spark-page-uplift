@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 const points = [
   {
     title: "Publish and promote classes",
-    body: "Create a class, set the schedule and price, and put it in front of students searching for your subject.",
+    body: "Create a class, set the schedule and price and put it in front of students searching for your subject.",
   },
   {
     title: "Reach students beyond your network",
