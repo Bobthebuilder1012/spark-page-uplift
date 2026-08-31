@@ -63,59 +63,59 @@
 :root {
   --radius: 0.875rem;
 
-  /* Brand */
-  --brand: oklch(0.766 0.196 148);          /* #32D270 — iTutor green */
-  --brand-soft: oklch(0.95 0.06 144);       /* light tint — trust boxes, badges */
-  --brand-deep: oklch(0.50 0.17 144);       /* darker green — hover states */
-  --trust-bg: oklch(0.97 0.04 144);         /* very light green wash */
-  --trust-text: oklch(0.28 0.09 144);       /* dark green text on trust-bg */
-  --mint: oklch(0.985 0.003 240);           /* near-white page wash */
-  --mint-deep: oklch(0.95 0.01 230);
-  --ink: oklch(0.18 0.02 240);              /* near-black headings */
-  --coral: oklch(0.74 0.18 40);             /* warm accent */
-  --coral-soft: oklch(0.94 0.06 50);
+  /* Brand — iTutor palette */
+  --brand: #32D270;                         /* Primary — iTutor green */
+  --brand-soft: #E8F9EF;                    /* Light green tint */
+  --brand-deep: #0F2E47;                     /* Secondary — deep navy */
+  --trust-bg: #F1FCF6;                      /* Very light green wash */
+  --trust-text: #0F2E47;                     /* Dark green/navy text on trust-bg */
+  --mint: #F4F7F5;                           /* White — warm off-white page wash */
+  --mint-deep: #E8EDE9;
+  --ink: #1A211E;                            /* Black — near-black headings/text */
+  --coral: #F5A524;                          /* Tertiary — warm amber accent */
+  --coral-soft: #FFF4E0;
   --lavender: oklch(0.92 0.05 295);
   --peach: oklch(0.93 0.06 65);
   --sky: oklch(0.92 0.05 230);
-  --forest: oklch(0.24 0.04 155);
+  --forest: #0F2E47;
 
   /* Semantic */
-  --background: oklch(1 0 0);
+  --background: #F4F7F5;
   --foreground: var(--ink);
-  --card: oklch(1 0 0);
+  --card: #FFFFFF;
   --card-foreground: var(--ink);
-  --popover: oklch(1 0 0);
+  --popover: #FFFFFF;
   --popover-foreground: var(--ink);
   --primary: var(--brand);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: var(--brand-soft);
-  --secondary-foreground: var(--forest);
-  --muted: oklch(0.97 0.01 150);
-  --muted-foreground: oklch(0.5 0.02 240);
+  --primary-foreground: #FFFFFF;
+  --secondary: #E3E9ED;
+  --secondary-foreground: var(--brand-deep);
+  --muted: #E8EDE9;
+  --muted-foreground: oklch(0.45 0.02 240);
   --accent: var(--coral);
-  --accent-foreground: oklch(0.99 0 0);
+  --accent-foreground: #1A211E;
   --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.92 0.01 150);
-  --input: oklch(0.92 0.01 150);
+  --border: #DFE5E1;
+  --input: #DFE5E1;
   --ring: var(--brand);
 }
 
 .dark {
-  --background: var(--ink);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.22 0.02 240);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.22 0.02 240);
-  --popover-foreground: oklch(0.98 0 0);
+  --background: var(--brand-deep);
+  --foreground: #F4F7F5;
+  --card: #1A211E;
+  --card-foreground: #F4F7F5;
+  --popover: #1A211E;
+  --popover-foreground: #F4F7F5;
   --primary: var(--brand);
-  --primary-foreground: oklch(0.99 0 0);
+  --primary-foreground: #FFFFFF;
   --secondary: oklch(0.28 0.03 240);
-  --secondary-foreground: oklch(0.98 0 0);
+  --secondary-foreground: #F4F7F5;
   --muted: oklch(0.26 0.02 240);
   --muted-foreground: oklch(0.7 0.02 240);
   --accent: var(--coral);
-  --accent-foreground: oklch(0.99 0 0);
+  --accent-foreground: #1A211E;
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 12%);
   --ring: var(--brand);
