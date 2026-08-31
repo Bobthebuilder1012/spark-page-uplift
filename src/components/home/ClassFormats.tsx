@@ -58,7 +58,7 @@ export function ClassFormats() {
               transition={{ duration: 0.45, delay: (i % 3) * 0.06, ease: "easeOut" }}
               className="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-brand/40"
             >
-              <span className="inline-flex size-10 items-center justify-center rounded-xl bg-muted text-ink">
+              <span className="inline-flex size-10 items-center justify-center rounded-xl bg-brand-soft text-brand-deep">
                 <f.icon className="h-4.5 w-4.5" />
               </span>
               <h3 className="mt-5 text-base font-semibold text-ink">{f.title}</h3>

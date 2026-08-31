@@ -57,7 +57,7 @@ export function BuiltHere() {
               ))}
             </div>
 
-            <div className="mt-9 rounded-2xl border border-dashed border-border p-5">
+            <div className="mt-9 rounded-2xl border border-dashed border-coral/40 bg-coral-soft/30 p-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Verified testimonial goes here
               </p>

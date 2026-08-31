@@ -4,19 +4,28 @@ import type { SampleClass } from "./marketplace-sample";
 import { teacherOf } from "./marketplace-sample";
 
 export function DataLabelChip({ label }: { label: string }) {
+  const style = labelStyles[label] ?? labelStyles["New"];
+  const dot = label === "Popular" ? "bg-brand" : "bg-coral";
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand-deep">
-      <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${style}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
       {label}
     </span>
   );
 }
 
+const labelStyles: Record<string, string> = {
+  Popular: "border-brand/30 bg-brand/10 text-brand-deep",
+  New: "border-coral/30 bg-coral/10 text-coral",
+  "Starting soon": "border-brand-deep/30 bg-brand-deep/10 text-brand-deep",
+  "Limited spaces": "border-coral/30 bg-coral/10 text-coral",
+};
+
 /** Compact marketplace class card used in the hero and subject discovery. */
 export function ClassMarketCard({ c }: { c: SampleClass }) {
   const t = teacherOf(c);
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_18px_40px_-24px_oklch(0.2_0.02_240/0.35)]">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_18px_40px_-24px_color-mix(in_oklab,var(--brand-deep)_18%,transparent)]">
       <div className="h-1.5 w-full" style={{ background: c.accent }} />
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex items-start gap-3">

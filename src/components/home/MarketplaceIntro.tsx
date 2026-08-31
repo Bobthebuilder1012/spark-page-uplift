@@ -13,7 +13,7 @@ export function MarketplaceIntro() {
   const teachers = Object.values(sampleTeachers);
 
   return (
-    <section className="border-b border-border bg-muted/40 py-20 sm:py-28">
+    <section className="border-b border-border bg-brand-soft/30 py-20 sm:py-28">
       <div className="mx-auto grid max-w-7xl gap-14 px-5 sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-5xl">
@@ -27,7 +27,7 @@ export function MarketplaceIntro() {
           <dl className="mt-10 grid gap-x-6 gap-y-5 sm:grid-cols-2">
             {facets.map((f) => (
               <div key={f.value} className="flex items-start gap-3">
-                <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-card text-ink ring-1 ring-border">
+                <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-deep ring-1 ring-brand/20">
                   <f.icon className="h-4 w-4" />
                 </span>
                 <div>

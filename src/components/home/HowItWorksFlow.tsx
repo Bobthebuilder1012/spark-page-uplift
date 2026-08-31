@@ -166,7 +166,7 @@ export function HowItWorksFlow() {
   return (
     <section
       id="how-it-works"
-      className="border-b border-border bg-muted/40 py-20 sm:py-28"
+      className="border-b border-border bg-brand-soft/30 py-20 sm:py-28"
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <h2 className="max-w-xl text-3xl font-bold tracking-tight text-ink sm:text-5xl">
@@ -213,9 +213,9 @@ export function HowItWorksFlow() {
           <div className="lg:sticky lg:top-28">
             <div className="rounded-3xl border border-border bg-card p-5 shadow-[0_28px_60px_-40px_oklch(0.2_0.02_240/0.4)] sm:p-6">
               <div className="mb-4 flex items-center gap-1.5">
-                <span className="size-2.5 rounded-full bg-border" />
-                <span className="size-2.5 rounded-full bg-border" />
-                <span className="size-2.5 rounded-full bg-border" />
+                <span className="size-2.5 rounded-full bg-brand/30" />
+                <span className="size-2.5 rounded-full bg-brand/30" />
+                <span className="size-2.5 rounded-full bg-brand/30" />
                 <span className="ml-3 text-xs text-muted-foreground">
                   iTutor · step {step + 1} of 4
                 </span>
