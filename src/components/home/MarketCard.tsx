@@ -4,9 +4,11 @@ import type { SampleClass } from "./marketplace-sample";
 import { teacherOf } from "./marketplace-sample";
 
 export function DataLabelChip({ label }: { label: string }) {
+  const style = labelStyles[label] ?? labelStyles["New"];
+  const dot = label === "Popular" ? "bg-brand" : "bg-coral";
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand-deep">
-      <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${style}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
       {label}
     </span>
   );
