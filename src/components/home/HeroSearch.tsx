@@ -60,9 +60,8 @@ export function HeroSearch() {
           <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-ink/60">
             Built here, for here
           </p>
-          <h1 className="mt-6 text-[2.6rem] font-bold leading-[1.03] tracking-tight text-ink sm:text-6xl lg:text-[4.1rem]">
-            There&apos;s a teacher for
-            <br className="hidden sm:block" /> the way{" "}
+          <h1 className="mt-6 max-w-[15ch] text-[2.6rem] font-bold leading-[1.03] tracking-tight text-ink sm:text-6xl lg:text-[4.1rem]">
+            There&apos;s a teacher for the way{" "}
             <span className="relative whitespace-nowrap">
               you learn.
               <svg
