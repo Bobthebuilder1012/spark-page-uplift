@@ -64,7 +64,7 @@
   --radius: 0.875rem;
 
   /* Brand */
-  --brand: oklch(0.70 0.20 144);            /* #32CC6F — official logo green */
+  --brand: oklch(0.766 0.196 148);          /* #32D270 — iTutor green */
   --brand-soft: oklch(0.95 0.06 144);       /* light tint — trust boxes, badges */
   --brand-deep: oklch(0.50 0.17 144);       /* darker green — hover states */
   --trust-bg: oklch(0.97 0.04 144);         /* very light green wash */
