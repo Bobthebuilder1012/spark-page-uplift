@@ -38,7 +38,7 @@ export function FeaturedTeachers() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
-              className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card transition-shadow hover:shadow-[0_28px_60px_-38px_oklch(0.2_0.02_240/0.5)]"
+              className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card transition-shadow hover:shadow-[0_28px_60px_-38px_color-mix(in_oklab,var(--brand-deep)_20%,transparent)]"
             >
               <div className="relative overflow-hidden">
                 <img

@@ -72,7 +72,7 @@ export function ForTeachers() {
         >
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold">Create a class</p>
-            <span className="rounded-full bg-brand/15 px-3 py-1 text-[11px] font-semibold text-brand">
+            <span className="rounded-full bg-coral/15 px-3 py-1 text-[11px] font-semibold text-coral">
               Draft
             </span>
           </div>

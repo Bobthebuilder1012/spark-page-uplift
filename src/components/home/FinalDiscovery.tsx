@@ -28,7 +28,7 @@ export function FinalDiscovery() {
   );
 
   return (
-    <section className="border-b border-border bg-muted/40 py-20 sm:py-28">
+    <section className="border-b border-border bg-coral-soft/30 py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="max-w-2xl">
           <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-5xl">
@@ -88,7 +88,7 @@ export function FinalDiscovery() {
 
             <Link
               to="/classes"
-              className="group inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3.5 text-base font-semibold text-background transition-colors hover:bg-brand hover:text-primary-foreground"
+              className="group inline-flex items-center gap-2 rounded-full bg-brand-deep px-6 py-3.5 text-base font-semibold text-background transition-colors hover:bg-brand hover:text-primary-foreground"
             >
               Find My Teacher
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

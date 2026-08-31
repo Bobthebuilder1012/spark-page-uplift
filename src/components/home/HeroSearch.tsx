@@ -57,7 +57,7 @@ export function HeroSearch() {
       />
       <div className="relative mx-auto grid max-w-7xl gap-14 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start lg:gap-16 lg:py-24">
         <div className="lg:sticky lg:top-28">
-          <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-ink/60">
+          <p className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand-soft px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-deep">
             Built here, for here
           </p>
           <h1 className="mt-6 max-w-[15ch] text-[2.6rem] font-bold leading-[1.03] tracking-tight text-ink sm:text-6xl lg:text-[4.1rem]">
@@ -108,7 +108,7 @@ export function HeroSearch() {
 
         {/* Interactive product surface */}
         <div className="relative">
-          <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-[0_30px_70px_-40px_oklch(0.2_0.02_240/0.45)] sm:p-6">
+          <div className="rounded-[1.75rem] border border-border bg-card p-4 shadow-[0_30px_70px_-40px_color-mix(in_oklab,var(--brand-deep)_20%,transparent)] sm:p-6">
             <label
               htmlFor="hero-search"
               className="block text-sm font-semibold text-ink"

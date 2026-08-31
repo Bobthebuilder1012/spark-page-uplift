@@ -12,11 +12,18 @@ export function DataLabelChip({ label }: { label: string }) {
   );
 }
 
+const labelStyles: Record<string, string> = {
+  Popular: "border-brand/30 bg-brand/10 text-brand-deep",
+  New: "border-coral/30 bg-coral/10 text-coral",
+  "Starting soon": "border-brand-deep/30 bg-brand-deep/10 text-brand-deep",
+  "Limited spaces": "border-coral/30 bg-coral/10 text-coral",
+};
+
 /** Compact marketplace class card used in the hero and subject discovery. */
 export function ClassMarketCard({ c }: { c: SampleClass }) {
   const t = teacherOf(c);
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_18px_40px_-24px_oklch(0.2_0.02_240/0.35)]">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_18px_40px_-24px_color-mix(in_oklab,var(--brand-deep)_18%,transparent)]">
       <div className="h-1.5 w-full" style={{ background: c.accent }} />
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex items-start gap-3">
